@@ -1,0 +1,935 @@
+{% extends "base.html" %}
+{% block title %}
+Reward Redemption History
+{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='student_rewards_history.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Add Lottie Player -->
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+{% endblock %}
+{% block main_content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Reward Redemption History</h2>
+        <a href="{{ url_for('student_rewards') }}" class="btn btn-light d-flex align-items-center" style="gap:8px; font-weight:600;">
+            <i class="fas fa-arrow-left"></i> Back to Rewards
+        </a>
+    </div>
+
+    <!-- Search and Filter Section (Unified Design) -->
+    <div class="search-filter-section">
+        <div class="search-container">
+            <div class="filter-row">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search your redemption history..." id="historySearchInput">
+                </div>
+            </div>
+            <div class="filter-tabs-container">
+                <!-- Custom Teacher Dropdown (same as rewards) -->
+                <div class="custom-teacher-dropdown" id="customTeacherDropdown">
+                    <button class="teacher-dropdown-toggle" id="teacherDropdownToggle">
+                        <img src="/static/image/default-avatar.png" alt="Teacher" class="teacher-dropdown-avatar" id="selectedTeacherAvatar">
+                        <span class="teacher-dropdown-info">
+                            <span class="teacher-dropdown-name" id="selectedTeacherName">All Teachers</span>
+                            <span class="teacher-dropdown-subject" id="selectedTeacherSubject">Select a teacher</span>
+                        </span>
+                        <i class="fas fa-chevron-down" style="margin-left: auto; font-size: 0.9em;"></i>
+                    </button>
+                    <div class="teacher-dropdown-menu" id="teacherDropdownMenu">
+                        <button class="teacher-dropdown-option" data-teacher-id="all">
+                            <img src="/static/image/default-avatar.png" alt="All Teachers" class="teacher-dropdown-avatar">
+                            <div class="teacher-dropdown-info">
+                                <span class="teacher-dropdown-name">All Teachers</span>
+                                <span class="teacher-dropdown-subject">View history from all teachers</span>
+                            </div>
+                            <span class="teacher-dropdown-active-badge" id="allTeachersBadge">ALL</span>
+                        </button>
+                        <!-- Teacher options will be dynamically added here -->
+                    </div>
+                </div>
+                <!-- Status Filter Tabs -->
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-status="All">
+                        <i class="fas fa-list"></i> All
+                    </button>
+                    <button class="filter-tab" data-status="Unused">
+                        <i class="fas fa-clock"></i> Unused
+                    </button>
+                    <button class="filter-tab" data-status="Used">
+                        <i class="fas fa-check-circle"></i> Used
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State (initially visible) -->
+    <div class="loading-container" id="loadingMessage">
+        <div class="loading-content">
+            <!-- Circular container for Lottie animation - Matching Flutter design -->
+            <div class="loading-avatar-container">
+                <div class="loading-avatar-circle">
+                    <lottie-player 
+                        src="{{ url_for('static', filename='image/animation/loading_animation_blue.json') }}"
+                        background="transparent" 
+                        speed="1" 
+                        style="width: 100%; height: 100%;"
+                        loop 
+                        autoplay>
+                    </lottie-player>
+                </div>
+            </div>
+            
+            <div class="loading-text">
+                <div class="loading-title">Loading Rewards History</div>
+                <div class="loading-subtitle">Retrieving your redemption records...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error State (hidden by default) -->
+    <div class="error-container" id="errorMessage" style="display: none;">
+        <!-- Error content will be populated by JavaScript -->
+    </div>
+
+    <!-- Redemption History Grid -->
+    <div class="rewards-grid" id="historyGrid" style="display: none;">
+        <!-- Redemption history cards will be rendered here -->
+    </div>
+
+    <!-- No History Message -->
+    <div class="no-rewards-container" id="noHistoryMessage" style="display: none;">
+        <i class="fas fa-box-open no-rewards-icon"></i>
+        <h3 class="no-rewards-title">No Redemptions Yet</h3>
+        <p class="no-rewards-subtitle">Your redeemed rewards will appear here.</p>
+        
+        <div class="no-rewards-suggestions">
+            <p><strong>Suggestions:</strong></p>
+            <ul class="suggestion-list">
+                <li>Browse available rewards and redeem some points</li>
+                <li>Check back after redeeming your first reward</li>
+                <li>Contact your teachers if you think this is an error</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Updated Redemption Details Modal with Remarks -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 700px;">
+    <div class="modal-content" style="border-radius: 20px; overflow: hidden; border: none;">
+      <!-- Flutter-style Header -->
+      <div class="flutter-modal-header">
+        <div class="flutter-modal-icon">
+          <i class="fa-solid fa-bag-shopping"></i>
+        </div>
+        <div class="flutter-modal-title">
+          <div class="flutter-modal-title-main">REDEMPTION DETAILS</div>
+          <div class="flutter-modal-subtitle" id="modalRewardName">Reward</div>
+        </div>
+        <button type="button" class="flutter-close-btn" data-bs-dismiss="modal" aria-label="Close">
+          <i class="fas fa-times" style="font-size: 22px;"></i>
+        </button>
+      </div>
+
+      <!-- Flutter-style Content - Horizontal Layout -->
+      <div class="flutter-content-section">
+        <div class="modal-horizontal-layout">
+          <!-- Left Column: Reward Details -->
+          <div class="modal-left-column">
+            <!-- Reward Card -->
+            <div class="flutter-reward-card">
+              <div class="d-flex align-items-start">
+                <div class="flutter-reward-icon" id="modalRewardIcon" style="background: #E3E7F9;">
+                  <i class="fas fa-gift" style="color: #303F9F; font-size: 20px;"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="modal-reward-title" id="modalRewardTitle">
+                    Reward Name
+                  </div>
+                  <div class="modal-reward-description" id="modalRewardDescription">
+                    Reward description will appear here.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Teacher Info -->
+            <div class="flutter-teacher-card">
+              <div class="d-flex align-items-center">
+                <div class="flutter-teacher-avatar" id="modalTeacherAvatar">
+                  <i class="fas fa-user"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="modal-section-label">
+                    Redeemed From
+                  </div>
+                  <div class="modal-teacher-name" id="modalTeacherName">
+                    Unknown Teacher
+                  </div>
+                  <div class="modal-subject-badge" id="modalTeacherSubject">
+                    General
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notes Section -->
+            <div class="flutter-notes-section" id="modalNotesSection" style="display: none;">
+              <div class="d-flex align-items-center mb-2">
+                <i class="fas fa-sticky-note" style="color: #5e72e4; font-size: 16px; margin-right: 8px;"></i>
+                <span class="modal-section-label">Teacher's Notes</span>
+              </div>
+              <div class="modal-notes-content" id="modalNotesContent">
+                Notes content will appear here.
+              </div>
+            </div>
+
+            <!-- Remarks Section -->
+            <div class="flutter-remarks-section" id="modalRemarksSection" style="display: none;">
+              <div class="remarks-header">
+                <i class="fas fa-comment-alt"></i>
+                <span>Student's Remarks</span>
+              </div>
+              <div class="remarks-content" id="modalRemarksContent">
+                Teacher remarks will appear here.
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Stats and Status -->
+          <div class="modal-right-column">
+            <!-- Points and Category - Unified with Card Design -->
+            <div class="modal-stats-container">
+                <!-- Points Stat -->
+                <div class="modal-stat-item modal-points-stat">
+                    <div class="modal-stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="modal-stat-content">
+                        <div class="modal-stat-label">Points</div>
+                        <div class="modal-stat-value" id="modalPoints">-0</div>
+                    </div>
+                </div>
+                
+                <!-- Category Stat -->
+                <div class="modal-stat-item modal-category-stat">
+                    <div class="modal-stat-icon">
+                        <i class="fas fa-tag"></i>
+                    </div>
+                    <div class="modal-stat-content">
+                        <div class="modal-stat-label">Category</div>
+                        <div class="modal-stat-value" id="modalCategory">Other</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status and Date Badges -->
+            <div class="modal-badges-container" id="modalBadges">
+              <!-- Status and date badges will be inserted here -->
+            </div>
+
+            <!-- Additional Info -->
+            <div class="modal-additional-info">
+              <div class="modal-info-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Redeemed on: <span id="modalRedeemedDate">-</span></span>
+              </div>
+              <div class="modal-info-item">
+                <i class="fas fa-clock"></i>
+                <span>Status: <span id="modalStatusText">-</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Close Button -->
+        <button type="button" class="flutter-close-button" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toastNotification" class="toast-notification" style="display:none;">
+  <span id="toastMessage"></span>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let allHistory = [];
+    let allTeachers = [];
+    let selectedStatus = 'All';
+    let selectedTeacherId = 'all';
+    let searchTerm = '';
+    let lastFiltered = [];
+
+    // Get DOM elements
+    const historyGrid = document.getElementById('historyGrid');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const errorMessage = document.getElementById('errorMessage');
+    const noHistoryMessage = document.getElementById('noHistoryMessage');
+
+    // Show loading state
+    function showLoading() {
+        loadingMessage.style.display = 'flex';
+        errorMessage.style.display = 'none';
+        historyGrid.style.display = 'none';
+        noHistoryMessage.style.display = 'none';
+    }
+
+    // Show error state
+    function showError(message) {
+        loadingMessage.style.display = 'none';
+        historyGrid.style.display = 'none';
+        noHistoryMessage.style.display = 'none';
+        
+        errorMessage.style.display = 'flex';
+        errorMessage.style.alignItems = 'center';
+        errorMessage.style.justifyContent = 'center';
+        errorMessage.style.minHeight = '400px';
+        
+        // Load the error template using fetch
+        fetch('/partials/showError')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load error template');
+                }
+                return response.text();
+            })
+            .then(html => {
+                errorMessage.innerHTML = html;
+                // Add event listener to retry button - calls fetchHistoryData for this page
+                const retryButton = document.getElementById('retryButton');
+                if (retryButton) {
+                    retryButton.addEventListener('click', function() {
+                        fetchHistoryData(); // This page's specific function
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading error template:', error);
+                // Fallback
+                errorMessage.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h3 style="color: #DB2D2D;">Connection Error</h3>
+                        <p>${message}</p>
+                        <button onclick="fetchHistoryData()" style="padding: 10px 20px; background: #5e72e4; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            });
+    }
+
+    // Show success state with history
+    function showHistory() {
+        loadingMessage.style.display = 'none';
+        errorMessage.style.display = 'none';
+        historyGrid.style.display = 'grid';
+        noHistoryMessage.style.display = 'none';
+    }
+
+    // Show no history state
+    function showNoHistory() {
+        loadingMessage.style.display = 'none';
+        errorMessage.style.display = 'none';
+        historyGrid.style.display = 'none';
+        noHistoryMessage.style.display = 'block';
+    }
+
+    // Fetch redemption history and extract teachers from it
+    function fetchHistoryData() {
+        showLoading();
+        
+        fetch('/api/student-redemption-history')
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    allHistory = data.history;
+                    
+                    // Extract unique teachers from redemption history
+                    const teacherMap = new Map();
+                    
+                    allHistory.forEach(redemption => {
+                        if (redemption.teacher_id && redemption.teacher_id !== 'all') {
+                            const teacherId = redemption.teacher_id;
+                            if (!teacherMap.has(teacherId)) {
+                                teacherMap.set(teacherId, {
+                                    id: teacherId,
+                                    name: redemption.teacher || 'Unknown Teacher',
+                                    subject: redemption.teacher_subject || 'General',
+                                    avatar: redemption.teacher_avatar || '/static/image/default-avatar.png'
+                                });
+                            }
+                        }
+                    });
+                    
+                    // Convert map to array
+                    allTeachers = Array.from(teacherMap.values());
+                    
+                    // Populate teacher dropdown
+                    populateTeacherDropdown();
+                    renderHistory();
+                    
+                    // Show success toast when data has loaded
+                    showToast('Rewards History Loaded Successfully');
+                } else {
+                    throw new Error(data.error || 'Failed to load history');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching redemption history:', error);
+                showError(error.message);
+            });
+    }
+
+    // Teacher dropdown logic
+    const customTeacherDropdown = document.getElementById('customTeacherDropdown');
+    const teacherDropdownToggle = document.getElementById('teacherDropdownToggle');
+    const teacherDropdownMenu = document.getElementById('teacherDropdownMenu');
+    const selectedTeacherAvatar = document.getElementById('selectedTeacherAvatar');
+    const selectedTeacherName = document.getElementById('selectedTeacherName');
+    const selectedTeacherSubject = document.getElementById('selectedTeacherSubject');
+
+    teacherDropdownToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        teacherDropdownMenu.classList.toggle('open');
+        teacherDropdownToggle.classList.toggle('active');
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!customTeacherDropdown.contains(e.target)) {
+            teacherDropdownMenu.classList.remove('open');
+            teacherDropdownToggle.classList.remove('active');
+        }
+    });
+
+    function populateTeacherDropdown() {
+        teacherDropdownMenu.innerHTML = `
+            <button class="teacher-dropdown-option" data-teacher-id="all">
+                <img src="/static/image/default-avatar.png" alt="All Teachers" class="teacher-dropdown-avatar">
+                <div class="teacher-dropdown-info">
+                    <span class="teacher-dropdown-name">All Teachers</span>
+                    <span class="teacher-dropdown-subject">View history from all teachers</span>
+                </div>
+                <span class="teacher-dropdown-active-badge" id="allTeachersBadge">ALL</span>
+            </button>
+        `;
+        
+        allTeachers.forEach(teacher => {
+            const teacherOption = document.createElement('button');
+            teacherOption.className = 'teacher-dropdown-option';
+            teacherOption.setAttribute('data-teacher-id', teacher.id);
+            teacherOption.innerHTML = `
+                <img src="${teacher.avatar}" alt="${teacher.name}" class="teacher-dropdown-avatar"
+                     onerror="this.src='/static/image/default-avatar.png'">
+                <div class="teacher-dropdown-info">
+                    <span class="teacher-dropdown-name">${teacher.name}</span>
+                    <span class="teacher-dropdown-subject">${teacher.subject || 'General'}</span>
+                </div>
+                <span class="teacher-dropdown-active-badge" style="display: none;">SELECTED</span>
+            `;
+            teacherOption.addEventListener('click', function() {
+                selectTeacher(teacher.id, teacher.name, teacher.subject, teacher.avatar);
+            });
+            teacherDropdownMenu.appendChild(teacherOption);
+        });
+        
+        // All Teachers option
+        teacherDropdownMenu.querySelector('[data-teacher-id="all"]').addEventListener('click', function() {
+            selectTeacher('all', 'All Teachers', 'Select a teacher', '/static/image/default-avatar.png');
+        });
+    }
+
+    function selectTeacher(teacherId, teacherName, teacherSubject, teacherAvatar) {
+        selectedTeacherId = teacherId;
+        selectedTeacherAvatar.src = teacherAvatar;
+        selectedTeacherName.textContent = teacherName;
+        selectedTeacherSubject.textContent = teacherSubject;
+        
+        document.querySelectorAll('.teacher-dropdown-active-badge').forEach(badge => badge.style.display = 'none');
+        if (teacherId === 'all') {
+            document.getElementById('allTeachersBadge').style.display = 'inline-block';
+        } else {
+            const selectedOption = document.querySelector(`[data-teacher-id="${teacherId}"] .teacher-dropdown-active-badge`);
+            if (selectedOption) selectedOption.style.display = 'inline-block';
+        }
+        
+        teacherDropdownMenu.classList.remove('open');
+        teacherDropdownToggle.classList.remove('active');
+        renderHistory();
+    }
+
+    // Filter tabs logic
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            filterTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            selectedStatus = this.getAttribute('data-status');
+            renderHistory();
+        });
+    });
+
+    // Search box logic
+    const historySearchInput = document.getElementById('historySearchInput');
+    historySearchInput.addEventListener('input', function() {
+        searchTerm = this.value.trim().toLowerCase();
+        renderHistory();
+    });
+
+    // Modal setup
+    const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+
+    // Helper functions
+    function getCategoryIcon(cat) {
+        if (!cat) return 'fa-gift';
+        cat = cat.toString().toLowerCase();
+        if (cat === 'academic') return 'fa-book-open';
+        if (cat === 'privileges') return 'fa-crown';
+        if (cat === 'material' || cat === 'material items') return 'fa-gift';
+        if (cat === 'experiences') return 'fa-trophy';
+        return 'fa-gift';
+    }
+
+    function getCategoryMainColor(cat) {
+        if (!cat) return '#303F9F';
+        cat = cat.toString().toLowerCase();
+        if (cat === 'academic') return '#3232FF';
+        if (cat === 'privileges') return '#198C19';
+        if (cat === 'material' || cat === 'material items') return '#FFAE19';
+        if (cat === 'experiences') return '#8C198C';
+        return '#303F9F';
+    }
+
+    function getCategoryLightColor(cat) {
+        if (!cat) return '#E3E7F9';
+        cat = cat.toString().toLowerCase();
+        if (cat === 'academic') return '#E3E7F9';
+        if (cat === 'privileges') return '#E6F7E6';
+        if (cat === 'material' || cat === 'material items') return '#FFF6E3';
+        if (cat === 'experiences') return '#F3E3F9';
+        return '#E3E7F9';
+    }
+
+    function escapeHtml(unsafe) {
+        if (unsafe === null || unsafe === undefined) return '';
+        return ('' + unsafe)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function formatDateHuman(dateStr) {
+        if (!dateStr) return '';
+        let s = String(dateStr).trim();
+        if (s.indexOf('T') === -1 && /\d{4}-\d{2}-\d{2}\s+\d{1,2}:\d{2}/.test(s)) {
+            s = s.replace(' ', 'T');
+        }
+        const d = new Date(s);
+        if (!isFinite(d.getTime())) {
+            return s;
+        }
+        const opts = { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true };
+        let formatted = d.toLocaleString('en-US', opts);
+        formatted = formatted.replace(/,/g, '').replace(/\s+AM$/i, ' am').replace(/\s+PM$/i, ' pm');
+        return formatted;
+    }
+
+    function openRedemptionModal(item) {
+        if (!item) return;
+        
+        const status = (item.status || 'Unused').toString();
+        const notes = item.notes || '';
+        const remarks = item.remarks || '';
+        const usedAt = item.used_at || '';
+        const usedAtStr = usedAt ? formatDateHuman(usedAt) : '';
+        const points = item.point_cost || 0;
+        const category = item.category || 'Other';
+        const redeemedDate = item.date || '';
+        
+        // Use teacher info directly from the item
+        const teacherAvatar = item.teacher_avatar || '/static/image/default-avatar.png';
+        const teacherName = item.teacher || 'Unknown Teacher';
+        const teacherSubject = item.teacher_subject || 'General';
+
+        // Update modal content with new horizontal layout
+        document.getElementById('modalRewardName').textContent = item.reward_name || 'Reward';
+        document.getElementById('modalRewardTitle').textContent = item.reward_name || 'Reward';
+        document.getElementById('modalRewardDescription').textContent = item.description && item.description.trim() ? item.description : 'No Description Available';
+        
+        // Update points and category with unified card styling
+        document.getElementById('modalPoints').textContent = `-${points}`;
+        document.getElementById('modalCategory').textContent = category;
+        
+        // Apply unified styling to points and category in modal
+        const pointsElement = document.getElementById('modalPoints');
+        const categoryElement = document.getElementById('modalCategory');
+        
+        if (pointsElement) {
+            pointsElement.className = 'modal-stat-value';
+            pointsElement.style.color = '#D97706';
+        }
+        
+        if (categoryElement) {
+            categoryElement.className = 'modal-stat-value';
+            const mainColor = getCategoryMainColor(category);
+            categoryElement.style.color = mainColor;
+        }
+        
+        // Update the stat icons with unified styling
+        const pointsStatIcon = document.querySelector('.modal-points-stat .modal-stat-icon');
+        const categoryStatIcon = document.querySelector('.modal-category-stat .modal-stat-icon');
+        
+        if (pointsStatIcon) {
+            pointsStatIcon.style.background = 'rgba(245, 158, 11, 0.1)';
+            pointsStatIcon.innerHTML = '<i class="fas fa-star" style="color: #F59E0B; font-size: 18px;"></i>';
+        }
+        
+        if (categoryStatIcon) {
+            const mainColor = getCategoryMainColor(category);
+            const lightColor = getCategoryLightColor(category);
+            categoryStatIcon.style.background = lightColor;
+            categoryStatIcon.innerHTML = `<i class="fas ${getCategoryIcon(category)}" style="color: ${mainColor}; font-size: 16px;"></i>`;
+        }
+        
+        // Update teacher info
+        document.getElementById('modalTeacherName').textContent = teacherName;
+        document.getElementById('modalTeacherSubject').textContent = teacherSubject;
+        
+        // Update teacher avatar
+        const teacherAvatarEl = document.getElementById('modalTeacherAvatar');
+        if (teacherAvatar && teacherAvatar !== '/static/image/default-avatar.png') {
+            teacherAvatarEl.innerHTML = `<img src="${teacherAvatar}" alt="${teacherName}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>'">`;
+        } else {
+            teacherAvatarEl.innerHTML = '<i class="fas fa-user"></i>';
+        }
+        
+        // Update reward icon
+        const rewardIconEl = document.getElementById('modalRewardIcon');
+        rewardIconEl.style.background = getCategoryLightColor(category);
+        rewardIconEl.innerHTML = `<i class="fas ${getCategoryIcon(category)}" style="color: ${getCategoryMainColor(category)}; font-size: 20px;"></i>`;
+        
+        // Update badges
+        const badgesContainer = document.getElementById('modalBadges');
+        badgesContainer.innerHTML = '';
+        
+        // Status badge
+        const statusBadge = document.createElement('div');
+        statusBadge.className = `flutter-status-badge ${status.trim().toLowerCase() === 'used' ? 'flutter-status-used' : 'flutter-status-unused'}`;
+        statusBadge.innerHTML = `
+            <i class="fas ${status.trim().toLowerCase() === 'used' ? 'fa-check-circle' : 'fa-clock'}"></i>
+            <span>${escapeHtml(status)}</span>
+        `;
+        badgesContainer.appendChild(statusBadge);
+        
+        // Date badge if available
+        if (usedAtStr) {
+            const dateBadge = document.createElement('div');
+            dateBadge.className = 'flutter-date-badge';
+            dateBadge.innerHTML = `
+                <i class="fas fa-calendar-check"></i>
+                <span>${escapeHtml(usedAtStr)}</span>
+            `;
+            badgesContainer.appendChild(dateBadge);
+        }
+        
+        // Update additional info
+        document.getElementById('modalRedeemedDate').textContent = redeemedDate;
+        document.getElementById('modalStatusText').textContent = status;
+        
+        // Update notes section
+        const notesSection = document.getElementById('modalNotesSection');
+        const notesContent = document.getElementById('modalNotesContent');
+        
+        if (notes && notes.trim()) {
+            notesContent.textContent = notes;
+            notesSection.style.display = 'block';
+        } else {
+            notesSection.style.display = 'none';
+        }
+        
+        // Update remarks section
+        const remarksSection = document.getElementById('modalRemarksSection');
+        const remarksContent = document.getElementById('modalRemarksContent');
+        
+        if (remarks && remarks.trim()) {
+            remarksContent.textContent = remarks;
+            remarksSection.style.display = 'block';
+            
+            // Add teacher message styling
+            remarksSection.classList.add('teacher-message');
+        } else {
+            remarksSection.style.display = 'none';
+            remarksSection.classList.remove('teacher-message');
+        }
+        
+        // Show the modal
+        detailsModal.show();
+    }
+
+    // Toast notification function
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('toastNotification');
+        const toastMsg = document.getElementById('toastMessage');
+        toastMsg.textContent = message;
+        toast.className = 'toast-notification' + (isError ? ' error' : '');
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 300);
+        }, 3000);
+
+        // Add click-to-dismiss
+        toast.onclick = function() {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 300);
+        };
+    }
+
+    function renderHistory() {
+    let filtered = allHistory;
+
+    // Filter by teacher
+    if (selectedTeacherId !== 'all') {
+        filtered = filtered.filter(h => h.teacher_id == selectedTeacherId);
+    }
+    // Filter by status
+    if (selectedStatus !== 'All') {
+        filtered = filtered.filter(h => (h.status || 'Unused').toLowerCase() === selectedStatus.toLowerCase());
+    }
+    // Filter by search
+    if (searchTerm) {
+        filtered = filtered.filter(h =>
+            (h.reward_name && h.reward_name.toLowerCase().includes(searchTerm)) ||
+            (h.description && h.description.toLowerCase().includes(searchTerm))
+        );
+    }
+
+    lastFiltered = filtered.slice();
+    historyGrid.innerHTML = '';
+    
+    if (filtered.length === 0) {
+        showNoHistory();
+    } else {
+        showHistory();
+        filtered.forEach((h, i) => {
+            const iconClass = getCategoryIcon(h.category);
+            const mainColor = getCategoryMainColor(h.category);
+            const lightColor = getCategoryLightColor(h.category);
+            const statusUsed = (h.status || '').trim().toLowerCase() === 'used';
+            const statusBg = statusUsed ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,66,0.12)';
+            const statusColor = statusUsed ? '#10B981' : '#F59E42';
+            const statusIcon = statusUsed ? 'fa-check-circle' : 'fa-clock';
+            const usedAtStr = h.used_at && h.used_at !== '' ? formatDateHuman(h.used_at) : '';
+            
+            // Handle description - show "No Description Available" if empty
+            const description = h.description && h.description.trim() ? h.description : 'No Description Available';
+            const descriptionStyle = h.description && h.description.trim() ? 
+                `color: #64748B; font-size: 14px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; min-height: 4.2em; max-height: 4.2em;` :
+                `color: #94A3B8; font-size: 14px; line-height: 1.4; font-style: italic; min-height: 4.2em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;`;
+
+            historyGrid.innerHTML += `
+            <div class="reward-card" data-index="${i}" style="
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                padding: 20px;
+                border: 1px solid #E2E8F0;
+                cursor: pointer;
+                transition: transform 0.2s, box-shadow 0.2s;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            ">
+                <!-- Main Content Row -->
+                <div style="display: flex; align-items: flex-start; gap: 16px;">
+                    <!-- Icon -->
+                    <div style="
+                        padding: 12px;
+                        background: ${lightColor};
+                        border-radius: 12px;
+                        border: 1px solid ${lightColor}66;
+                        box-shadow: 0 2px 8px ${lightColor}1F;
+                        display: flex; 
+                        align-items: center; 
+                        justify-content: center;
+                        min-width: 48px;
+                        min-height: 48px;
+                        flex-shrink: 0;
+                    ">
+                        <i class="fas ${iconClass}" style="color: ${mainColor}; font-size: 22px;"></i>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0;">
+                        <!-- Reward Name and Description -->
+                        <div style="min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+                            <div style="
+                                font-weight: 700;
+                                font-size: 17px;
+                                color: #1E293B;
+                                letter-spacing: -0.2px;
+                                line-height: 1.3;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                            ">${h.reward_name}</div>
+                            <div style="${descriptionStyle}">
+                                ${description}
+                            </div>
+                        </div>
+                        
+                        <!-- Category and Date Row -->
+                        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 4px;">
+                            <!-- Category -->
+                            <div style="
+                                padding: 6px 12px;
+                                background: ${lightColor}1A;
+                                border-radius: 8px;
+                                color: ${mainColor};
+                                font-size: 12px;
+                                font-weight: 600;
+                                flex-shrink: 0;
+                            ">${h.category || 'Other'}</div>
+                            
+                            <!-- Date -->
+                            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                                <i class="fas fa-calendar-day" style="font-size: 13px; color: #94A3B8;"></i>
+                                <span style="color: #94A3B8; font-size: 13px; font-weight: 500;">${h.date}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Points -->
+                    <div style="
+                        padding: 10px 14px;
+                        background: linear-gradient(90deg, #FEF3C7, #FEF7CD);
+                        border-radius: 14px;
+                        border: 1px solid #FDE68A80;
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        min-width: 70px;
+                        justify-content: center;
+                        align-self: flex-start;
+                        flex-shrink: 0;
+                    ">
+                        <i class="fas fa-star" style="color: #F59E0B; font-size: 18px;"></i>
+                        <span style="color: #D97706; font-weight: 700; font-size: 16px; letter-spacing: -0.2px;">-${h.point_cost}</span>
+                    </div>
+                </div>
+                
+                <!-- Footer: Status and Additional Info -->
+                <div style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 16px;
+                    flex-wrap: wrap;
+                    padding-top: 16px;
+                    border-top: 1px solid #F1F5F9;
+                    min-height: 32px;
+                ">
+                    <!-- Left side: Status -->
+                    <div style="
+                        padding: 6px 12px;
+                        background: ${statusBg};
+                        border-radius: 8px;
+                        color: ${statusColor};
+                        font-weight: bold;
+                        font-size: 13px;
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        min-width: 80px;
+                        justify-content: center;
+                        flex-shrink: 0;
+                    ">
+                        <i class="fas ${statusIcon}" style="color: ${statusColor}; font-size: 14px;"></i>
+                        <span>${h.status}</span>
+                    </div>
+                    
+                    <!-- Right side: Additional Info -->
+                    <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: flex-end; flex: 1;">
+                        ${(!statusUsed && usedAtStr) ? `
+                            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                                <i class="fas fa-calendar-check" style="font-size: 14px; color: #5e72e4;"></i>
+                                <span style="color: #5e72e4; font-size: 12px; font-weight: 500;">${usedAtStr}</span>
+                            </div>
+                        ` : ''}
+                        
+                        ${(h.notes && h.notes.trim()) ? `
+                            <div style="display: flex; align-items: center; gap: 6px; max-width: 200px; flex-shrink: 1;">
+                                <i class="fas fa-sticky-note" style="font-size: 14px; color: #5e72e4; flex-shrink: 0;"></i>
+                                <span style="
+                                    color: #5e72e4;
+                                    font-size: 12px;
+                                    font-weight: 500;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                    flex: 1;
+                                ">${h.notes}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+            `;
+        });
+        
+        // Attach click listeners to open modal
+        filtered.forEach((h, i) => {
+            const card = historyGrid.querySelector(`.reward-card[data-index="${i}"]`);
+            if (card) {
+                card.addEventListener('click', function() {
+                    const item = lastFiltered[i];
+                    openRedemptionModal(item);
+                });
+                
+                // Add hover effect
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.08)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+                });
+            }
+        });
+    }
+}
+
+
+    // Initialize with "All Teachers" selected and fetch data
+    selectTeacher('all', 'All Teachers', 'Select a teacher', '/static/image/default-avatar.png');
+    fetchHistoryData();
+});
+</script>
+{% endblock %}

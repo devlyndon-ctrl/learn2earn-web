@@ -1,0 +1,598 @@
+{% extends "base.html" %}
+
+{% block title %}Learn2Earn - Subject Assignment{% endblock %}
+
+
+{% block page_title %}Subject Assignment{% endblock %}
+
+{% block admin_content %}
+<style>
+    
+/* Universal Modal Centering Styles */
+/* This will apply to all Bootstrap modals in your application */
+.collapse-icon {
+    transition: transform 0.2s ease-in-out;
+}
+
+.collapse.show + .card-header .collapse-icon,
+.card-header[aria-expanded="true"] .collapse-icon {
+    transform: rotate(180deg);
+}
+.modal-dialog-centered {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: calc(100vh - 1rem);
+    padding-top: 10vh; /* Adjust this value to position higher or lower */
+}
+
+@media (min-width: 576px) {
+    .modal-dialog-centered {
+        min-height: calc(100vh - 3.5rem);
+        padding-top: 8vh;
+    }
+}
+
+/* Specific targeting for your modals if needed */
+#assignTeacherModal .modal-dialog,
+#reassignTeacherModal .modal-dialog,
+#detailsModal .modal-dialog {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: calc(100vh - 1rem);
+    padding-top: 10vh;
+}
+
+@media (min-width: 576px) {
+    #assignTeacherModal .modal-dialog,
+    #reassignTeacherModal .modal-dialog,
+    #detailsModal .modal-dialog {
+        min-height: calc(100vh - 3.5rem);
+        padding-top: 8vh;
+    }
+}
+
+/* Alternative approach using transforms (uncomment if you prefer this method) */
+/*
+.modal.fade .modal-dialog {
+    transform: translate(0, -25%);
+    transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: translate(0, 0);
+}
+*/
+
+/* Ensure modal content doesn't overflow */
+.modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* Pagination Styles */
+#assignmentPaginationNav {
+    border-top: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+}
+
+.page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.page-link {
+    color: #007bff;
+}
+
+.page-link:hover {
+    color: #0056b3;
+}
+
+
+</style>
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="page-title">Subject Assignment</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item active">Subject Assignment</li>
+                    </ol>
+                </nav>
+            </div>
+            <button type="button" class="btn btn-admin mt-3" data-bs-toggle="modal" data-bs-target="#assignTeacherModal">
+                <i class="fas fa-plus me-2"></i>Assign Subject Teacher
+            </button>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs mb-3" id="classroomTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="assign-tab" data-bs-toggle="tab" data-bs-target="#assignTabPane" type="button" role="tab" aria-controls="assignTabPane" aria-selected="true">
+                Subject Assignment
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overviewTabPane" type="button" role="tab" aria-controls="overviewTabPane" aria-selected="false">
+                Subject Overview
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="archive-tab" data-bs-toggle="tab" data-bs-target="#archiveTabPane" type="button" role="tab" aria-controls="archiveTabPane" aria-selected="false">
+                <i class="fas fa-archive me-2"></i>Assignment Archives
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="classroomTabContent">
+        <!-- Assignment Tab -->
+        <div class="tab-pane fade show active" id="assignTabPane" role="tabpanel" aria-labelledby="assign-tab">
+            <!-- Loading State for Assignments -->
+            <div class="loading-container" id="assignmentsLoadingMessage">
+                <div class="loading-content">
+                    <div class="loading-avatar-container">
+                        <div class="loading-avatar-circle">
+                            <lottie-player 
+                                src="{{ url_for('static', filename='image/animation/loading_animation_blue.json') }}"
+                                background="transparent" 
+                                speed="1" 
+                                style="width: 100%; height: 100%;"
+                                loop 
+                                autoplay>
+                            </lottie-player>
+                        </div>
+                    </div>
+                    <div class="loading-text">
+                        <div class="loading-title">Loading Subject Assignments</div>
+                        <div class="loading-subtitle">Subject assignments are being prepared</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error State for Assignments -->
+            <div class="error-container" id="assignmentsErrorMessage" style="display: none;">
+                <!-- Error content will be populated by JavaScript -->
+            </div>
+
+            <!-- Classroom Assignments Table -->
+            <div class="card" id="assignmentsTableContainer" style="display: none;">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Current Subject Assignments</h5>
+                        <div class="d-flex gap-2">
+                            <select class="form-select form-select-sm" id="gradeFilter" style="width: 120px;">
+                                <option value="">All Grades</option>
+                                <option value="7">Grade 7</option>
+                                <option value="8">Grade 8</option>
+                                <option value="9">Grade 9</option>
+                                <option value="10">Grade 10</option>
+                            </select>
+                            <select class="form-select form-select-sm" id="sectionFilter" style="width: 120px;">
+                                <option value="">All Sections</option>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="classroomTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center">Classroom</th>
+                                    <th class="text-center">Assigned Teacher</th>
+                                    <th class="text-center">Teacher Email</th>
+                                    <th class="text-center">Assignment Count</th>
+                                    <th class="text-center">Assigned Date</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <!-- Spinner tbody -->
+                            <tbody id="assignmentLoading" style="display:none;">
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">
+                                        <div class="spinner-border text-primary mb-2" role="status"></div>
+                                        <div>Loading Subject Teachers...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <!-- Data tbody -->
+                            <tbody id="assignmentData">
+                                <!-- Assignment rows will be loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Add Pagination Controls -->
+                    <div class="card-footer">
+                        <nav id="assignmentPaginationNav" class="mt-4" style="display: none;">
+                            <ul class="pagination justify-content-center mb-0" id="assignmentPagination">
+                                <!-- Pagination will be rendered here -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview Tab -->
+        <div class="tab-pane fade" id="overviewTabPane" role="tabpanel" aria-labelledby="overview-tab">
+            <!-- Loading State for Overview -->
+            <div class="loading-container" id="overviewLoadingMessage">
+                <div class="loading-content">
+                    <div class="loading-avatar-container">
+                        <div class="loading-avatar-circle">
+                            <lottie-player 
+                                src="{{ url_for('static', filename='image/animation/loading_animation_blue.json') }}"
+                                background="transparent" 
+                                speed="1" 
+                                style="width: 100%; height: 100%;"
+                                loop 
+                                autoplay>
+                            </lottie-player>
+                        </div>
+                    </div>
+                    <div class="loading-text">
+                        <div class="loading-title">Loading Classroom Overview</div>
+                        <div class="loading-subtitle">Almost there! Classroom overview is being prepared</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error State for Overview -->
+            <div class="error-container" id="overviewErrorMessage" style="display: none;">
+                <!-- Error content will be populated by JavaScript -->
+            </div>
+
+            <div class="container py-3" id="classroomOverviewContainer" style="display: none;">
+                <!-- Cards will be rendered here by JS -->
+            </div>
+            
+            <!-- Update the Classroom Overview pagination -->
+            <div id="classroomOverviewPaginationContainer" class="mt-4" style="display: none;">
+                <nav aria-label="Classroom overview pagination">
+                    <ul class="pagination justify-content-center mb-0" id="classroomOverviewPaginationControls">
+                        <!-- Pagination will be rendered here -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Archive Tab -->
+        <div class="tab-pane fade" id="archiveTabPane" role="tabpanel" aria-labelledby="archive-tab">
+            <!-- Loading State for Archives -->
+            <div class="loading-container" id="archiveLoadingMessage">
+                <div class="loading-content">
+                    <div class="loading-avatar-container">
+                        <i class="fas fa-archive fa-3x"></i>
+                    </div>
+                    <div class="loading-text">
+                        <h5>Loading archived assignments...</h5>
+                        <p>Please wait</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error State for Archives -->
+            <div class="error-container" id="archiveErrorMessage" style="display: none;">
+                <!-- Error content will be populated by JavaScript -->
+            </div>
+
+            <!-- Archived Assignments Table -->
+            <div class="card" id="archiveTableContainer" style="display: none;">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0 text-secondary">
+                                <i class="fas fa-history me-2"></i>Historical Assignment Records
+                            </h5>
+                            <small class="text-muted">These assignments have been ended and archived</small>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <select class="form-select form-select-sm" id="archiveSchoolYearFilter" style="width: 140px;">
+                                <option value="">All School Years</option>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                            <select class="form-select form-select-sm" id="archiveGradeFilter" style="width: 120px;">
+                                <option value="">All Grades</option>
+                                <option value="7">Grade 7</option>
+                                <option value="8">Grade 8</option>
+                                <option value="9">Grade 9</option>
+                                <option value="10">Grade 10</option>
+                            </select>
+                            <select class="form-select form-select-sm" id="archiveSectionFilter" style="width: 120px;">
+                                <option value="">All Sections</option>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Classroom</th>
+                                    <th>Teacher</th>
+                                    <th>Teacher Email</th>
+                                    <th>Subject</th>
+                                    <th>Assigned Date</th>
+                                    <th>Ended Date</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="archiveTableBody">
+                                <!-- Archived assignments will be rendered here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination for archives -->
+                    <div class="card-footer">
+                        <nav aria-label="Archives pagination">
+                            <ul class="pagination justify-content-center mb-0" id="archivePagination">
+                                <!-- Pagination controls -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty state -->
+            <div class="alert alert-info mt-3" id="archiveEmptyMessage" style="display: none;">
+                <i class="fas fa-info-circle me-2"></i>
+                No archived assignments found. Archived assignments will appear here after school year transitions.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Teacher Modal (for new assignments) -->
+<div class="modal fade" id="assignTeacherModal" tabindex="-1" aria-labelledby="assignTeacherModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered"><!-- Added modal-dialog-centered -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignTeacherModalLabel">
+                    <i class="fas fa-chalkboard-teacher me-2"></i>Assign Subjects to Teacher
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="assignTeacherForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3 p-3 bg-light border rounded">
+                                <h6 class="mb-2"><i class="fas fa-calendar me-2"></i>Current Active School Year</h6>
+                                <h5 class="mb-0"><span id="currentSchoolYearDisplay">Loading...</span></h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="teacherSelect" class="form-label">Select Teacher <span class="text-danger">*</span></label>
+                                <select class="form-select" id="teacherSelect" name="teacher_id" required>
+                                    <option value="">Choose a teacher...</option>
+                                    <!-- Teacher options will be loaded dynamically -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="teacherSubject" class="form-label">Subject</label>
+                                <input type="text" class="form-control" id="teacherSubject" name="subject" readonly tabindex="-1" placeholder="Subject will appear here" style="max-width: 300px;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="gradeSelect" class="form-label">Grade Level <span class="text-danger">*</span></label>
+                                <select class="form-select" id="gradeSelect" name="grade_level" required>
+                                    <option value="">Select grade...</option>
+                                    <option value="7">Grade 7</option>
+                                    <option value="8">Grade 8</option>
+                                    <option value="9">Grade 9</option>
+                                    <option value="10">Grade 10</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="sectionSelect" class="form-label">Section <span class="text-danger">*</span></label>
+                                <select class="form-select" id="sectionSelect" name="section" required>
+                                    <option value="">Select section...</option>
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Teacher Information Display -->
+                    <div id="teacherInfo" class="alert alert-info d-none">
+                        <h6><i class="fas fa-info-circle me-2"></i>Teacher Information</h6>
+                        <div id="teacherDetails"></div>
+                    </div>
+                    
+                    <!-- Assignment Warning -->
+                    <div id="assignmentWarning" class="alert alert-warning d-none">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <span id="warningMessage"></span>
+                    </div>
+                    
+                    <!-- Assignment Preview -->
+                    <div id="assignmentPreview" class="card d-none">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-eye me-2"></i>Assignment Preview</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Teacher:</strong> <span id="previewTeacher"></span><br>
+                                    <strong>Subject:</strong> <span id="previewSubject"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Classroom:</strong> <span id="previewClassroom"></span><br>
+                                    <strong>Assignment Count:</strong> <span id="previewCount"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-admin" id="assignButton" disabled>
+                        <i class="fas fa-check me-2"></i>Assign Teacher
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reassign Teacher Modal (for transfers) -->
+<div class="modal fade" id="reassignTeacherModal" tabindex="-1" aria-labelledby="reassignTeacherModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered"><!-- Added modal-dialog-centered -->
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="reassignTeacherModalLabel">
+                    <i class="fas fa-exchange-alt me-2"></i>Reassign Teacher to Different Classroom
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="reassignTeacherForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="reassignTeacherSelect" class="form-label">Select Teacher <span class="text-danger">*</span></label>
+                                <select class="form-select" id="reassignTeacherSelect" name="teacher_id" required>
+                                    <option value="">Choose a teacher...</option>
+                                    <!-- Teacher options will be loaded dynamically -->
+                                </select>
+                                <div class="form-text">Transferring a teacher will remove them from their current classroom.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="reassignSubject" class="form-label">Subject</label>
+                                <input type="text" class="form-control" id="reassignSubject" name="subject" readonly tabindex="-1" placeholder="Subject will appear here" style="max-width: 300px;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="reassignGradeSelect" class="form-label">Grade Level <span class="text-danger">*</span></label>
+                                <select class="form-select" id="reassignGradeSelect" name="grade_level" required>
+                                    <option value="">Select grade...</option>
+                                    <option value="7">Grade 7</option>
+                                    <option value="8">Grade 8</option>
+                                    <option value="9">Grade 9</option>
+                                    <option value="10">Grade 10</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="reassignSectionSelect" class="form-label">Section <span class="text-danger">*</span></label>
+                                <select class="form-select" id="reassignSectionSelect" name="section" required>
+                                    <option value="">Select section...</option>
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Teacher Information Display -->
+                    <div id="reassignTeacherInfo" class="alert alert-info d-none">
+                        <h6><i class="fas fa-info-circle me-2"></i>Teacher Information</h6>
+                        <div id="reassignTeacherDetails"></div>
+                    </div>
+                    
+                    <!-- Reassignment Warning -->
+                    <div id="reassignmentWarning" class="alert alert-warning d-none">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <span id="reassignWarningMessage"></span>
+                    </div>
+                    
+                    <!-- Reassignment Preview -->
+                    <div id="reassignmentPreview" class="card d-none">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-eye me-2"></i>Reassignment Preview</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Teacher:</strong> <span id="previewReassignTeacher"></span><br>
+                                    <strong>Subject:</strong> <span id="previewReassignSubject"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Classroom:</strong> <span id="previewReassignClassroom"></span><br>
+                                    <strong>Assignment Count:</strong> <span id="previewReassignCount"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        This will transfer the teacher to a new classroom and remove them from the previous one.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning" id="reassignButton" disabled>
+                        <i class="fas fa-exchange-alt me-2"></i>Reassign Teacher
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Remove Assignment Confirmation Modal -->
+<div class="modal fade" id="removeAssignmentModal" tabindex="-1" aria-labelledby="removeAssignmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="removeAssignmentModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Remove Assignment
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to remove this classroom assignment?</p>
+                <div class="alert alert-warning">
+                    <strong>Classroom:</strong> <span id="removeClassroom"></span><br>
+                    <strong>Teacher:</strong> <span id="removeTeacher"></span>
+                </div>
+                <p class="mb-0 text-muted">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmRemoveButton">
+                    <i class="fas fa-trash me-2"></i>Remove Assignment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="{{ url_for('static', filename='js/admins/subject/subject.js') }}"></script>
+
+<script>
+document.getElementById('reassignTeacherModal').addEventListener('shown.bs.modal', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>
+
+{% endblock %}
+{% include "partials/confirmation_dialouge.html" %}

@@ -1,0 +1,245 @@
+/* Add this at the top of your CSS files */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Apply Inter font globally */
+body, html, .inter {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+/* Enhanced card styling */
+    .card {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .card:hover {
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1rem 1.25rem;
+    }
+    
+    .card-header h5 {
+        font-weight: 600;
+        color: #495057;
+        display: flex;
+        align-items: center;
+    }
+    
+    .card-header h5:before {
+        content: "";
+        display: inline-block;
+        width: 4px;
+        height: 18px;
+        background: linear-gradient(135deg, #5E72E4, #825EE4);
+        border-radius: 4px;
+        margin-right: 10px;
+    }
+    
+    /* Enhanced stats cards */
+    .stats-card {
+        border-radius: 12px;
+        padding: 1.5rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        height: 100%;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stats-card .icon {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        opacity: 0.2;
+        font-size: 3rem;
+    }
+    
+    .stats-card h3 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-card p {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+    
+    .card-1 {
+        background: linear-gradient(135deg, #5E72E4, #825EE4);
+    }
+    
+    .card-2 {
+        background: linear-gradient(135deg, #F5A623, #F4B043);
+    }
+    
+    .card-3 {
+        background: linear-gradient(135deg, #2DCE89, #2DCE98);
+    }
+    
+    .card-4 {
+        background: linear-gradient(135deg, #F5365C, #F56036);
+    }
+    
+    /* Enhanced table styling */
+    .table-responsive {
+        border-radius: 0 0 12px 12px;
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem 0.75rem;
+        background-color: #f8f9fa;
+    }
+    
+    .table td {
+        padding: 1rem 0.75rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f3f9;
+    }
+    
+    .table tbody tr {
+        transition: all 0.2s ease;
+    }
+    
+    .table tbody tr:hover {
+        background-color: rgba(94, 114, 228, 0.05);
+    }
+    
+    /* Enhanced badges */
+    .badge {
+        font-weight: 500;
+        padding: 0.4em 0.8em;
+        border-radius: 6px;
+    }
+    
+    /* Recent awards styling */
+    .list-group-item {
+        border: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+    }
+    
+    .list-group-item:hover {
+        background-color: rgba(94, 114, 228, 0.03);
+    }
+    
+    .list-group-item:last-child {
+        border-bottom: none;
+    }
+    
+    /* Custom points icon */
+    .points-icon-gradient {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #F5A623, #F4B043);
+        margin-right: 6px;
+    }
+    
+    .points-icon-gradient i {
+        color: #fff;
+        font-size: 13px;
+    }
+    
+    /* Student avatar styling - FIXED */
+    .student-avatar {
+        position: relative;
+        display: inline-block;
+        width: 54px;
+        height: 54px;
+    }
+    
+    .student-avatar .avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .student-avatar .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .student-avatar .streak-badge {
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.75rem;
+        padding: 2px 6px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 2px solid #fff;
+        z-index: 2;
+    }
+    
+    /* Student info styling */
+    .student-info {
+        margin-left: 1rem;
+    }
+    
+    .student-info .student-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #495057;
+    }
+    
+    .student-info .student-class {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+    
+    /* Section headers */
+    .section-title {
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: #495057;
+        position: relative;
+        padding-bottom: 0.5rem;
+    }
+    
+    .section-title:after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 40px;
+        height: 3px;
+        background: linear-gradient(135deg, #5E72E4, #825EE4);
+        border-radius: 3px;
+    }

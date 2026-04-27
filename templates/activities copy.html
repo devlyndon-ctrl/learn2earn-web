@@ -1,0 +1,1781 @@
+{% extends "base.html" %}
+
+{% block title %}Learn2Earn - Activites{% endblock %}
+
+{% block page_title %}Activites{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='activities.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Add Lottie Player -->
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+{% endblock %}
+
+{% block main_content %}
+
+<div class="container-fluid px-0">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h5 class="mb-0">My Uploaded Activities</h5>
+        </div>
+        <div class="col-md-6 text-end">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newTaskModal">
+                <i class="fas fa-plus me-2"></i>New Activity
+            </button>
+        </div>
+    </div>
+
+    <!-- Updated Search and Filter Section - Matching student_rewards layout -->
+    <div class="search-filter-section">
+        <div class="search-container">
+            <div class="filter-row">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search activities..." id="searchInput">
+                </div>
+            </div>
+            
+            <div class="filter-tabs-container">
+                <!-- Sort Dropdown -->
+                <div class="sort-dropdown" id="sortDropdown">
+                    <button class="sort-dropdown-toggle" id="sortDropdownToggle">
+                        <i class="fas fa-sort-amount-down"></i>
+                        <span class="sort-dropdown-info">
+                            <span class="sort-dropdown-name" id="selectedSortName">Activity Name</span>
+                            <span class="sort-dropdown-subject" id="selectedSortOrder">Ascending</span>
+                        </span>
+                        <i class="fas fa-chevron-down" style="margin-left: auto; font-size: 0.9em;"></i>
+                    </button>
+                    <div class="sort-dropdown-menu" id="sortDropdownMenu">
+                        <button class="sort-dropdown-option" data-sort-field="title" data-sort-order="asc">
+                            <div class="sort-dropdown-info">
+                                <span class="sort-dropdown-name">Activity Name</span>
+                                <span class="sort-dropdown-subject">Ascending (A-Z)</span>
+                            </div>
+                            <span class="sort-dropdown-active-badge" id="titleAscBadge">SELECTED</span>
+                        </button>
+                        <button class="sort-dropdown-option" data-sort-field="title" data-sort-order="desc">
+                            <div class="sort-dropdown-info">
+                                <span class="sort-dropdown-name">Activity Name</span>
+                                <span class="sort-dropdown-subject">Descending (Z-A)</span>
+                            </div>
+                            <span class="sort-dropdown-active-badge" id="titleDescBadge" style="display: none;">SELECTED</span>
+                        </button>
+                        <button class="sort-dropdown-option" data-sort-field="points" data-sort-order="desc">
+                            <div class="sort-dropdown-info">
+                                <span class="sort-dropdown-name">Points</span>
+                                <span class="sort-dropdown-subject">High to Low</span>
+                            </div>
+                            <span class="sort-dropdown-active-badge" id="pointsDescBadge" style="display: none;">SELECTED</span>
+                        </button>
+                        <button class="sort-dropdown-option" data-sort-field="points" data-sort-order="asc">
+                            <div class="sort-dropdown-info">
+                                <span class="sort-dropdown-name">Points</span>
+                                <span class="sort-dropdown-subject">Low to High</span>
+                            </div>
+                            <span class="sort-dropdown-active-badge" id="pointsAscBadge" style="display: none;">SELECTED</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Classroom Filter Dropdown -->
+                <div class="sort-dropdown classroom-dropdown" id="classroomDropdown">
+                    <button class="sort-dropdown-toggle" id="classroomDropdownToggle">
+                        <i class="fas fa-school"></i>
+                        <span class="sort-dropdown-info">
+                            <span class="sort-dropdown-name" id="selectedClassroomName">All Classes</span>
+                        </span>
+                        <i class="fas fa-chevron-down" style="margin-left: auto; font-size: 0.9em;"></i>
+                    </button>
+                    <div class="sort-dropdown-menu classroom-dropdown-menu" id="classroomDropdownMenu">
+                        <button class="sort-dropdown-option" data-classroom-id="all">
+                            <div class="sort-dropdown-info">
+                                <span class="sort-dropdown-name">All Classes</span>
+                            </div>
+                            <span class="sort-dropdown-active-badge" id="allClassroomsBadge">ALL</span>
+                        </button>
+                        <!-- Classroom options will be dynamically added here -->
+                    </div>
+                </div>
+
+                <!-- Priority Filter Dropdown -->
+                <div class="sort-dropdown priority-dropdown" id="priorityDropdown">
+                    <button class="sort-dropdown-toggle" id="priorityDropdownToggle">
+                        <i class="fas fa-flag"></i>
+                        <span class="sort-dropdown-info">
+                            <span class="sort-dropdown-name" id="selectedPriorityName">All Priorities</span>
+                        </span>
+                        <i class="fas fa-chevron-down" style="margin-left: auto; font-size: 0.9em;"></i>
+                    </button>
+                    <div class="sort-dropdown-menu priority-dropdown-menu" id="priorityDropdownMenu">
+                        <button class="sort-dropdown-option" data-priority="all">
+                            <div class="sort-dropdown-info">
+                                <span class="sort-dropdown-name">All Priorities</span>
+                            </div>
+                            <span class="sort-dropdown-active-badge" id="allPrioritiesBadge">ALL</span>
+                        </button>
+                        <button class="sort-dropdown-option" data-priority="high">
+                            <div class="sort-dropdown-info">
+                                <span class="sort-dropdown-name">High Priority</span>
+                            </div>
+                            <span class="sort-dropdown-active-badge" id="highPriorityBadge" style="display: none;">SELECTED</span>
+                        </button>
+                        <button class="sort-dropdown-option" data-priority="medium">
+                            <div class="sort-dropdown-info">
+                                <span class="sort-dropdown-name">Medium Priority</span>
+                            </div>
+                            <span class="sort-dropdown-active-badge" id="mediumPriorityBadge" style="display: none;">SELECTED</span>
+                        </button>
+                        <button class="sort-dropdown-option" data-priority="low">
+                            <div class="sort-dropdown-info">
+                                <span class="sort-dropdown-name">Low Priority</span>
+                            </div>
+                            <span class="sort-dropdown-active-badge" id="lowPriorityBadge" style="display: none;">SELECTED</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Category Filter Tabs -->
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="Current">
+                        <i class="fas fa-tasks"></i> Current Activities
+                    </button>
+                    <button class="filter-tab" data-filter="Completed">
+                        <i class="fas fa-check-circle"></i> Completed Activities
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-0">Activity List</h5>
+                <small class="text-muted" id="resultsCount">Showing all activities</small>
+            </div>
+            <!-- Removed the tab navigation since we're using filter tabs now -->
+        </div>
+        <div class="card-body p-0" style="min-height: 400px;">
+            <!-- Loading State INSIDE the activity list -->
+            <div class="loading-container" id="activitiesLoadingMessage">
+                <div class="loading-content">
+                    <div class="loading-avatar-container">
+                        <div class="loading-avatar-circle">
+                            <lottie-player 
+                                src="{{ url_for('static', filename='image/animation/loading_animation_blue.json') }}"
+                                background="transparent" 
+                                speed="1" 
+                                style="width: 100%; height: 100%;"
+                                loop 
+                                autoplay>
+                            </lottie-player>
+                        </div>
+                    </div>
+                    <div class="loading-text">
+                        <div class="loading-title">Loading Activities</div>
+                        <div class="loading-subtitle">Almost there! Your activities are being prepared</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error State Container INSIDE the activity list -->
+            <div class="error-container" id="activitiesErrorMessage" style="display: none;">
+                <!-- Error content will be populated by JavaScript -->
+            </div>
+
+            <!-- Activities Content (hidden until loaded) -->
+            <div id="activitiesContent" style="display: none;">
+                <!-- Single task list container (no tabs) -->
+                <div id="currentTaskLoading" class="task-card-list-empty" style="display:none;">
+                    <div class="spinner-border text-primary mb-2" role="status"></div>
+                    <div>Loading activities...</div>
+                </div>
+                <div id="currentTaskCards" class="row task-card-list"></div>
+                <div id="currentTaskEmpty" class="task-card-list-empty" style="display:none;">
+                    <i class="fas fa-tasks" style="font-size:2.5rem;opacity:0.2;"></i>
+                    <div>No activity found.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="taskDetailsInline" style="display:none;"></div>
+
+<!-- New Task Modal -->
+<div class="modal fade" id="newTaskModal" tabindex="-1" aria-labelledby="newTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newTaskModalLabel">Create New Activity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="taskTitle" class="form-label">Activity Title</label>
+                                <input type="text" class="form-control" id="taskTitle" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="taskDescription" class="form-label">Description</label>
+                                <textarea class="form-control" id="taskDescription" rows="3"></textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="taskDueDate" class="form-label">Due Date</label>
+                                    <input type="date" class="form-control" id="taskDueDate">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="taskPriority" class="form-label">Priority</label>
+                                    <select class="form-select" id="taskPriority">
+                                        <option value="low">Low</option>
+                                        <option value="medium" selected>Medium</option>
+                                        <option value="high">High</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="taskPoints" class="form-label">Points</label>
+                                    <input type="number" class="form-control" id="taskPoints" min="1" value="1" required>
+                                    <!-- Move the helper below the input -->
+                                    <div class="points-helper-container">
+                                        <div id="pointsHelper" class="points-helper" style="display:none;">
+                                            <div class="points-helper-content">
+                                                <div>
+                                                    <span class="points-helper-icon" id="pointsHelperIcon"></span>
+                                                    <span class="points-helper-text" id="pointsHelperText"></span>
+                                                </div>
+                                                <span class="points-helper-range" id="pointsHelperRange"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="taskClassroom" class="form-label">Classroom</label>
+                                    <select class="form-select" id="taskClassroom" required>
+                                        <option value="">Select Classroom</option>
+                                        <!-- Options loaded by JS -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Activity Template</label>
+                                <div id="templateCarousel" class="d-flex align-items-center justify-content-center" style="gap:1rem;">
+                                    <button type="button" id="templatePrev" class="btn btn-outline-secondary btn-sm" aria-label="Previous template">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <div id="templatePreview" style="min-width:0;max-width:320px;"></div>
+                                    <button type="button" id="templateNext" class="btn btn-outline-secondary btn-sm" aria-label="Next template">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                                <div id="templateLabel" class="text-center mt-2 fw-semibold"></div>
+                                <input type="hidden" id="taskTemplate" value="default" required>
+                            </div>
+                            <!-- Center the modal footer buttons below the template picker -->
+                            <div class="d-flex justify-content-center gap-2 mt-3">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="saveTask">Save Activity</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Award Points Modal -->
+<div class="modal fade" id="awardPointsModal" tabindex="-1" aria-labelledby="awardPointsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content award-points-modal">
+      <div class="modal-header">
+        <div class="d-flex align-items-center">
+          <i class="fas fa-trophy me-2 award-points-icon"></i>
+          <div>
+            <h5 class="modal-title mb-0" id="awardPointsModalLabel">Award Points</h5>
+            <small class="text-muted">Review student submissions</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div id="awardPointsStudentList">
+          <!-- Student checkboxes will be loaded here by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Task Details Modal -->
+<div class="modal fade" id="taskDetailsModal" tabindex="-1" aria-labelledby="taskDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content task-details-modal">
+      <div class="modal-header">
+        <div class="d-flex align-items-center">
+          <i class="fas fa-tasks me-2 task-details-icon"></i>
+          <div>
+            <h5 class="modal-title mb-0" id="taskDetailsModalLabel">Activity Details</h5>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div id="taskDetailsModalBody">
+          <!-- Content will be loaded here by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Proof Modal -->
+<div class="modal fade" id="viewProofModal" tabindex="-1" aria-labelledby="viewProofModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewProofModalLabel">Submitted Proof</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="viewProofImage" src="" alt="Proof Image" class="img-fluid" style="max-height: 70vh; object-fit: contain;">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock %}
+{% include "partials/confirmation_dialouge.html" %}
+
+{% block extra_js %}
+<script>
+// ================================
+// LOADING STATE MANAGEMENT FOR ACTIVITIES PAGE
+// ================================
+window.activitiesLoadingState = {
+    tasks: false,
+    classrooms: false,
+    hasError: false,
+    allLoaded: false
+};
+
+// Global error handler for debugging
+window.addEventListener('error', function(e) {
+    console.error('Global error caught:', e.error);
+    console.error('Error at:', e.filename, 'line:', e.lineno);
+});
+
+// Also catch unhandled promise rejections
+window.addEventListener('unhandledrejection', function(e) {
+    console.error('Unhandled promise rejection:', e.reason);
+});
+
+// Function to check if all activities data has loaded
+function checkActivitiesDataLoaded() {
+    const state = window.activitiesLoadingState;
+    console.log('Activities loading state:', state);
+    
+    // If any data type has an error, show error state immediately
+    if (state.hasError) {
+        console.log('Error detected, showing error state');
+        showActivitiesError();
+        return;
+    }
+    
+    // Only show content if all data loaded successfully
+    if (!state.allLoaded && state.tasks && state.classrooms) {
+        state.allLoaded = true;
+        // Small delay to ensure DOM is updated
+        setTimeout(() => {
+            showActivitiesContent();
+            // Only show success toast if there are actual tasks
+            if (cachedTasks.length > 0) {
+                showToast('Activities loaded successfully!', 'success');
+            }
+        }, 100);
+    }
+}
+
+// Function to handle activities loading errors
+function handleActivitiesDataLoadError(dataType, error) {
+    console.error(`Activities ${dataType} load error:`, error);
+    window.activitiesLoadingState[dataType] = true; // Mark as loaded (but failed)
+    window.activitiesLoadingState.hasError = true; // Set error flag
+    checkActivitiesDataLoaded();
+}
+
+// Show/hide loading and content states for activities (INSIDE activity list)
+function showActivitiesLoading() {
+    const loadingMessage = document.getElementById('activitiesLoadingMessage');
+    const errorMessage = document.getElementById('activitiesErrorMessage');
+    const content = document.getElementById('activitiesContent');
+    
+    if (loadingMessage) loadingMessage.style.display = 'flex';
+    if (errorMessage) errorMessage.style.display = 'none';
+    if (content) content.style.display = 'none';
+}
+
+function showActivitiesError() {
+    const loadingMessage = document.getElementById('activitiesLoadingMessage');
+    const errorMessage = document.getElementById('activitiesErrorMessage');
+    const content = document.getElementById('activitiesContent');
+    
+    if (loadingMessage) loadingMessage.style.display = 'none';
+    if (content) content.style.display = 'none';
+    
+    if (errorMessage) {
+        errorMessage.style.display = 'flex';
+        errorMessage.style.alignItems = 'center';
+        errorMessage.style.justifyContent = 'center';
+        errorMessage.style.minHeight = '200px';
+        
+        // Load the error template using fetch
+        fetch('/partials/showError')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load error template');
+                }
+                return response.text();
+            })
+            .then(html => {
+                errorMessage.innerHTML = html;
+                // Add event listener to retry button - reloads activities
+                const retryButton = document.getElementById('retryButton');
+                if (retryButton) {
+                    retryButton.addEventListener('click', function() {
+                        location.reload(); // Reload the page to retry
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading error template:', error);
+                // Fallback to basic error message
+                errorMessage.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h3 style="color: #DB2D2D;">Connection Error</h3>
+                        <p>Unable to load activities data. Please check your connection.</p>
+                        <button onclick="location.reload()" style="padding: 10px 20px; background: #5e72e4; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            });
+    }
+}
+
+function showActivitiesContent() {
+    const loadingMessage = document.getElementById('activitiesLoadingMessage');
+    const errorMessage = document.getElementById('activitiesErrorMessage');
+    const content = document.getElementById('activitiesContent');
+    
+    if (loadingMessage) loadingMessage.style.display = 'none';
+    if (errorMessage) errorMessage.style.display = 'none';
+    if (content) content.style.display = 'block';
+    console.log('Activities content shown');
+}
+
+const PRIORITY_POINT_LIMITS = {
+    low: { min: 1, max: 15 },
+    medium: { min: 16, max: 25 },
+    high: { min: 26, max: 50 }
+};
+
+let cachedTasks = []; // Store all tasks after initial fetch
+let currentAwardTask = null;
+let currentAwardPoints = 0;
+let deniedStudents = [];
+
+// Sorting variables
+let currentSortField = 'title';
+let currentSortOrder = 'asc';
+
+// Classroom filter variable
+let currentClassroomFilter = 'all';
+
+// Priority filter variable
+let currentPriorityFilter = 'all';
+
+// Tab filter variable
+let currentTabFilter = 'Current';
+
+// Track selected students
+let selectedStudents = [];
+
+// Enhanced toast notification function (green and red only)
+function showToast(message, type = 'success', duration = 5000) {
+    // Remove any existing toasts
+    const existingToasts = document.querySelectorAll('.toast-notification');
+    existingToasts.forEach(toast => {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+    });
+
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type === 'error' ? 'error' : 'success'}`;
+    
+    let icon = 'fa-check-circle';
+    if (type === 'error') icon = 'fa-exclamation-circle';
+
+    toast.innerHTML = `
+        <div class="toast-content">
+            <i class="fas ${icon} me-2"></i>
+            ${message}
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => { 
+        toast.classList.add('show'); 
+    }, 10);
+    
+    // Auto remove after duration
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => { 
+            if (toast.parentNode) toast.parentNode.removeChild(toast); 
+        }, 300);
+    }, duration);
+    
+    // Also allow click to dismiss
+    toast.addEventListener('click', function() {
+        this.classList.remove('show');
+        setTimeout(() => { 
+            if (this.parentNode) this.parentNode.removeChild(this); 
+        }, 300);
+    });
+}
+
+// Confirmation Dialog Function
+function showConfirmationDialog(title, message) {
+    return new Promise((resolve) => {
+        const dialog = document.getElementById('confirmationDialogue');
+        const titleEl = document.getElementById('confirmationDialogueTitle');
+        const messageEl = document.getElementById('confirmationDialogueMessage');
+        const confirmBtn = document.getElementById('confirmationDialogueConfirmBtn');
+        const cancelBtn = document.getElementById('confirmationDialogueCancelBtn');
+
+        // Set dialog content
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+
+        // Show dialog
+        dialog.style.display = 'flex';
+
+        // Remove previous event listeners
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+        // Add event listeners
+        newConfirmBtn.addEventListener('click', () => {
+            dialog.style.display = 'none';
+            resolve(true);
+        });
+
+        newCancelBtn.addEventListener('click', () => {
+            dialog.style.display = 'none';
+            resolve(false);
+        });
+
+        // Close on overlay click
+        dialog.addEventListener('click', (e) => {
+            if (e.target === dialog) {
+                dialog.style.display = 'none';
+                resolve(false);
+            }
+        });
+    });
+}
+
+function isTaskFinished(task) {
+    // Consider a task finished if ALL students are either completed or denied
+    // AND there are no pending or approval students left
+    const pending = (task.pending_students?.length || 0) + (task.approval_students?.length || 0);
+    const approval = (task.approval_students?.length || 0);
+    const completed = (task.completed_students?.length || 0);
+    const denied = (task.denied_students?.length || 0);
+
+    // If there are no pending/approval students, and at least one completed or denied
+    if (pending === 0 && approval === 0 && (completed + denied > 0)) {
+        return true;
+    }
+    return false;
+}
+
+function renderTaskCards(tasks, containerId, emptyId, finished = false) {
+  const container = document.getElementById(containerId);
+  const emptyDiv = document.getElementById(emptyId);
+  container.innerHTML = "";
+  let count = 0;
+  tasks.forEach(task => {
+    const badgeColor = task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'info';
+    const classroom = `Grade ${task.grade_level} - Section ${task.section}`;
+    const due = task.due_date ? task.due_date.split('T')[0] : '';
+    const points = task.points || 0;
+    const pending = (task.pending_students?.length || 0) + (task.approval_students?.length || 0);
+    const countLabel = "Current Submissions";
+    const templateClass = task.template ? `template-${task.template}` : 'template-default';
+    // Show Award Points button in all tabs except Completed
+    const showAwardBtn = !finished && task.status !== 'Denied' && task.approval_students && task.approval_students.length > 0;
+    container.innerHTML += `
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+      <div class="task-card shadow ${templateClass} w-100">
+        <div style="position:absolute;top:0;right:0;padding:0.7rem;">
+          <span class="task-badge bg-gradient-primary text-white" style="font-size:0.85rem;">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority</span>
+        </div>
+        <div style="padding:1.5rem 1rem 1rem 1rem;">
+          <div class="task-title">${task.title}</div>
+          <div class="task-meta">${classroom}</div>
+          <div style="margin-bottom:0.7rem;">
+            <span class="task-points"><i class="fas fa-star me-1"></i> ${points} pts</span>
+            <span class="task-due"><i class="fas fa-calendar-alt me-1"></i> Due: ${due}</span>
+          </div>
+          <div style="margin-bottom:0.7rem;">
+            <span class="task-count pending-submissions">
+              ${countLabel}: <strong>${pending}</strong>
+            </span>
+          </div>
+          <div style="margin-top:1rem;">
+            <button class="btn btn-primary btn-sm" style="border-radius:0.5rem;" onclick="showTaskDetails('${task.id}')">
+              View Details
+            </button>
+            ${showAwardBtn ? `
+            <button class="btn btn-success btn-sm" style="border-radius:0.5rem;" onclick="approveAll('${task.id}')">
+              Award Points
+            </button>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+    count++;
+  });
+  container.className = "row task-card-list";
+  container.style.display = count ? "" : "none";
+  emptyDiv.style.display = count ? "none" : "block";
+}
+
+function showTaskDetails(taskId) {
+    // Use cachedTasks instead of fetching again
+    const task = cachedTasks.find(t => t.id == taskId);
+    if (!task) return;
+    
+    const templateClass = task.template ? `template-${task.template}` : 'template-default';
+    const classroom = `Grade ${task.grade_level} - Section ${task.section}`;
+    const due = task.due_date ? task.due_date.split('T')[0] : 'No due date';
+    const points = task.points || 0;
+    
+    // Student lists
+    const assignedList = task.pending_students || [];
+    const pendingList = task.approval_students || [];
+    const deniedList = task.denied_students || [];
+    const completedList = task.completed_students || [];
+    
+    // Helper function to create collapsible student group HTML
+    function studentGroup(title, list, icon, badgeClass, groupKey) {
+        if (!list.length) return '';
+        
+        const isCollapsed = list.length > 3; // Collapse if more than 3 students
+        
+        return `
+            <div class="task-details-student-group">
+                <div class="task-details-student-group-header" data-bs-toggle="collapse" data-bs-target="#group-${groupKey}">
+                    <div class="task-details-student-group-title">
+                        <i class="fas ${icon}"></i> ${title}
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="task-details-student-count">${list.length}</span>
+                        <i class="fas fa-chevron-down ms-2 transition-all" style="font-size:0.7rem;"></i>
+                    </div>
+                </div>
+                <ul class="task-details-student-list collapse ${isCollapsed ? '' : 'show'}" id="group-${groupKey}">
+                    ${list.map(s => `
+                        <li class="task-details-student-item">
+                            <span class="task-details-student-name">${s.name}</span>
+                            ${s.submitted_at ? `<span class="task-details-student-date">${s.submitted_at.split('T')[0]}</span>` : ''}
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>
+        `;
+    }
+    
+    let html = `
+        <div class="task-details-content ${templateClass}">
+            <div class="task-details-header">
+                <div class="task-details-title-section">
+                    <h2 class="task-details-title">${task.title}</h2>
+                    <div class="task-details-classroom">${classroom}</div>
+                </div>
+                <span class="task-details-priority-badge">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
+            </div>
+            
+            <div class="task-details-meta">
+                <div class="task-details-meta-item">
+                    <div class="task-details-meta-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="task-details-meta-text">
+                        <span class="task-details-meta-label">Points</span>
+                        <span class="task-details-meta-value">${points}</span>
+                    </div>
+                </div>
+                
+                <div class="task-details-meta-item">
+                    <div class="task-details-meta-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="task-details-meta-text">
+                        <span class="task-details-meta-label">Due Date</span>
+                        <span class="task-details-meta-value">${due}</span>
+                    </div>
+                </div>
+                
+                <div class="task-details-meta-item">
+                    <div class="task-details-meta-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="task-details-meta-text">
+                        <span class="task-details-meta-label">Students</span>
+                        <span class="task-details-meta-value">${assignedList.length + pendingList.length + deniedList.length + completedList.length}</span>
+                    </div>
+                </div>
+            </div>
+            
+            ${task.description ? `
+                <div class="task-details-description">
+                    <div class="task-details-description-label">Description</div>
+                    <p class="task-details-description-text">${task.description}</p>
+                </div>
+            ` : ''}
+            
+            <div class="task-details-students-section">
+                <h4 class="task-details-students-header">
+                    <i class="fas fa-user-graduate"></i> Student Progress
+                </h4>
+                <div class="task-details-students-list">
+                    ${studentGroup('Assigned', assignedList, 'fa-user-clock', 'secondary', 'assigned')}
+                    ${studentGroup('Pending', pendingList, 'fa-hourglass-half', 'warning', 'pending')}
+                    ${studentGroup('Completed', completedList, 'fa-check-circle', 'success', 'completed')}
+                    ${studentGroup('Denied', deniedList, 'fa-times-circle', 'danger', 'denied')}
+                </div>
+            </div>
+            
+            <div class="task-details-actions">
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Close
+                </button>
+                ${pendingList.length > 0 ? `
+                    <button class="btn btn-primary" onclick="approveAll('${task.id}')">
+                        <i class="fas fa-trophy me-1"></i>Award Points
+                    </button>
+                ` : ''}
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('taskDetailsModalBody').innerHTML = html;
+    
+    // Add template class to modal for consistent styling
+    const modalContent = document.querySelector('#taskDetailsModal .modal-content');
+    modalContent.className = `modal-content task-details-modal ${templateClass}`;
+    
+    const modal = new bootstrap.Modal(document.getElementById('taskDetailsModal'));
+    modal.show();
+    
+    // Add click handlers for collapsible sections
+    document.querySelectorAll('.task-details-student-group-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const icon = this.querySelector('.fa-chevron-down');
+            icon.classList.toggle('fa-rotate-180');
+        });
+    });
+}
+
+function hideTaskDetails() {
+  document.getElementById('taskDetailsInline').style.display = 'none';
+  document.getElementById('taskDetailsInline').innerHTML = '';
+}
+
+// --- Main Script ---
+let currentPage = 1;
+const itemsPerPage = 9;
+
+function loadTasks(classroomFilter = "", page = 1, retryCount = 0) {
+    document.getElementById('taskDetailsInline').style.display = 'none';
+    document.getElementById('taskDetailsInline').innerHTML = '';
+
+    document.getElementById('currentTaskLoading').style.display = "block";
+    document.getElementById('currentTaskCards').style.display = "none";
+    document.getElementById('currentTaskEmpty').style.display = "none";
+
+    let url = `/api/my-tasks?page=${page}&per_page=${itemsPerPage}`;
+    if (classroomFilter && classroomFilter !== 'all') {
+        const [grade, section] = classroomFilter.split('|');
+        url += `&grade=${grade}&section=${section}`;
+    }
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                cachedTasks = data.tasks || [];
+                renderFilteredTaskCards();
+                document.getElementById('currentTaskLoading').style.display = "none";
+                
+                // Update loading state
+                window.activitiesLoadingState.tasks = true;
+                checkActivitiesDataLoaded();
+            } else {
+                // Retry up to 2 more times before showing error
+                if (retryCount < 2) {
+                    setTimeout(() => loadTasks(classroomFilter, page, retryCount + 1), 600);
+                } else {
+                    handleActivitiesDataLoadError('tasks', new Error(data.message || 'Failed to load tasks'));
+                    document.getElementById('currentTaskLoading').style.display = "none";
+                    document.getElementById('currentTaskEmpty').style.display = "block";
+                }
+            }
+        })
+        .catch(error => {
+            // Retry up to 2 more times before showing error
+            if (retryCount < 2) {
+                setTimeout(() => loadTasks(classroomFilter, page, retryCount + 1), 600);
+            } else {
+                handleActivitiesDataLoadError('tasks', error);
+                console.error('Error loading tasks:', error);
+                document.getElementById('currentTaskLoading').style.display = "none";
+                document.getElementById('currentTaskEmpty').style.display = "block";
+            }
+        });
+}
+
+// Sort tasks based on current sort field and order
+function sortTasks(tasks) {
+    return tasks.sort((a, b) => {
+        let aValue, bValue;
+        
+        if (currentSortField === 'title') {
+            aValue = a.title || '';
+            bValue = b.title || '';
+        } else if (currentSortField === 'points') {
+            aValue = a.points || 0;
+            bValue = b.points || 0;
+        }
+        
+        if (typeof aValue === 'string') {
+            aValue = aValue.toLowerCase();
+            bValue = bValue.toLowerCase();
+        }
+        
+        if (currentSortOrder === 'asc') {
+            return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+        } else {
+            return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+        }
+    });
+}
+
+// Filter tasks by tab
+function filterTasksByTab(tasks, tab) {
+    if (tab === 'Completed') {
+        // Show tasks where all students are completed or denied (no pending/approval left)
+        return tasks.filter(task => isTaskFinished(task));
+    }
+    // Current: show tasks that still have pending/approval students
+    return tasks.filter(task => !(isTaskFinished(task)));
+}
+
+// Filter tasks by classroom
+function filterTasksByClassroom(tasks, classroomFilter) {
+    if (!classroomFilter || classroomFilter === 'all') {
+        return tasks;
+    }
+    
+    const [grade, section] = classroomFilter.split('|');
+    return tasks.filter(task => 
+        task.grade_level == grade && task.section == section
+    );
+}
+
+// Filter tasks by priority
+function filterTasksByPriority(tasks, priorityFilter) {
+    if (!priorityFilter || priorityFilter === 'all') {
+        return tasks;
+    }
+    
+    return tasks.filter(task => task.priority === priorityFilter);
+}
+
+// Fixed renderFilteredTaskCards function
+function renderFilteredTaskCards() {
+    const searchInput = document.getElementById('searchInput');
+    const searchValue = searchInput ? searchInput.value.trim().toLowerCase() : "";
+
+    console.log('Rendering filtered tasks:', {
+        currentTabFilter,
+        currentClassroomFilter,
+        currentPriorityFilter,
+        searchValue,
+        totalTasks: cachedTasks.length
+    });
+
+    let filtered = filterTasksByTab(cachedTasks, currentTabFilter);
+    
+    // Apply classroom filter
+    filtered = filterTasksByClassroom(filtered, currentClassroomFilter);
+    
+    // Apply priority filter
+    filtered = filterTasksByPriority(filtered, currentPriorityFilter);
+
+    // Apply search filter
+    if (searchValue) {
+        filtered = filtered.filter(task =>
+            (task.title && task.title.toLowerCase().includes(searchValue)) ||
+            (task.description && task.description.toLowerCase().includes(searchValue))
+        );
+    }
+
+    // Apply sorting
+    filtered = sortTasks(filtered);
+
+    // Update results count
+    const resultsCount = document.getElementById('resultsCount');
+    if (resultsCount) {
+        const count = filtered.length;
+        let message = `Showing ${count} ${currentTabFilter.toLowerCase()} activities`;
+        
+        if (currentPriorityFilter !== 'all') {
+            message += ` (${currentPriorityFilter} priority)`;
+        }
+        
+        if (currentClassroomFilter !== 'all') {
+            const [grade, section] = currentClassroomFilter.split('|');
+            message += ` in Grade ${grade} - Section ${section}`;
+        }
+        
+        resultsCount.textContent = message;
+    }
+
+    console.log('Filtered tasks count:', filtered.length);
+    renderTaskCards(filtered, "currentTaskCards", "currentTaskEmpty", currentTabFilter === 'Completed');
+}
+
+// Fixed initDropdowns function
+function initDropdowns() {
+    // Sort dropdown functionality
+    const sortDropdownToggle = document.getElementById('sortDropdownToggle');
+    const sortDropdownMenu = document.getElementById('sortDropdownMenu');
+    
+    sortDropdownToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        sortDropdownMenu.classList.toggle('open');
+        sortDropdownToggle.classList.toggle('active');
+    });
+    
+    // Sort option selection
+    document.querySelectorAll('.sort-dropdown-option').forEach(option => {
+        option.addEventListener('click', function() {
+            const field = this.getAttribute('data-sort-field');
+            const order = this.getAttribute('data-sort-order');
+            
+            // Update current sort
+            currentSortField = field;
+            currentSortOrder = order;
+            
+            // Update UI
+            updateSortDropdownUI(field, order);
+            
+            // Close dropdown
+            sortDropdownMenu.classList.remove('open');
+            sortDropdownToggle.classList.remove('active');
+            
+            // Re-render tasks with new sorting
+            renderFilteredTaskCards();
+        });
+    });
+    
+    // Classroom dropdown functionality
+    const classroomDropdownToggle = document.getElementById('classroomDropdownToggle');
+    const classroomDropdownMenu = document.getElementById('classroomDropdownMenu');
+    
+    classroomDropdownToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        classroomDropdownMenu.classList.toggle('open');
+        classroomDropdownToggle.classList.toggle('active');
+    });
+    
+    // FIXED: Classroom option selection - use event delegation
+    classroomDropdownMenu.addEventListener('click', function(e) {
+        const option = e.target.closest('.sort-dropdown-option');
+        if (option && option.hasAttribute('data-classroom-id')) {
+            const classroomId = option.getAttribute('data-classroom-id');
+            const classroomName = option.querySelector('.sort-dropdown-name').textContent;
+            
+            // Update current classroom filter
+            currentClassroomFilter = classroomId;
+            
+            // Update UI
+            document.querySelectorAll('#classroomDropdownMenu .sort-dropdown-active-badge').forEach(badge => {
+                badge.style.display = 'none';
+            });
+            
+            const selectedBadge = option.querySelector('.sort-dropdown-active-badge');
+            if (selectedBadge) {
+                selectedBadge.style.display = 'inline-block';
+            }
+            
+            document.getElementById('selectedClassroomName').textContent = classroomName;
+            
+            // Close dropdown
+            classroomDropdownMenu.classList.remove('open');
+            classroomDropdownToggle.classList.remove('active');
+            
+            // Re-render tasks with new classroom filter
+            renderFilteredTaskCards();
+        }
+    });
+    
+    // Priority dropdown functionality
+    const priorityDropdownToggle = document.getElementById('priorityDropdownToggle');
+    const priorityDropdownMenu = document.getElementById('priorityDropdownMenu');
+    
+    priorityDropdownToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        priorityDropdownMenu.classList.toggle('open');
+        priorityDropdownToggle.classList.toggle('active');
+    });
+    
+    // Priority option selection
+    priorityDropdownMenu.addEventListener('click', function(e) {
+        const option = e.target.closest('.sort-dropdown-option');
+        if (option && option.hasAttribute('data-priority')) {
+            const priority = option.getAttribute('data-priority');
+            
+            // Update current priority filter
+            currentPriorityFilter = priority;
+            
+            // Update UI
+            document.querySelectorAll('#priorityDropdownMenu .sort-dropdown-active-badge').forEach(badge => {
+                badge.style.display = 'none';
+            });
+            
+            const selectedBadge = option.querySelector('.sort-dropdown-active-badge');
+            if (selectedBadge) {
+                selectedBadge.style.display = 'inline-block';
+            }
+            
+            // Update dropdown text
+            const priorityNameMap = {
+                'all': 'All Priorities',
+                'high': 'High Priority',
+                'medium': 'Medium Priority',
+                'low': 'Low Priority'
+            };
+            
+            document.getElementById('selectedPriorityName').textContent = priorityNameMap[priority];
+            
+            // Close dropdown
+            priorityDropdownMenu.classList.remove('open');
+            priorityDropdownToggle.classList.remove('active');
+            
+            // Re-render tasks with new priority filter
+            renderFilteredTaskCards();
+        }
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.sort-dropdown')) {
+            sortDropdownMenu.classList.remove('open');
+            sortDropdownToggle.classList.remove('active');
+        }
+        
+        if (!e.target.closest('.classroom-dropdown')) {
+            classroomDropdownMenu.classList.remove('open');
+            classroomDropdownToggle.classList.remove('active');
+        }
+        
+        if (!e.target.closest('.priority-dropdown')) {
+            priorityDropdownMenu.classList.remove('open');
+            priorityDropdownToggle.classList.remove('active');
+        }
+    });
+}
+
+// Update sort dropdown UI
+function updateSortDropdownUI(field, order) {
+    // Hide all badges first
+    document.querySelectorAll('.sort-dropdown-active-badge').forEach(badge => {
+        badge.style.display = 'none';
+    });
+    
+    // Show the selected badge
+    const badgeId = `${field}${order.charAt(0).toUpperCase() + order.slice(1)}Badge`;
+    const selectedBadge = document.getElementById(badgeId);
+    if (selectedBadge) {
+        selectedBadge.style.display = 'inline-block';
+    }
+    
+    // Update dropdown text
+    const selectedSortName = document.getElementById('selectedSortName');
+    const selectedSortOrder = document.getElementById('selectedSortOrder');
+    
+    if (field === 'title') {
+        selectedSortName.textContent = '';
+        selectedSortOrder.textContent = order === 'asc' ? 'Ascending (A-Z)' : 'Descending (Z-A)';
+    } else if (field === 'points') {
+        selectedSortName.textContent = '';
+        selectedSortOrder.textContent = order === 'asc' ? 'Low to High' : 'High to Low';
+    }
+}
+
+// Updated approveAll function with new modal design and selection logic
+function approveAll(taskId) {
+    // Use cachedTasks instead of fetching again
+    const task = cachedTasks.find(t => t.id == taskId);
+    if (task && task.approval_students && task.approval_students.length) {
+        // 1. If the details modal is open, hide it before showing Award Points
+        const detailsModal = bootstrap.Modal.getInstance(document.getElementById('taskDetailsModal'));
+        if (detailsModal) {
+            detailsModal.hide();
+        }
+
+        currentAwardTask = taskId;
+        currentAwardPoints = task.points || 0;
+        const students = task.approval_students;
+        const listDiv = document.getElementById('awardPointsStudentList');
+        
+        selectedStudents = []; // None selected by default
+
+        listDiv.innerHTML = `
+        <div class="award-points-content">
+            <div class="award-points-header">
+                <div class="award-points-task-info">
+                    <div class="award-points-task-title">${task.title}</div>
+                    <div class="award-points-task-points">
+                        <i class="fas fa-star me-1"></i>${currentAwardPoints} points each
+                    </div>
+                </div>
+                <div class="award-points-selection-counter" id="selectionCounter">
+                    0 selected
+                </div>
+            </div>
+            
+            <div class="award-points-student-list" id="awardStudentList">
+                ${students.map((s, index) => `
+                    <div class="award-points-student-item" data-student-id="${s.id}">
+                        <div class="award-points-student-header">
+                            <div class="award-points-student-info">
+                                <div class="award-points-checkbox" onclick="toggleStudentSelection('${s.id}')"></div>
+                                <div class="award-points-student-name">${s.name}</div>
+                                <button class="btn btn-outline-danger btn-sm ms-2" onclick="toggleStudentDenial('${s.id}')">Deny</button>
+                            </div>
+                        </div>
+                        <div class="award-points-proof-section">
+                            <div class="award-points-proof-label">
+                                <i class="fas fa-image"></i>Proof of submission
+                            </div>
+                            ${s.image_urls ? renderProofImages(s.image_urls) : '<div class="award-points-no-proof">No proof uploaded</div>'}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="award-points-actions">
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button class="btn btn-success" id="confirmAwardPoints">
+                    <i class="fas fa-trophy me-1"></i>Award Points
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // No students selected by default
+    selectedStudents = [];
+
+    const modal = new bootstrap.Modal(document.getElementById('awardPointsModal'));
+    modal.show();
+
+    // Scroll to top when modal opens
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+    } else {
+        showToast('No student has submitted yet.', 'error');
+    }
+}
+
+// Toggle selection for student
+function toggleStudentSelection(studentId) {
+    const checkbox = document.querySelector(`[data-student-id="${studentId}"] .award-points-checkbox`);
+    const isCurrentlySelected = selectedStudents.includes(studentId);
+    
+    if (isCurrentlySelected) {
+        // Remove from selection
+        selectedStudents = selectedStudents.filter(id => id !== studentId);
+        checkbox.classList.remove('checked');
+    } else {
+        // Add to selection
+        selectedStudents.push(studentId);
+        checkbox.classList.add('checked');
+    }
+    updateSelectionCounter();
+}
+
+// Replace the toggleStudentDenial function with this:
+function toggleStudentDenial(studentId) {
+    // Show confirmation dialog before denying student
+    const studentItem = document.querySelector(`[data-student-id="${studentId}"]`);
+    const studentName = studentItem ? studentItem.querySelector('.award-points-student-name').textContent : 'this student';
+    
+    showConfirmationDialog(
+        'Confirm Deny Activity',
+        `Are you sure you want to deny "${studentName}" for this activity?`
+    ).then(async (confirmed) => {
+        if (!confirmed) return;
+        
+        // Immediately send denial to backend
+        fetch('/api/approve-task-submissions', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                taskId: currentAwardTask,
+                selectedStudents: [], // No award
+                deniedStudents: [studentId]
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Activity has been denied', 'error');
+                // Remove student from modal list (optional)
+                const item = document.querySelector(`[data-student-id="${studentId}"]`);
+                if (item) item.remove();
+                // Reload tasks to update UI
+                loadTasks(currentClassroomFilter, currentPage);
+            } else {
+                showToast(data.message || 'Failed to deny student.', 'error');
+            }
+        })
+        .catch(() => {
+            showToast('Server error. Please try again.', 'error');
+        });
+    });
+}
+
+// Update selection counter to show both arrays
+function updateSelectionCounter() {
+    const counter = document.getElementById('selectionCounter');
+    if (!counter) return;
+    if (selectedStudents.length && !deniedStudents.length) {
+        counter.textContent = `${selectedStudents.length} selected`;
+    } else if (selectedStudents.length || deniedStudents.length) {
+        counter.textContent = `${selectedStudents.length} to award, ${deniedStudents.length} to deny`;
+    } else {
+        counter.textContent = `0 selected`;
+    }
+}
+
+// Updated renderProofImages function for the new design
+function renderProofImages(image_urls) {
+    let urls = [];
+    try {
+        if (typeof image_urls === 'string') {
+            urls = JSON.parse(image_urls);
+        } else if (Array.isArray(image_urls)) {
+            urls = image_urls;
+        }
+    } catch (e) {
+        urls = [];
+    }
+    if (!urls.length) return '';
+    return `
+        <div class="award-points-proof-images">
+            ${urls.map(url => `
+                <a href="javascript:void(0)" class="award-points-proof-thumb" title="View full image" onclick="showProofModal('${url}')">
+                    <img src="${url}" alt="Proof image" loading="lazy">
+                </a>
+            `).join('')}
+        </div>
+    `;
+}
+
+// --- Template Preview Logic ---
+const templates = [
+  {
+    key: 'default',
+    label: 'Classic (Default)',
+    html: `
+      <div class="task-card template-default shadow" style="box-shadow:none;margin-bottom:0;">
+        <div style="position:absolute;top:0;right:0;padding:0.7rem;">
+          <span class="task-badge bg-gradient-primary text-white" style="font-size:0.85rem;">Medium Priority</span>
+        </div>
+        <div style="padding:1.2rem 1rem 1rem 1rem;">
+          <div class="task-title">Classic (Default)</div>
+          <div class="task-meta">Grade 7 - Section A</div>
+          <div style="margin-bottom:0.7rem;">
+            <span class="task-points"><i class="fas fa-star me-1"></i> 10 pts</span>
+            <span class="task-due"><i class="fas fa-calendar-alt me-1"></i> Due: 2025-09-10</span>
+          </div>
+        </div>
+      </div>
+    `
+  },
+  {
+    key: 'success-green',
+    label: 'Green Success',
+    html: `
+      <div class="task-card template-success-green shadow" style="box-shadow:none;margin-bottom:0;">
+        <div style="position:absolute;top:0;right:0;padding:0.7rem;">
+          <span class="task-badge bg-gradient-primary text-white" style="font-size:0.85rem;">Medium Priority</span>
+        </div>
+        <div style="padding:1.2rem 1rem 1rem 1rem;">
+          <div class="task-title">Green Success</div>
+          <div class="task-meta">Grade 7 - Section A</div>
+          <div style="margin-bottom:0.7rem;">
+            <span class="task-points"><i class="fas fa-star me-1"></i> 10 pts</span>
+            <span class="task-due"><i class="fas fa-calendar-alt me-1"></i> Due: 2025-09-10</span>
+          </div>
+        </div>
+      </div>
+    `
+  },
+  {
+    key: 'deep-indigo',
+    label: 'Deep Indigo',
+    html: `
+      <div class="task-card template-deep-indigo shadow" style="box-shadow:none;margin-bottom:0;">
+        <div style="position:absolute;top:0;right:0;padding:0.7rem;">
+          <span class="task-badge bg-gradient-primary text-white" style="font-size:0.85rem;">Medium Priority</span>
+        </div>
+        <div style="padding:1.2rem 1rem 1rem 1rem;">
+          <div class="task-title">Deep Indigo</div>
+          <div class="task-meta">Grade 7 - Section A</div>
+          <div style="margin-bottom:0.7rem;">
+            <span class="task-points"><i class="fas fa-star me-1"></i> 10 pts</span>
+            <span class="task-due"><i class="fas fa-calendar-alt me-1"></i> Due: 2025-09-10</span>
+          </div>
+        </div>
+      </div>
+    `
+  }
+];
+
+let currentTemplateIdx = 0;
+
+function showTemplate(idx) {
+  const t = templates[idx];
+  document.getElementById('templatePreview').innerHTML = t.html;
+  document.getElementById('templateLabel').textContent = t.label;
+  document.getElementById('taskTemplate').value = t.key;
+}
+
+// Function to update the points input limits
+function updatePointsLimits() {
+    const priority = document.getElementById('taskPriority').value;
+    const pointsInput = document.getElementById('taskPoints');
+    const limits = PRIORITY_POINT_LIMITS[priority] || { min: 1, max: 15 };
+    pointsInput.min = limits.min;
+    pointsInput.max = limits.max;
+    // Adjust value if out of new range
+    if (parseInt(pointsInput.value, 10) < limits.min) pointsInput.value = limits.min;
+    if (parseInt(pointsInput.value, 10) > limits.max) pointsInput.value = limits.max;
+}
+
+// Fixed points helper function
+function showPointsHelper() {
+    const priority = document.getElementById('taskPriority').value;
+    const pointsInput = document.getElementById('taskPoints');
+    let points = parseInt(pointsInput.value, 10) || 0;
+    const limits = PRIORITY_POINT_LIMITS[priority] || { min: 1, max: 15 };
+    const helper = document.getElementById('pointsHelper');
+    const helperIcon = document.getElementById('pointsHelperIcon');
+    const helperText = document.getElementById('pointsHelperText');
+    const helperRange = document.getElementById('pointsHelperRange');
+    
+    // If points exceed max, set back to max
+    if (points > limits.max) {
+        pointsInput.value = limits.max;
+        points = limits.max;
+    }
+
+    // Fixed: Use textContent for the entire message
+    if (points < limits.min || points > limits.max) {
+        helperText.textContent = `Please enter a valid number of points for ${priority} priority.`;
+        helperRange.textContent = `Range: ${limits.min}-${limits.max} points`;
+        helperIcon.className = 'points-helper-icon fas fa-exclamation-circle';
+        helper.className = 'points-helper invalid';
+        helper.style.display = "block";
+    } else {
+        helperText.textContent = `Valid points for ${priority} priority.`;
+        helperRange.textContent = `Range: ${limits.min}-${limits.max} points`;
+        helperIcon.className = 'points-helper-icon fas fa-check-circle';
+        helper.className = 'points-helper valid';
+        helper.style.display = "block";
+    }
+}
+
+// Show helper when points input is focused
+function handlePointsFocus() {
+    const pointsInput = document.getElementById('taskPoints');
+    pointsInput.classList.add('points-input-focused');
+    showPointsHelper();
+}
+
+// Hide helper when points input loses focus (unless invalid)
+function handlePointsBlur() {
+    const pointsInput = document.getElementById('taskPoints');
+    const points = parseInt(pointsInput.value, 10) || 0;
+    const priority = document.getElementById('taskPriority').value;
+    const limits = PRIORITY_POINT_LIMITS[priority] || { min: 1, max: 15 };
+    
+    pointsInput.classList.remove('points-input-focused');
+    
+    // Only hide if value is valid
+    if (points >= limits.min && points <= limits.max) {
+        setTimeout(() => {
+            document.getElementById('pointsHelper').style.display = "none";
+        }, 300);
+    }
+}
+
+function showProofModal(imageUrl) {
+    const proofImage = document.getElementById('viewProofImage');
+    proofImage.src = imageUrl;
+    const modal = new bootstrap.Modal(document.getElementById('viewProofModal'));
+    modal.show();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Start with loading state
+    showActivitiesLoading();
+    
+    // Initialize dropdowns
+    initDropdowns();
+    
+    // Load classrooms for both filter and modal dropdowns
+    fetch('/api/my-classrooms')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.classrooms) {
+                const select = document.getElementById('taskClassroom');
+                const classroomDropdownMenu = document.getElementById('classroomDropdownMenu');
+                
+                // Clear existing options except "All Classrooms"
+                const allClassroomsOption = classroomDropdownMenu.querySelector('[data-classroom-id="all"]');
+                classroomDropdownMenu.innerHTML = '';
+                classroomDropdownMenu.appendChild(allClassroomsOption);
+                
+                // Clear modal dropdown except first option
+                select.innerHTML = '<option value="">Select Classroom</option>';
+                
+                // Create a Set to track unique classrooms by their key
+                const uniqueClassroomKeys = new Set();
+                const uniqueClassrooms = [];
+                
+                data.classrooms.forEach(c => {
+                    const classroomKey = `${c.grade}|${c.section}`;
+                    
+                    // Only add if not already seen
+                    if (!uniqueClassroomKeys.has(classroomKey)) {
+                        uniqueClassroomKeys.add(classroomKey);
+                        uniqueClassrooms.push({
+                            key: classroomKey,
+                            label: `Grade ${c.grade} - Section ${c.section}`,
+                            grade: c.grade,
+                            section: c.section
+                        });
+                    }
+                });
+                
+                // Add unique classrooms to both dropdowns
+                uniqueClassrooms.forEach(classroom => {
+                    // Add to modal dropdown
+                    const option = document.createElement('option');
+                    option.value = classroom.key;
+                    option.textContent = classroom.label;
+                    select.appendChild(option);
+
+                    // Add to filter dropdown
+                    const classroomOption = document.createElement('button');
+                    classroomOption.className = 'sort-dropdown-option classroom-dropdown-option';
+                    classroomOption.setAttribute('data-classroom-id', classroom.key);
+                    
+                    classroomOption.innerHTML = `
+                        <div class="sort-dropdown-info">
+                            <span class="sort-dropdown-name">${classroom.label}</span>
+                        </div>
+                        <span class="sort-dropdown-active-badge" style="display: none;">SELECTED</span>
+                    `;
+                    
+                    classroomDropdownMenu.appendChild(classroomOption);
+                });
+                
+                // Update loading state
+                window.activitiesLoadingState.classrooms = true;
+                checkActivitiesDataLoaded();
+            } else {
+                handleActivitiesDataLoadError('classrooms', new Error(data.message || 'Failed to load classrooms'));
+            }
+        })
+        .catch(error => {
+            handleActivitiesDataLoadError('classrooms', error);
+        });
+
+    // Remove paginationControls div if present
+    const pagDiv = document.getElementById('paginationControls');
+    if (pagDiv) {
+        pagDiv.remove();
+    }
+    
+    loadTasks();
+    
+    // Template picker logic
+    document.querySelectorAll('.template-option').forEach(option => {
+      option.addEventListener('click', function() {
+        document.querySelectorAll('.template-option').forEach(opt => opt.classList.remove('selected'));
+        this.classList.add('selected');
+        document.getElementById('taskTemplate').value = this.getAttribute('data-template');
+      });
+      option.addEventListener('keydown', function(e) {
+        if (e.key === "Enter" || e.key === " ") {
+          this.click();
+        }
+      });
+    });
+
+    // Template navigation
+    showTemplate(currentTemplateIdx);
+    document.getElementById('templatePrev').onclick = function() {
+        currentTemplateIdx = (currentTemplateIdx - 1 + templates.length) % templates.length;
+        showTemplate(currentTemplateIdx);
+    };
+    document.getElementById('templateNext').onclick = function() {
+        currentTemplateIdx = (currentTemplateIdx + 1) % templates.length;
+        showTemplate(currentTemplateIdx);
+    };
+
+    // Fixed save task event listener
+    document.getElementById('saveTask').addEventListener('click', async function() {
+        const classroom = document.getElementById('taskClassroom').value;
+        const task = document.getElementById('taskTitle').value;
+        const description = document.getElementById('taskDescription').value;
+        const due_date = document.getElementById('taskDueDate').value;
+        const priority = document.getElementById('taskPriority').value;
+        const points = parseInt(document.getElementById('taskPoints').value, 10) || 0;
+        const template = document.getElementById('taskTemplate').value;
+        
+        // Validation checks with specific error messages
+        if (!classroom) {
+            showToast('Please select a classroom', 'error', 4000);
+            return;
+        }
+        
+        if (!task || task.trim() === '') {
+            showToast('Please enter an activity title', 'error', 4000);
+            return;
+        }
+        
+        if (!points || points < 1) {
+            showToast('Please set valid points for the activity', 'error', 4000);
+            return;
+        }
+        
+        const limits = PRIORITY_POINT_LIMITS[priority] || { min: 1, max: 15 };
+        if (points < limits.min || points > limits.max) {
+            showToast(`For ${priority} priority, points must be between ${limits.min} and ${limits.max}`, 'error', 5000);
+            return;
+        }
+
+        // Show confirmation dialog before creating activity
+        const [grade_level, section] = classroom.split('|');
+        const confirmed = await showConfirmationDialog(
+            'Confirm Create Activity',
+            `Are you sure you want to create the activity "${task}" for Grade ${grade_level} - Section ${section}?`
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        // Disable button to prevent double submission
+        const saveBtn = document.getElementById('saveTask');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+
+        try {
+            const response = await fetch('/api/assign-task', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    grade_level,
+                    section,
+                    task,
+                    description,
+                    due_date,
+                    priority,
+                    points,
+                    template
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast('Activity created successfully!', 'success', 3000);
+                // Close modal and reload after delay
+                const modal = bootstrap.Modal.getInstance(document.getElementById('newTaskModal'));
+                modal.hide();
+                
+                // Reset form
+                document.getElementById('taskForm').reset();
+                
+                // Reload tasks
+                setTimeout(() => {
+                    loadTasks(currentClassroomFilter, currentPage);
+                }, 1500);
+            } else {
+                throw new Error(data.message || 'Failed to create activity');
+            }
+        } catch (error) {
+            console.error('Error creating task:', error);
+            showToast(
+                error.message.includes('HTTP error') 
+                    ? 'Network error: Please check your connection and try again.' 
+                    : error.message, 
+                'error', 
+                5000
+            );
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = 'Save Activity';
+        }
+    });
+
+    // Filter tab click logic
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active from all tabs
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            // Add active to clicked tab
+            this.classList.add('active');
+            // Set filter
+            currentTabFilter = this.getAttribute('data-filter');
+            renderFilteredTaskCards();
+        });
+    });
+
+    // Search input event listener
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            renderFilteredTaskCards();
+        });
+    }
+
+    // Enhanced points helper event listeners
+    const pointsInput = document.getElementById('taskPoints');
+    pointsInput.addEventListener('input', showPointsHelper);
+    pointsInput.addEventListener('focus', handlePointsFocus);
+    pointsInput.addEventListener('blur', handlePointsBlur);
+    
+    document.getElementById('taskPriority').addEventListener('change', function() {
+        updatePointsLimits();
+        showPointsHelper();
+    });
+    
+    // Initialize points limits
+    updatePointsLimits();
+    // Don't show helper initially, only on focus
+});
+
+// Reset form when modal is closed
+document.getElementById('newTaskModal').addEventListener('hidden.bs.modal', function() {
+    document.getElementById('taskForm').reset();
+    const saveBtn = document.getElementById('saveTask');
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = 'Save Activity';
+});
+
+// Update the confirmAwardPoints function to use selectedStudents
+document.addEventListener('click', async function(e) {
+    if (e.target && e.target.id === 'confirmAwardPoints') {
+        if (!selectedStudents.length && !deniedStudents.length) {
+            showToast('Select at least one student to award or deny.', 'error');
+            return;
+        }
+
+        // Show confirmation dialog before awarding points
+        const task = cachedTasks.find(t => t.id == currentAwardTask);
+        const taskTitle = task ? task.title : 'this activity';
+        const points = task ? task.points : 0;
+        
+        const confirmed = await showConfirmationDialog(
+            'Confirm Award Points',
+            `Are you sure you want to award ${points} points to ${selectedStudents.length} student(s) for "${taskTitle}"?`
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        e.target.disabled = true;
+        e.target.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Awarding...';
+
+        fetch('/api/approve-task-submissions', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                taskId: currentAwardTask,
+                selectedStudents: selectedStudents,
+                deniedStudents: deniedStudents
+            })
+        })
+        .then(res => res.json())
+        .then (data => {
+            if (data.success) {
+                showToast('Points awarded successfully!', 'success');
+                // PATCH: Refresh tasks after awarding points
+                setTimeout(() => {
+                    // Hide modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('awardPointsModal'));
+                    if (modal) modal.hide();
+                    // Reload tasks (will update all tabs)
+                    loadTasks(currentClassroomFilter, currentPage);
+                }, 800);
+            } else {
+                showToast(data.message || 'Failed to award points.', 'error');
+                e.target.disabled = false;
+                e.target.innerHTML = '<i class="fas fa-trophy me-1"></i>Award Points';
+            }
+        })
+        .catch(() => {
+            showToast('Server error. Please try again.', 'error');
+            e.target.disabled = false;
+            e.target.innerHTML = '<i class="fas fa-trophy me-1"></i>Award Points';
+        });
+    }
+});
+</script>
+{% endblock %}

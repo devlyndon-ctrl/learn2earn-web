@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Learn2Earn - {% if session.get('role') == 'Admin' %}Admin Dashboard{% else %}Teacher Dashboard{% endif %}{% endblock %}</title>
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/base.css">
+    <link rel="stylesheet" href="/static/sidebar.css">
+    <link rel="stylesheet" href="/static/modal.css">
+    <link rel="icon" type="image/png" href="/static/image/masiconshsLOGO.png">
+    <link rel="stylesheet" href="/static/streak-border.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.7.0/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+    {% block extra_css %}{% endblock %}
+    <script>
+        // Apply sidebar state BEFORE page renders to prevent flash
+        (function() {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                document.documentElement.setAttribute('data-sidebar-collapsed', 'true');
+            }
+        })();
+    </script>
+</head>
+<body>
+    {% block content %}
+        {% include "sidebar.html" %}
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navbar -->
+            <nav class="navbar">
+                <div>
+                    <h4 class="mb-0">
+                        {% block page_title %}
+                            {% if session.get('role') == 'Admin' %}
+                                Admin Dashboard
+                            {% elif session.get('role') == 'Student' %}
+                                Student Home
+                            {% else %}
+                                Dashboard
+                            {% endif %}
+                        {% endblock %}
+                    </h4>
+                </div>
+                <div class="d-flex align-items-center">
+                    {% if session.get('role') != 'Student' %}
+                    <!-- Notifications for Admin/Teacher -->
+                    <div class="dropdown me-3">
+                        <a href="#" class="text-muted" id="notificationsDropdown">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge rounded-pill bg-danger">3</span>
+                        </a>
+                        <div class="dropdown-menu d-none" id="notificationsDropdownMenu" data-bs-auto-close="outside">
+                            <h6 class="dropdown-header notif-header">Notifications</h6>
+                            <div class="notif-tabs">
+                                <button class="notif-tab active" id="tabAll">All</button>
+                                <button class="notif-tab" id="tabUnread">Unread</button>
+                            </div>
+                            <div id="notificationsList">
+                                <div class="dropdown-item text-muted">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if session.get('role') == 'Student' %}
+                    <!-- Notifications for Student -->
+                    <div class="dropdown me-2">
+                        <a href="#" class="text-muted" id="notificationsDropdown">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge rounded-pill bg-danger">3</span>
+                        </a>
+                        <div class="dropdown-menu d-none" id="notificationsDropdownMenu" data-bs-auto-close="outside">
+                            <h6 class="dropdown-header notif-header">Notifications</h6>
+                            <div class="notif-tabs">
+                                <button class="notif-tab active" id="tabAll">All</button>
+                                <button class="notif-tab" id="tabUnread">Unread</button>
+                            </div>
+                            <div id="notificationsList">
+                                <div class="dropdown-item text-muted">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Student Points Pill -->
+                    <div class="student-points-pill d-flex align-items-center me-3">
+                        <span class="points-pill-icon" style="margin-right: 0.5em;">
+                            <i class="fas fa-star"></i>
+                        </span>
+                        <span class="points-pill-value">
+                            {{ session.get('points', 0) }}
+                        </span>
+                    </div>
+                    {% endif %}
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none" id="userDropdown" data-bs-toggle="dropdown">
+                            {% if session.get('role') == 'Student' %}
+                                {% set streak = session.get('streak', 0) %}
+                                <div class="avatar me-2 streak-border streak-{{ streak if streak < 71 else 'max' }}" style="width:40px;height:40px;">
+                                    {% if session.get('profile_picture') %}
+                                        <img src="{{ session['profile_picture'] }}" alt="Profile Picture" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                                    {% else %}
+                                        <img src="/static/image/default-avatar.png" alt="Default Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="avatar me-2 {% if session.get('role') == 'Admin' %}bg-gradient-admin{% endif %}" style="width:40px;height:40px;">
+                                    {% if session.get('profile_picture') %}
+                                        <img src="{{ session['profile_picture'] }}" alt="Profile Picture" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                                    {% else %}
+                                        <img src="/static/image/default-avatar.png" alt="Default Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            <div>
+                                {% if session.get('role') == 'Teacher' %}
+                                    {% set gender = session.get('gender', '').lower() %}
+                                    {% set prefix = 'Mr.' %}
+                                    {% if gender == 'female' %}
+                                        {% set prefix = 'Mrs.' %}
+                                    {% elif gender == 'other' %}
+                                        {% set prefix = 'Mx.' %}
+                                    {% endif %}
+                                    <h6 class="mb-0" style="color: #FFFFFF;">{{ prefix }} {{ session.get('last_name', '') }}</h6>
+                                    <small style="color: #FFFFFF;">{{ session.get('subject', 'Subject Teacher') }}</small>
+                                {% elif session.get('role') == 'Student' %}
+                                    <h6 class="mb-0" style="color: #FFFFFF;">{{ session.get('first_name', '') }} {{ session.get('last_name', '') }}</h6>
+                                    <small style="color: #FFFFFF;">
+                                        {{ session.get('year_level', '') }} - {{ session.get('section', '') }}
+                                    </small>
+                                {% elif session.get('role') == 'Admin' %}
+                                    <h6 class="mb-0" style="color:#fff;">Admin {{ session.get('last_name', '') }}</h6>
+                                    <small style="color:#fff !important;">Administrator</small>
+                                {% else %}
+                                    <h6 class="mb-0">Teacher Demo</h6>
+                                    <small class="text-muted">Science Teacher</small>
+                                {% endif %}
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block main_content %}{% endblock %}
+            {% block admin_content %}{% endblock %}
+        </div>
+    </div>
+    {% endblock %}
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <!-- Unified Quarters Manager (Global) - CENTRALIZED INITIALIZATION -->
+    <script src="/static/js/quarters.js"></script>
+    <script>
+        // Create a centralized promise that all pages can wait on
+        // This ensures quarters manager is initialized BEFORE any page-specific code runs
+        window.quartersManagerReady = new Promise((resolve) => {
+            // Check if quarters manager is already initialized
+            const checkInit = setInterval(() => {
+                if (window.quartersManager && window.quartersManager.isInitialized) {
+                    clearInterval(checkInit);
+                    console.log('✅ Quarters Manager is ready (centralized check)');
+                    resolve(window.quartersManager);
+                }
+            }, 50); // Check every 50ms
+            
+            // Timeout after 5 seconds to prevent infinite waiting
+            setTimeout(() => {
+                clearInterval(checkInit);
+                if (window.quartersManager) {
+                    resolve(window.quartersManager);
+                }
+            }, 5000);
+        });
+
+        // Initialize quarters manager immediately (don't wait for DOMContentLoaded)
+        if (window.quartersManager && !window.quartersManager.isInitialized) {
+            console.log('🚀 Starting early Quarters Manager initialization...');
+            window.quartersManager.initialize().then(() => {
+                console.log('✅ Quarters Manager initialized early');
+            }).catch(error => {
+                console.error('❌ Error in early quarters initialization:', error);
+            });
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+    {% include "partials/confirmation_dialouge.html" %}
+    
+<script>
+    // Global Toast notification function
+    function showToast(message, type = 'success', duration = 5000) {
+        // Remove any existing toasts
+        const existingToasts = document.querySelectorAll('.toast-notification');
+        existingToasts.forEach(toast => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+
+        const toast = document.createElement('div');
+        toast.className = `toast-notification ${type === 'error' ? 'error' : 'success'}`;
+        
+        let icon = 'fa-check-circle';
+        if (type === 'error') icon = 'fa-exclamation-circle';
+
+        toast.innerHTML = `
+            <div class="toast-content">
+                <i class="fas ${icon} me-2"></i>
+                ${message}
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Animate in
+        setTimeout(() => { 
+            toast.classList.add('show'); 
+        }, 10);
+        
+        // Auto remove after duration
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => { 
+                if (toast.parentNode) toast.parentNode.removeChild(toast); 
+            }, 300);
+        }, duration);
+        
+        // Also allow click to dismiss
+        toast.addEventListener('click', function() {
+            this.classList.remove('show');
+            setTimeout(() => { 
+                if (this.parentNode) this.parentNode.removeChild(this); 
+            }, 300);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        
+        // Remove the data attribute after page has loaded (no longer needed)
+        document.documentElement.removeAttribute('data-sidebar-collapsed');
+        
+        // FIXED: Properly sync classList with localStorage on page load
+        const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (isCollapsed) {
+            sidebar.classList.add('collapsed');
+            const toggleIcon = document.querySelector('.toggle-btn i');
+            if (toggleIcon) {
+                toggleIcon.classList.remove('fa-chevron-left');
+                toggleIcon.classList.add('fa-chevron-right');
+            }
+        } else {
+            // Ensure collapsed class is removed if sidebar should be open
+            sidebar.classList.remove('collapsed');
+            const toggleIcon = document.querySelector('.toggle-btn i');
+            if (toggleIcon) {
+                toggleIcon.classList.remove('fa-chevron-right');
+                toggleIcon.classList.add('fa-chevron-left');
+            }
+        }
+
+        // Logout confirmation
+        const logoutLink = document.getElementById('logoutLink');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', async function(e) {
+                e.preventDefault();
+                const confirmed = await showConfirmationDialog(
+                    'Logout Confirmation',
+                    'Are you sure you want to log out?'
+                );
+                if (confirmed) {
+                    window.location.href = logoutLink.href;
+                }
+            });
+        }
+
+        // Confirmation dialog function
+        function showConfirmationDialog(title, message) {
+            return new Promise((resolve) => {
+                document.getElementById('confirmationDialogueTitle').textContent = title;
+                document.getElementById('confirmationDialogueMessage').textContent = message;
+                document.getElementById('confirmationDialogue').style.display = 'flex';
+
+                const confirmBtn = document.getElementById('confirmationDialogueConfirmBtn');
+                const cancelBtn = document.getElementById('confirmationDialogueCancelBtn');
+
+                function cleanup(result) {
+                    document.getElementById('confirmationDialogue').style.display = 'none';
+                    confirmBtn.removeEventListener('click', onConfirm);
+                    cancelBtn.removeEventListener('click', onCancel);
+                    resolve(result);
+                }
+                function onConfirm() { cleanup(true); }
+                function onCancel() { cleanup(false); }
+
+                confirmBtn.addEventListener('click', onConfirm);
+                cancelBtn.addEventListener('click', onCancel);
+            });
+        }
+
+        function timeAgo(dateString) {
+            const now = new Date();
+            const date = new Date(dateString);
+            const seconds = Math.floor((now - date) / 1000);
+            if (seconds < 60) return 'Just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+            const days = Math.floor(hours / 24);
+            if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
+            const weeks = Math.floor(days / 7);
+            if (weeks < 5) return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+            const months = Math.floor(days / 30);
+            return `${months} month${months > 1 ? 's' : ''} ago`;
+        }
+
+        // Notification system
+        const notifBell = document.getElementById('notificationsDropdown');
+        const notifList = document.getElementById('notificationsList');
+        const notifBadge = notifBell ? notifBell.querySelector('.badge') : null;
+        const tabAll = document.getElementById('tabAll');
+        const tabUnread = document.getElementById('tabUnread');
+        let allNotifications = [];
+        let notificationsLoaded = false;
+
+        function renderNotifications(filter) {
+            notifList.innerHTML = '';
+            let filtered = allNotifications;
+            if (filter === 'unread') {
+                filtered = allNotifications.filter(n => n.status === 'Unread');
+            }
+            if (filtered.length === 0) {
+                notifList.innerHTML = '<div class="dropdown-item text-muted">No notifications</div>';
+                return;
+            }
+            filtered.forEach(n => {
+                const item = document.createElement('a');
+                item.className = 'dropdown-item notif-item ' + (n.status === 'Unread' ? 'unread fw-bold' : 'read');
+                item.href = '#';
+                const avatarUrl = n.sender_pic || '/static/image/default-avatar.png';
+                const senderName = n.sender_name || 'System';
+                item.innerHTML = `
+                    <div class="notif-avatar">
+                        <img src="${avatarUrl}" alt="avatar">
+                    </div>
+                    <div class="notif-content">
+                        <div class="notif-title"><b>${senderName}</b></div>
+                        <div class="notif-assignment">${n.title || (session.get('role') == 'Admin' ? 'New Classroom Assignment' : '')}</div>
+                        <div class="notif-message">${n.message}</div>
+                        <div class="notif-time">${timeAgo(n.created_at)}</div>
+                    </div>
+                `;
+                item.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (n.status === 'Unread') {
+                        await markAsRead(n.notif_id);
+                        n.status = 'Read';
+                        item.classList.remove('unread', 'fw-bold');
+                        item.classList.add('read');
+                        let unreadCount = allNotifications.filter(n => n.status === 'Unread').length;
+                        if (notifBadge) notifBadge.textContent = unreadCount > 0 ? unreadCount : '';
+                    }
+                });
+                notifList.appendChild(item);
+            });
+        }
+
+        async function loadNotifications() {
+            notifList.innerHTML = '<div class="dropdown-item text-muted">Loading...</div>';
+            try {
+                const res = await fetch('/api/notifications');
+                const data = await res.json();
+                allNotifications = data.success ? data.notifications : [];
+                let unreadCount = allNotifications.filter(n => n.status === 'Unread').length;
+                if (notifBadge) notifBadge.textContent = unreadCount > 0 ? unreadCount : '';
+                renderNotifications(tabUnread.classList.contains('active') ? 'unread' : 'all');
+                notificationsLoaded = true;
+            } catch (e) {
+                notifList.innerHTML = '<div class="dropdown-item text-danger">Failed to load notifications</div>';
+                if (notifBadge) notifBadge.textContent = '';
+            }
+        }
+
+        // Load only badge count on page load (lightweight)
+        async function loadBadgeCount() {
+            try {
+                const res = await fetch('/api/notifications/count');
+                const data = await res.json();
+                if (data.success && notifBadge) {
+                    const unreadCount = data.unread_count || 0;
+                    notifBadge.textContent = unreadCount > 0 ? unreadCount : '';
+                }
+            } catch (e) {
+                // Fallback to loading full notifications if count endpoint fails
+                try {
+                    const res = await fetch('/api/notifications');
+                    const data = await res.json();
+                    if (data.success && notifBadge) {
+                        const unreadCount = data.notifications.filter(n => n.status === 'Unread').length;
+                        notifBadge.textContent = unreadCount > 0 ? unreadCount : '';
+                    }
+                } catch (fallbackError) {
+                    if (notifBadge) notifBadge.textContent = '';
+                }
+            }
+        }
+
+        // Tab switching
+        if (tabAll && tabUnread) {
+            tabAll.addEventListener('click', function(e) {
+                e.stopPropagation();
+                tabAll.classList.add('active');
+                tabUnread.classList.remove('active');
+                renderNotifications('all');
+            });
+            tabUnread.addEventListener('click', function(e) {
+                e.stopPropagation();
+                tabUnread.classList.add('active');
+                tabAll.classList.remove('active');
+                renderNotifications('unread');
+            });
+        }
+
+        // Load notifications only when bell is clicked
+        if (notifBell) {
+            notifBell.addEventListener('click', function(e) {
+                e.preventDefault();
+                const dropdownMenu = document.getElementById('notificationsDropdownMenu');
+                if (dropdownMenu.classList.contains('d-none')) {
+                    dropdownMenu.classList.remove('d-none');
+                    if (!notificationsLoaded) {
+                        loadNotifications();
+                    }
+                } else {
+                    dropdownMenu.classList.add('d-none');
+                }
+            });
+        }
+
+        // Load only badge count on page load (much lighter than full notifications)
+        loadBadgeCount();
+
+        // Mark notification as read in backend
+        async function markAsRead(notif_id) {
+            try {
+                await fetch(`/api/notifications/${notif_id}/read`, { method: 'POST' });
+            } catch (e) {
+                console.error('Failed to mark notification as read:', e);
+            }
+        }
+
+        // Smooth page load animation
+        if (mainContent) {
+            mainContent.style.opacity = '0';
+            mainContent.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                mainContent.style.transition = 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
+                mainContent.style.opacity = '1';
+                mainContent.style.transform = 'translateY(0)';
+            }, 100);
+        }
+        
+        // ========== FIXED POINTS UPDATE SYSTEM ==========
+        let pointsUpdateInterval;
+
+        function updatePointsPill() {
+            const userRole = "{{ session.get('role') }}";
+            if (userRole !== 'Student') return;
+            
+            fetch('/api/my-points')
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        const pill = document.querySelector('.points-pill-value');
+                        if (pill) {
+                            // Add visual feedback when points change
+                            const currentPoints = parseInt(pill.textContent) || 0;
+                            const newPoints = data.points;
+                            
+                            if (currentPoints !== newPoints) {
+                                // Animation for points change
+                                pill.style.transform = 'scale(1.2)';
+                                pill.style.color = '#ffd700';
+                                pill.textContent = newPoints;
+                                
+                                setTimeout(() => {
+                                    pill.style.transform = 'scale(1)';
+                                    pill.style.color = '';
+                                }, 500);
+                            } else {
+                                pill.textContent = newPoints;
+                            }
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Failed to update points:', error);
+                    // Retry after 10 seconds if failed
+                    setTimeout(updatePointsPill, 10000);
+                });
+        }
+
+        function initPointsSystem() {
+            const userRole = "{{ session.get('role') }}";
+            if (userRole === 'Student') {
+                // Initial update
+                updatePointsPill();
+                
+                // Update every 5 seconds (more reasonable than 3)
+                pointsUpdateInterval = setInterval(updatePointsPill, 1000);
+                
+                // Update when page becomes visible again (user switches back to tab)
+                document.addEventListener('visibilitychange', function() {
+                    if (!document.hidden) {
+                        updatePointsPill();
+                    }
+                });
+                
+                // Update when user focuses on the window
+                window.addEventListener('focus', updatePointsPill);
+            }
+        }
+
+        // Initialize the points system
+        initPointsSystem();
+        // ========== END FIXED POINTS UPDATE SYSTEM ==========
+    });
+</script>
+</body>
+</html>

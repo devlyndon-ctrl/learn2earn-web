@@ -1,0 +1,2252 @@
+{% extends "base.html" %}
+
+{% block title %}Learn2Earn - Settings{% endblock %}
+
+{% block page_title %}Settings{% endblock %}
+
+{% block main_content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='settings.css') }}">
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Profile Settings</h5>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="true">Profile</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab" aria-controls="security" aria-selected="false">Security</button>
+                    </li>
+                    {% if session.get('role') == 'Admin' %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="quarters-tab" data-bs-toggle="tab" data-bs-target="#quarters" type="button" role="tab" aria-controls="quarters" aria-selected="false">School Year</button>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <div class="tab-content p-3" id="settingsTabContent">
+                    <!-- Profile Tab -->
+                    <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                        <form id="profileForm">
+                            <div class="row mb-4 mt-3">
+                                <div class="col-md-3 text-center">
+                                    <div class="position-relative mb-3">
+                                        <div class="avatar mx-auto" id="profileAvatar" style="width: 120px; height: 120px; font-size: 2.5rem; background-size: cover; background-position: center; cursor: pointer; border: 2px dashed #007bff; transition: all 0.3s ease;" title="Click to upload profile picture">
+                                            <!-- Default avatar will be set via JavaScript -->
+                                        </div>
+                                        <input type="file" id="avatarInput" name="profile_picture" accept="image/*" style="display: none;">
+                                        <div class="position-absolute top-50 start-50 translate-middle text-primary" id="uploadIcon" style="pointer-events: none; opacity: 0; transition: opacity 0.3s ease;">
+                                            <i class="fas fa-camera fa-2x"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Click to change photo</small>
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="firstName" class="form-label">First Name</label>
+                                            <input type="text" class="form-control" id="firstName" name="first_name" pattern="[A-Za-z\s]+" title="Letters only" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="lastName" class="form-label">Last Name</label>
+                                            <input type="text" class="form-control" id="lastName" name="last_name" pattern="[A-Za-z\s]+" title="Letters only" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="email" class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="email" readonly>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="phone" class="form-label">Phone Number</label>
+                                            <input type="tel" class="form-control" id="phone" name="mobile_no" pattern="^09\d{9}$" maxlength="11" title="Phone number must start with 09 and be 11 digits">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>                   
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Security Tab -->
+                    <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
+                        <div class="mt-3">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Change Password</h6>
+                                </div>
+                                <div class="card-body">
+                                    <form id="passwordForm">
+                                        <div class="mb-3">
+                                            <label for="currentPassword" class="form-label">Current Password</label>
+                                            <div class="position-relative">
+                                                <input type="password" class="form-control" id="currentPassword" required style="padding-right:2.5rem;">
+                                                <span class="toggle-password" data-target="currentPassword" style="position:absolute; top:50%; right:1rem; transform:translateY(-50%); cursor:pointer; color:#888;">
+                                                    <i class="fas fa-eye"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="newPassword" class="form-label">New Password</label>
+                                            <div class="position-relative">
+                                                <input type="password" class="form-control" id="newPassword" required style="padding-right:2.5rem;">
+                                                <span class="toggle-password" data-target="newPassword" style="position:absolute; top:50%; right:1rem; transform:translateY(-50%); cursor:pointer; color:#888;">
+                                                    <i class="fas fa-eye"></i>
+                                                </span>
+                                            </div>
+                                                                                       
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                            <div class="position-relative">
+                                                <input type="password" class="form-control" id="confirmPassword" required style="padding-right:2.5rem;">
+                                                <span class="toggle-password" data-target="confirmPassword" style="position:absolute; top:50%; right:1rem; transform:translateY(-50%); cursor:pointer; color:#888;">
+                                                    <i class="fas fa-eye"></i>
+                                                </span>
+                                            </div>
+                                            <!-- Password Requirements Indicator -->
+                                            <div class="password-requirements mt-3">
+                                                <div class="requirements-title mb-2">
+                                                    <span class="fw-semibold">Password Requirements:</span>
+                                                    <span class="requirement-tooltip ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="All requirements must be met to set a secure password">
+                                                        <i class="fas fa-question-circle text-muted"></i>
+                                                    </span>
+                                                </div>
+                                                <div class="requirements-list">
+                                                    <div class="requirement-item" data-requirement="length">
+                                                        <i class="fas fa-times-circle me-2"></i>
+                                                        <span>At least 8 characters</span>
+                                                    </div>
+                                                    <div class="requirement-item" data-requirement="uppercase">
+                                                        <i class="fas fa-times-circle me-2"></i>
+                                                        <span>One uppercase letter (A-Z)</span>
+                                                    </div>
+                                                    <div class="requirement-item" data-requirement="lowercase">
+                                                        <i class="fas fa-times-circle me-2"></i>
+                                                        <span>One lowercase letter (a-z)</span>
+                                                    </div>
+                                                    <div class="requirement-item" data-requirement="number">
+                                                        <i class="fas fa-times-circle me-2"></i>
+                                                        <span>One number (0-9)</span>
+                                                    </div>
+                                                    <div class="requirement-item" data-requirement="special">
+                                                        <i class="fas fa-times-circle me-2"></i>
+                                                        <span>One special character (!@#$%^&*()_+-=)</span>
+                                                    </div>
+                                                    <div class="requirement-item" data-requirement="different">
+                                                        <i class="fas fa-times-circle me-2"></i>
+                                                        <span>Different from current password</span>
+                                                    </div>
+                                                    <div class="requirement-item" data-requirement="match">
+                                                        <i class="fas fa-times-circle me-2"></i>
+                                                        <span>Passwords must match</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary" id="changePasswordBtn" disabled>Change Password</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Only: School Quarters Tab -->
+                    {% if session.get('role') == 'Admin' %}
+                    <div class="tab-pane fade" id="quarters" role="tabpanel" aria-labelledby="quarters-tab">
+                        <div class="mt-3">
+                            <!-- CURRENT STATUS BANNER - Shows the active school year -->
+                            <div class="alert alert-info border-2 mb-4" style="border-color: #0d6efd !important; background: linear-gradient(135deg, #e7f3ff 0%, #f0f8ff 100%);">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="mb-2"><i class="fas fa-calendar-check me-2"></i>📅 Currently Active School Year</h5>
+                                        <h4 class="mb-0" id="currentYearDisplay" style="font-weight: 700; color: #0d6efd; font-size: 1.8rem;">2025-2026</h4>
+                                    </div>
+                                    <button type="button" class="btn btn-primary" id="switchYearBtn">
+                                        <i class="fas fa-sync me-2"></i>Switch Year
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- MODAL: Switch Year (hidden by default) -->
+                            <div class="card mb-4 border-primary" id="switchYearCard" style="display: none;">
+                                <div class="card-header bg-primary bg-opacity-10 border-primary">
+                                    <h6 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Switch or Create a School Year</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <label for="schoolYearSelect" class="form-label fw-semibold">Select a Different School Year</label>
+                                            <select class="form-select form-select-lg" id="schoolYearSelect" style="font-weight: 600;">
+                                                <option value="">-- Choose a School Year --</option>
+                                                <!-- Options will be populated dynamically -->
+                                            </select>
+                                            <small class="text-muted d-block mt-2">
+                                                <i class="fas fa-info-circle me-1"></i>Select a year to manage its quarters or prepare transition
+                                            </small>
+                                        </div>
+                                        <div class="col-md-4 d-flex align-items-end">
+                                            <button type="button" class="btn btn-primary w-100" id="addSchoolYearBtn">
+                                                <i class="fas fa-plus me-1"></i>Create New Year
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- School Year Transition Card -->
+                            <!-- Quarters Setup Card -->
+                            <div class="card" id="quartersSetupCard">
+                                <div class="card-header bg-success bg-opacity-10 border-success">
+                                    <h6 class="mb-0"><i class="fas fa-pencil-alt me-2 text-success"></i>Step 1: Manage Quarters for New Year</h6>
+                                </div>
+                                <div class="card-body">
+                                    <form id="quartersForm">
+                                        <input type="hidden" id="schoolYear" name="school_year">
+                                        
+                                        <!-- Simplified Quarters Input -->
+                                        <div class="row mb-4">
+                                            <div class="col-md-6">
+                                                <div class="quarter-input-group mb-3">
+                                                    <label class="form-label fw-semibold">1st Quarter</label>
+                                                    <div class="input-group">
+                                                        <input type="date" class="form-control" id="q1Start" name="q1_start" placeholder="Start Date">
+                                                        <span class="input-group-text">to</span>
+                                                        <input type="date" class="form-control" id="q1End" name="q1_end" placeholder="End Date">
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="quarter-input-group mb-3">
+                                                    <label class="form-label fw-semibold">2nd Quarter</label>
+                                                    <div class="input-group">
+                                                        <input type="date" class="form-control" id="q2Start" name="q2_start" placeholder="Start Date">
+                                                        <span class="input-group-text">to</span>
+                                                        <input type="date" class="form-control" id="q2End" name="q2_end" placeholder="End Date">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="quarter-input-group mb-3">
+                                                    <label class="form-label fw-semibold">3rd Quarter</label>
+                                                    <div class="input-group">
+                                                        <input type="date" class="form-control" id="q3Start" name="q3_start" placeholder="Start Date">
+                                                        <span class="input-group-text">to</span>
+                                                        <input type="date" class="form-control" id="q3End" name="q3_end" placeholder="End Date">
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="quarter-input-group mb-3">
+                                                    <label class="form-label fw-semibold">4th Quarter</label>
+                                                    <div class="input-group">
+                                                        <input type="date" class="form-control" id="q4Start" name="q4_start" placeholder="Start Date">
+                                                        <span class="input-group-text">to</span>
+                                                        <input type="date" class="form-control" id="q4End" name="q4_end" placeholder="End Date">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-4">
+                                            <button type="submit" class="btn btn-primary">Save Quarters</button>
+                                            <button type="button" class="btn btn-outline-secondary ms-2" id="clearQuartersForm">Clear</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Current Quarters Display -->
+                            <div class="card mt-4 border-info">
+                                <div class="card-header bg-info bg-opacity-10 border-info">
+                                    <h6 class="mb-0"><i class="fas fa-table me-2 text-info"></i>Step 2: Current Quarters Overview</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover quarters-table">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th width="20%">Quarter</th>
+                                                    <th width="25%">Start Date</th>
+                                                    <th width="25%">End Date</th>
+                                                    <th width="20%">Status</th>
+                                                    <th width="10%">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="quartersTableBody">
+                                                <tr>
+                                                    <td colspan="5" class="text-center text-muted py-4">
+                                                        Select a school year to view quarters
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- School Year Transition Card -->
+                            <div class="card mt-4" id="transitionCardStep1" border-warning="">
+                                <div class="card-header bg-warning bg-opacity-10 border-warning">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0"><i class="fas fa-arrow-right me-2 text-warning"></i>Step 3: When Ready - End Year & Transition</h6>
+                                            <small class="text-muted d-block mt-1">Execute when school year is over</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-warning mb-3">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Ready to Transition?</strong> When the school year ends, use this to advance students. Next year will be created automatically.
+                                    </div>
+
+                                    <form id="transitionForm">
+                                        <div class="row mb-3">
+                                            <div class="col-md-8">
+                                                <label class="form-label fw-semibold">School Year to End</label>
+                                                <div class="input-group input-group-lg">
+                                                    <input type="text" class="form-control" id="transitionYearDisplay" placeholder="Select a year from above first" required readonly style="background-color: #f8f9fa;">
+                                                    <span class="input-group-text bg-light border-start-0">
+                                                        <i class="fas fa-arrow-right text-warning"></i>
+                                                    </span>
+                                                    <input type="text" class="form-control" id="nextYearDisplay" placeholder="Auto-calculated" readonly style="background-color: #e7f3ff;">
+                                                </div>
+                                                <small class="text-muted d-block mt-2">
+                                                    <i class="fas fa-info-circle me-1"></i>Left: Year to end | Right: New year (auto-created)
+                                                </small>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-semibold d-block mb-3">Actions</label>
+                                                <button type="button" class="btn btn-outline-info w-100 mb-2" id="previewTransitionBtn">
+                                                    <i class="fas fa-binoculars me-1"></i>Preview
+                                                </button>
+                                                <button type="submit" class="btn btn-warning w-100" id="executeTransitionBtn" disabled>
+                                                    <i class="fas fa-play me-1"></i>Execute
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+
+                                    <!-- Preview Results -->
+                                    <div id="transitionPreview" class="mt-4" style="display: none;">
+                                        <h6 class="mb-3">Transition Preview:</h6>
+                                        <div class="row text-center">
+                                            <div class="col-md-3">
+                                                <div class="card bg-light">
+                                                    <div class="card-body">
+                                                        <h3 class="text-primary" id="preview7to8">0</h3>
+                                                        <small class="text-muted">Grade 7 → 8</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-light">
+                                                    <div class="card-body">
+                                                        <h3 class="text-info" id="preview8to9">0</h3>
+                                                        <small class="text-muted">Grade 8 → 9</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-light">
+                                                    <div class="card-body">
+                                                        <h3 class="text-success" id="preview9to10">0</h3>
+                                                        <small class="text-muted">Grade 9 → 10</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-light">
+                                                    <div class="card-body">
+                                                        <h3 class="text-danger" id="preview10toArchived">0</h3>
+                                                        <small class="text-muted">Grade 10 → Archived</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- DANGER ZONE: Rollback Card -->
+                            <div class="card mt-4 border-danger border-2">
+                                <div class="card-header bg-danger bg-opacity-10 border-danger">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0"><i class="fas fa-exclamation-circle me-2 text-danger"></i><strong>DANGER ZONE:</strong> Undo Transition</h6>
+                                            <small class="text-muted d-block mt-1">Restore all data to a previous school year (rollback only if transition was a mistake)</small>
+                                        </div>
+                                        <span class="badge bg-danger">Advanced</span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-danger mb-3">
+                                        <i class="fas fa-times-circle me-2"></i>
+                                        <strong>⚠️ WARNING!</strong> Rolling back will restore all data to how it was BEFORE the selected transition. Current data will be replaced. Use ONLY if transition was executed by mistake.
+                                    </div>
+
+                                    <form id="rollbackForm">
+                                        <div class="row mb-3">
+                                            <div class="col-md-8">
+                                                <label class="form-label fw-semibold">Select School Year to Restore From</label>
+                                                <div class="input-group input-group-lg">
+                                                    <span class="input-group-text bg-light">
+                                                        <i class="fas fa-history text-danger"></i>
+                                                    </span>
+                                                    <select class="form-select" id="rollbackYearSelect" required>
+                                                        <option value="">-- Select a school year to rollback --</option>
+                                                    </select>
+                                                </div>
+                                                <small class="text-muted d-block mt-2">
+                                                    <i class="fas fa-info-circle me-1"></i>Shows years available for rollback (archived data exists)
+                                                </small>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-semibold d-block mb-3">Actions</label>
+                                                <button type="button" class="btn btn-outline-danger w-100 mb-2" id="previewRollbackBtn" disabled>
+                                                    <i class="fas fa-binoculars me-1"></i>Preview Rollback
+                                                </button>
+                                                <button type="submit" class="btn btn-danger w-100" id="executeRollbackBtn" disabled>
+                                                    <i class="fas fa-undo me-1"></i>Execute Rollback
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+
+                                    <!-- Rollback Preview Results -->
+                                    <div id="rollbackPreview" class="mt-4" style="display: none;">
+                                        <h6 class="mb-3 text-danger"><i class="fas fa-info-circle me-2"></i>Rollback Preview:</h6>
+                                        <div class="row text-center">
+                                            <div class="col-md-6">
+                                                <div class="card bg-danger bg-opacity-10 border-danger">
+                                                    <div class="card-body">
+                                                        <h3 class="text-danger" id="rollbackStudentCount">0</h3>
+                                                        <small class="text-muted">Students to Restore</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="card bg-danger bg-opacity-10 border-danger">
+                                                    <div class="card-body">
+                                                        <h3 class="text-danger" id="rollbackPointsCount">0</h3>
+                                                        <small class="text-muted">Point Records to Restore</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="alert alert-danger mt-3 mb-0">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            <strong id="rollbackWarning"></strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Student Archives Viewer Card -->
+                            <div class="card mt-4">
+                                <div class="card-header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0"><i class="fas fa-archive me-2"></i>Student Archives</h6>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" id="viewArchivesBtn">
+                                            <i class="fas fa-folder-open me-1"></i>View Archives
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted mb-3">View archived student data from previous school years with complete grade and point history.</p>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="archiveSchoolYear" class="form-label">Filter by School Year</label>
+                                            <select class="form-select form-select-sm" id="archiveSchoolYear">
+                                                <option value="">-- All Years --</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="archiveGradeLevel" class="form-label">Filter by Grade</label>
+                                            <select class="form-select form-select-sm" id="archiveGradeLevel">
+                                                <option value="">-- All Grades --</option>
+                                                <option value="Grade 7">Grade 7</option>
+                                                <option value="Grade 8">Grade 8</option>
+                                                <option value="Grade 9">Grade 9</option>
+                                                <option value="Grade 10">Grade 10</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-primary mt-3" id="searchArchivesBtn">
+                                        <i class="fas fa-search me-1"></i>Search Archives
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add School Year Modal -->
+<div class="modal fade" id="addSchoolYearModal" tabindex="-1" aria-labelledby="addSchoolYearModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSchoolYearModalLabel">Add New School Year</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addSchoolYearForm">
+                    <div class="mb-3">
+                        <label for="newSchoolYear" class="form-label">School Year</label>
+                        <input type="text" class="form-control" id="newSchoolYear" placeholder="e.g., 2025-2026" required>
+                        <div class="form-text">Format: YYYY-YYYY (e.g., 2025-2026)</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveSchoolYearBtn">Add School Year</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Quarter Modal -->
+<div class="modal fade" id="editQuarterModal" tabindex="-1" aria-labelledby="editQuarterModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editQuarterModalLabel">Edit Quarter</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editQuarterForm">
+                    <input type="hidden" id="editQuarterId" name="quarter_id">
+                    <input type="hidden" id="editSchoolYear" name="school_year">
+                    
+                    <div class="mb-3">
+                        <label for="editQuarterName" class="form-label">Quarter</label>
+                        <input type="text" class="form-control" id="editQuarterName" readonly>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editStartDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="editStartDate" name="start_date" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editEndDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="editEndDate" name="end_date" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <small>
+                            <i class="fas fa-info-circle me-1"></i>
+                            Updating this quarter will affect the entire school year schedule.
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveEditQuarterBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Profile Picture Modal (Updated with proper icons) -->
+<div class="modal fade" id="avatarModal" tabindex="-1" aria-labelledby="avatarModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="avatarModalLabel">
+          <i class="fas fa-camera"></i>
+          Change Profile Picture
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Upload Section - Centered -->
+        <div class="upload-section">
+          <h6 class="fw-semibold">
+            <i class="fas fa-cloud-upload-alt"></i>
+            Upload New Image
+          </h6>
+          <div class="d-flex flex-column align-items-center justify-content-center">
+            <button type="button" class="btn btn-outline-primary" id="uploadNewAvatarBtn">
+              <i class="fas fa-cloud-upload-alt me-2"></i>Choose Image
+            </button>
+            <small class="text-muted">JPG, PNG, GIF (Max 5MB)</small>
+          </div>
+          <input type="file" id="modalAvatarInput" name="profile_picture" accept="image/*" style="display: none;">
+        </div>
+
+        <!-- Recent Avatars Section -->
+        <div class="recent-avatars-section">
+            <h6 class="fw-semibold mb-2">
+                <i class="fas fa-history"></i>
+                Recent Avatars
+            </h6>
+            <small class="text-muted d-block mb-3">Access your 6 most recent avatars</small>
+            <div class="recent-avatars-grid" id="recentAvatarsGrid">
+                <!-- Recent avatars will be populated here -->
+                <div class="text-muted text-center py-4 col-12" style="grid-column: 1 / -1;">
+                  <i class="fas fa-images fs-5 mb-2 d-block" style="color: #cbd5e0;"></i>
+                  <small>No recent avatars yet</small>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Student Archives Modal -->
+<div class="modal fade" id="studentArchivesModal" tabindex="-1" aria-labelledby="studentArchivesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-info bg-opacity-10">
+        <h5 class="modal-title" id="studentArchivesModalLabel">
+          <i class="fas fa-archive me-2"></i>Student Archives
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info mb-3">
+          <i class="fas fa-info-circle me-2"></i>
+          View historical data for students from previous school years.
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-hover" id="archivesTable">
+            <thead class="table-light">
+              <tr>
+                <th>Student Name</th>
+                <th>Email</th>
+                <th>School Year</th>
+                <th>Grade Level</th>
+                <th>Section</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="archivesTableBody">
+              <tr>
+                <td colspan="7" class="text-center text-muted py-4">
+                  <i class="fas fa-spinner fa-spin me-2"></i>Loading archives...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Student Archive Details Modal -->
+<div class="modal fade" id="archiveDetailsModal" tabindex="-1" aria-labelledby="archiveDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-success bg-opacity-10">
+        <h5 class="modal-title" id="archiveDetailsModalLabel">
+          <i class="fas fa-graduation-cap me-2"></i>Student Archive History
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="archiveDetailsContent">
+          <i class="fas fa-spinner fa-spin me-2"></i>Loading details...
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let selectedAvatarFile = null;
+
+    // Set default avatar initially
+    const avatar = document.getElementById('profileAvatar');
+    const defaultAvatarPath = "{{ url_for('static', filename='image/default-avatar.png') }}";
+    avatar.style.backgroundImage = `url('${defaultAvatarPath}')`;
+
+    // Fetch user data
+    fetch('/api/users/{{ session["user_id"] }}')
+        .then(res => res.json())
+        .then (data => {
+            if (data.success && data.user) {
+                const user = data.user;
+                // Text fields
+                document.getElementById('firstName').value = user.first_name || '';
+                document.getElementById('lastName').value = user.last_name || '';
+                document.getElementById('email').value = user.email || '';
+                document.getElementById('phone').value = user.mobile_no || '';
+                
+                // Always fetch profile picture from database
+                fetchAndDisplayProfilePicture(user);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching user data:', error);
+        });
+
+    // Function to fetch and display profile picture
+    function fetchAndDisplayProfilePicture(user) {
+        const avatar = document.getElementById('profileAvatar');
+        
+        // Fetch profile picture from profile_pictures table
+        fetch(`/api/users/{{ session["user_id"] }}/profile-picture`)
+            .then(res => res.json())
+            .then(picData => {
+                if (picData.success && picData.file_path) {
+                    // Use img element for GIF animation support
+                    avatar.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = picData.file_path;
+                    img.alt = 'Profile Picture';
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '50%';
+                    img.onload = function() {
+                        avatar.appendChild(img);
+                        avatar.style.backgroundImage = 'none';
+                        avatar.style.border = '2px solid #007bff';
+                        avatar.classList.add('has-image');
+                    };
+                    img.onerror = function() {
+                        // Image failed to load, show default
+                        showDefaultAvatar(avatar);
+                    };
+                } else {
+                    // Show default avatar if no profile picture
+                    showDefaultAvatar(avatar);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching profile picture:', error);
+                // Show default avatar as fallback
+                showDefaultAvatar(avatar);
+            });
+    }
+
+    // Function to show default avatar image
+    function showDefaultAvatar(avatar) {
+        const defaultAvatarPath = "{{ url_for('static', filename='image/default-avatar.png') }}";
+        avatar.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = defaultAvatarPath;
+        img.alt = 'Default Avatar';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '50%';
+        avatar.appendChild(img);
+        avatar.style.backgroundImage = 'none';
+        avatar.style.border = '2px solid #007bff';
+        avatar.classList.add('has-image');
+    }
+
+    // Avatar hover effects
+    const avatarDiv = document.getElementById('profileAvatar');
+    const uploadIcon = document.getElementById('uploadIcon');
+    
+    avatarDiv.addEventListener('mouseenter', function() {
+        uploadIcon.style.opacity = '0.8';
+        this.style.opacity = '0.7';
+    });
+    
+    avatarDiv.addEventListener('mouseleave', function() {
+        uploadIcon.style.opacity = '0';
+        this.style.opacity = '1';
+    });
+
+    // Avatar click: open modal with recent avatars
+    const avatarInput = document.getElementById('avatarInput');
+    const modalAvatarInput = document.getElementById('modalAvatarInput');
+    
+    avatarDiv.addEventListener('click', function() {
+        // Show the avatar modal instead of directly opening file picker
+        const avatarModal = new bootstrap.Modal(document.getElementById('avatarModal'));
+        avatarModal.show();
+        
+        // Load recent avatars when modal opens
+        loadRecentAvatars();
+    });
+
+    // Modal file input handler - Preview and close modal on file selection
+    document.getElementById('uploadNewAvatarBtn').addEventListener('click', function() {
+        modalAvatarInput.click();
+    });
+
+    modalAvatarInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        
+        // Validate file type - include GIF
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            showToast('Please select a valid image file (JPEG, PNG, GIF)', 'danger');
+            return;
+        }
+        
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('File size must be less than 5MB', 'danger');
+            return;
+        }
+        
+        // Create object URL for preview
+        const imageUrl = URL.createObjectURL(file);
+        
+        // Preview image and close modal immediately
+        handleAvatarSelection(imageUrl, file);
+    });
+
+    // NEW: Function to handle avatar upload and preview
+    function handleAvatarSelection(imageUrl, file = null) {
+        // Preview the image in the circle immediately
+        previewImageInCircle(imageUrl);
+        
+        // Close the modal
+        const avatarModal = bootstrap.Modal.getInstance(document.getElementById('avatarModal'));
+        avatarModal.hide();
+        
+        // Store the selected file for later saving
+        selectedAvatarFile = file;
+        
+        // Show toast message to inform user they need to save changes
+        showToast('Profile picture preview updated. Click "Save Profile Changes" to apply.', 'info');
+    }
+
+    // NEW: Function to preview image in the circle
+    function previewImageInCircle(imageUrl) {
+        avatarDiv.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        img.alt = 'Profile Picture Preview';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '50%';
+        avatarDiv.appendChild(img);
+        avatarDiv.style.backgroundImage = 'none';
+        avatarDiv.style.border = '2px solid white';
+        avatarDiv.classList.add('has-image');
+    }
+
+    // Load recent avatars function
+    function loadRecentAvatars() {
+        const recentAvatarsGrid = document.getElementById('recentAvatarsGrid');
+        
+        // Fetch recent avatars from API
+        fetch('/api/users/{{ session["user_id"] }}/recent-avatars')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.avatars && data.avatars.length > 0) {
+                    recentAvatarsGrid.innerHTML = '';
+                    
+                    data.avatars.forEach(avatar => {
+                        const avatarElement = document.createElement('div');
+                        avatarElement.className = 'recent-avatar-item';
+                        
+                        // Create image
+                        const img = document.createElement('img');
+                        img.src = avatar.file_path;
+                        img.alt = 'Recent Avatar';
+                        img.className = 'recent-avatar-img';
+                        
+                        // Create delete button
+                        const deleteBtn = document.createElement('div');
+                        deleteBtn.className = 'recent-avatar-delete';
+                        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                        
+                        avatarElement.appendChild(img);
+                        avatarElement.appendChild(deleteBtn);
+                        
+                        // Add hover effects
+                        avatarElement.addEventListener('mouseenter', function() {
+                            this.style.transform = 'scale(1.05)';
+                            this.style.borderColor = '#5e72e4';
+                            this.style.boxShadow = '0 4px 12px rgba(94, 114, 228, 0.4)';
+                        });
+                        
+                        avatarElement.addEventListener('mouseleave', function() {
+                            this.style.transform = 'scale(1)';
+                            this.style.borderColor = 'transparent';
+                            this.style.boxShadow = 'none';
+                        });
+                        
+                        // Add click handler for selecting avatar
+                        avatarElement.addEventListener('click', function(e) {
+                            // Don't trigger if clicking the delete icon
+                            if (!e.target.closest('.recent-avatar-delete')) {
+                                fetch(`/api/users/{{ session["user_id"] }}/set-avatar-from-history`, {
+                                    method: 'POST',
+                                    headers: {'Content-Type': 'application/json'},
+                                    body: JSON.stringify({ file_path: avatar.file_path })
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        handleAvatarSelection(avatar.file_path);
+                                        updateNavbarAvatar();
+                                        showToast('Profile picture updated from history!', 'success');
+                                    } else {
+                                        throw new Error(data.message || 'Failed to set avatar from history');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error setting avatar from history:', error);
+                                    showToast('Failed to set avatar from history.', 'danger');
+                                });
+                            }
+                        });
+                        
+                        // Add delete functionality
+                        deleteBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            deleteRecentAvatar(avatar.file_path, avatarElement);
+                        });
+                        
+                        recentAvatarsGrid.appendChild(avatarElement);
+                    });
+                } else {
+                    recentAvatarsGrid.innerHTML = `
+                        <div class="text-muted text-center py-3 w-100">
+                            <i class="fas fa-image fs-4 mb-2 d-block"></i>
+                            No recent avatars
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading recent avatars:', error);
+                recentAvatarsGrid.innerHTML = `
+                    <div class="text-muted text-center py-3 w-100">
+                        <i class="fas fa-exclamation-triangle fs-4 mb-2 d-block"></i>
+                        Failed to load recent avatars
+                    </div>
+                `;
+            });
+    }
+
+    // Delete recent avatar function
+    function deleteRecentAvatar(filePath, avatarElement) {
+        if (confirm('Are you sure you want to delete this avatar?')) {
+            fetch(`/api/users/{{ session["user_id"] }}/delete-recent-avatar`, {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ file_path: filePath })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    avatarElement.remove();
+                    showToast('Avatar deleted successfully!', 'success');
+                    
+                    // Reload recent avatars if empty
+                    const recentAvatarsGrid = document.getElementById('recentAvatarsGrid');
+                    if (recentAvatarsGrid.children.length === 0) {
+                        recentAvatarsGrid.innerHTML = `
+                            <div class="text-muted text-center py-3 w-100">
+                                <i class="fas fa-image fs-4 mb-2 d-block"></i>
+                                No recent avatars
+                            </div>
+                        `;
+                    }
+                } else {
+                    throw new Error(data.message || 'Failed to delete avatar');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting avatar:', error);
+                showToast('Failed to delete avatar.', 'danger');
+            });
+        }
+    }
+
+    // Reset modal when closed
+    document.getElementById('avatarModal').addEventListener('hidden.bs.modal', function() {
+        modalAvatarInput.value = '';
+    });
+
+    // Function to update navbar avatar
+    function updateNavbarAvatar() {
+        const navbarAvatar = document.querySelector('.navbar .avatar, .navbar .profile-pic');
+        if (navbarAvatar) {
+            // Force refresh by fetching the updated image
+            fetch(`/api/users/{{ session["user_id"] }}/profile-picture`)
+                .then(res => res.json())
+                .then(updatedPicData => {
+                    if (updatedPicData.success && updatedPicData.file_path) {
+                        if (navbarAvatar.tagName === 'IMG') {
+                            navbarAvatar.src = updatedPicData.file_path + '?t=' + new Date().getTime();
+                        } else {
+                            // If navbar avatar is a div, convert it to use img for GIF support
+                            navbarAvatar.innerHTML = '';
+                            const img = document.createElement('img');
+                            img.src = updatedPicData.file_path + '?t=' + new Date().getTime();
+                            img.alt = 'Profile Picture';
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
+                            img.style.borderRadius = '50%';
+                            navbarAvatar.appendChild(img);
+                            navbarAvatar.style.backgroundImage = 'none';
+                        }
+                    }
+                });
+        }
+    }
+
+    // Profile form submission - UPDATED: Handle ONLY avatar saving
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const userId = "{{ session['user_id'] }}";
+            
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Saving...';
+            submitBtn.disabled = true;
+
+            // Only upload picture if a new file was selected
+            if (selectedAvatarFile) {
+                // Upload new file
+                const formData = new FormData();
+                formData.append('profile_picture', selectedAvatarFile);
+                
+                // Try multiple possible endpoints for profile picture upload
+                const uploadEndpoints = [
+                    `/api/users/${userId}/profile-picture`,
+                    `/api/users/${userId}/upload-profile-picture`,
+                    `/api/upload-profile-picture`
+                ];
+
+                let uploadPromise = Promise.reject(new Error('No endpoints worked'));
+                
+                for (const endpoint of uploadEndpoints) {
+                    uploadPromise = uploadPromise.catch(() => 
+                        fetch(endpoint, {
+                            method: 'POST',
+                            body: formData
+                        }).then(res => res.json())
+                    );
+                }
+
+                uploadPromise
+                    .then(picData => {
+                        if (picData.success) {
+                            selectedAvatarFile = null;
+                            updateNavbarAvatar();
+                            // Refresh the profile picture display
+                            fetch(`/api/users/{{ session["user_id"] }}/profile-picture`)
+                                .then(res => res.json())
+                                .then(updatedPicData => {
+                                    if (updatedPicData.success && updatedPicData.file_path) {
+                                        fetchAndDisplayProfilePicture({});
+                                    }
+                                });
+                            showToast('Profile picture updated successfully!', 'success');
+                        } else {
+                            throw new Error(picData.message || 'Picture upload failed');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showToast(error.message || 'Failed to upload profile picture.', 'danger');
+                    })
+                    .finally(() => {
+                        // Restore button state
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    });
+            } else {
+                // No new avatar selected
+                showToast('No changes to save.', 'info');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+
+    // Password validation logic - Updated with password match requirement
+    function validatePasswordRequirements(newPassword, currentPassword = '', confirmPassword = '') {
+        const requirements = {
+            length: newPassword.length >= 8,
+            uppercase: /[A-Z]/.test(newPassword),
+            lowercase: /[a-z]/.test(newPassword),
+            number: /[0-9]/.test(newPassword),
+            special: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(newPassword),
+            different: currentPassword ? newPassword !== currentPassword : true,
+            match: confirmPassword ? newPassword === confirmPassword : false
+        };
+
+        // Update UI for each requirement
+        Object.keys(requirements).forEach(req => {
+            const item = document.querySelector(`[data-requirement="${req}"]`);
+            const icon = item.querySelector('i');
+            
+            if (requirements[req]) {
+                item.classList.add('valid');
+                item.classList.remove('invalid');
+                icon.classList.remove('fa-times-circle');
+                icon.classList.add('fa-check-circle');
+            } else {
+                // Remove any valid classes but keep default grey styling
+                item.classList.remove('valid');
+                item.classList.remove('invalid');
+                icon.classList.remove('fa-check-circle');
+                icon.classList.add('fa-times-circle');
+                // Keep default grey color for invalid state
+                icon.style.color = '#6c757d';
+            }
+        });
+
+        // Check if all requirements are met
+        const allRequirements = ['length', 'uppercase', 'lowercase', 'number', 'special', 'different', 'match'];
+        const allMet = allRequirements.every(req => requirements[req]);
+
+        // Update submit button state
+        const submitBtn = document.getElementById('changePasswordBtn');
+        submitBtn.disabled = !allMet;
+
+        return allMet;
+    }
+
+    // Real-time password validation
+    document.getElementById('newPassword').addEventListener('input', function() {
+        const newPassword = this.value;
+        const currentPassword = document.getElementById('currentPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        validatePasswordRequirements(newPassword, currentPassword, confirmPassword);
+    });
+
+    // Also validate when current password changes
+    document.getElementById('currentPassword').addEventListener('input', function() {
+        const currentPassword = this.value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        if (newPassword) {
+            validatePasswordRequirements(newPassword, currentPassword, confirmPassword);
+        }
+    });
+
+    // Confirm password real-time validation
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+        const confirmPassword = this.value;
+        const newPassword = document.getElementById('newPassword').value;
+        const currentPassword = document.getElementById('currentPassword').value;
+        
+        if (newPassword) {
+            validatePasswordRequirements(newPassword, currentPassword, confirmPassword);
+        }
+    });
+
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Updated Password change logic with confirmation dialogue
+    const passwordForm = document.getElementById('passwordForm');
+    passwordForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const currentPassword = document.getElementById('currentPassword').value.trim();
+        const newPassword = document.getElementById('newPassword').value.trim();
+        const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            showToast('Please fill in all password fields.', 'warning');
+            return;
+        }
+        
+        // Final validation check
+        if (!validatePasswordRequirements(newPassword, currentPassword, confirmPassword)) {
+            showToast('Please meet all password requirements.', 'danger');
+            return;
+        }
+
+        showConfirmationDialogue(
+            "Change Password",
+            "Are you sure you want to change your password?",
+            function onConfirm() {
+                const submitBtn = passwordForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Changing...';
+                submitBtn.disabled = true;
+
+                fetch(`/api/users/{{ session['user_id'] }}/change-password`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        current_password: currentPassword,
+                        new_password: newPassword
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Password changed successfully!', 'success');
+                        passwordForm.reset();
+                        // Reset requirements UI
+                        document.querySelectorAll('.requirement-item').forEach(item => {
+                            item.classList.remove('valid');
+                            const icon = item.querySelector('i');
+                            icon.classList.remove('fa-check-circle');
+                            icon.classList.add('fa-times-circle');
+                            icon.style.color = '#6c757d';
+                        });
+                        submitBtn.disabled = true;
+                    } else {
+                        showToast(data.message || 'Failed to change password.', 'danger');
+                    }
+                })
+                .catch(() => showToast('Server error. Please try again.', 'danger'))
+                .finally(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = !validatePasswordRequirements(newPassword, currentPassword, confirmPassword);
+                });
+            }
+        );
+    });
+
+    // Show/hide password toggle for all .toggle-password
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
+    // ----------------- Simplified School Quarters Logic -----------------
+    {% if session.get('role') == 'Admin' %}
+    const schoolYearSelect = document.getElementById('schoolYearSelect');
+    const quartersSetupCard = document.getElementById('quartersSetupCard');
+    const addSchoolYearBtn = document.getElementById('addSchoolYearBtn');
+    const quartersForm = document.getElementById('quartersForm');
+    const editQuarterModal = new bootstrap.Modal(document.getElementById('editQuarterModal'));
+    
+    // Add new school year button
+    addSchoolYearBtn.addEventListener('click', function() {
+        const modal = new bootstrap.Modal(document.getElementById('addSchoolYearModal'));
+        modal.show();
+    });
+
+    // Save new school year
+    document.getElementById('saveSchoolYearBtn').addEventListener('click', function() {
+        const newSchoolYear = document.getElementById('newSchoolYear').value.trim();
+        
+        if (!newSchoolYear || !/^\d{4}-\d{4}$/.test(newSchoolYear)) {
+            showToast('Please enter a valid school year format (e.g., 2025-2026)', 'danger');
+            return;
+        }
+        
+        // Add to dropdown and select it
+        const option = document.createElement('option');
+        option.value = newSchoolYear;
+        option.textContent = newSchoolYear;
+        schoolYearSelect.appendChild(option);
+        schoolYearSelect.value = newSchoolYear;
+        
+        // Update the form and show quarters setup
+        document.getElementById('schoolYear').value = newSchoolYear;
+        quartersSetupCard.style.display = 'block';
+        
+        // Clear Step 1 (Quarters Form) and Step 2 (Quarters Table) for new school year
+        clearQuartersForm();
+        document.getElementById('quartersTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4"><i class="fas fa-inbox"></i> No quarters created yet for this school year</td></tr>';
+        
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addSchoolYearModal'));
+        modal.hide();
+        document.getElementById('addSchoolYearForm').reset();
+        
+        showToast(`School year ${newSchoolYear} added successfully! Please create quarters in Step 1.`, 'success');
+    });
+
+    // Load available school years
+    function loadSchoolYears() {
+        schoolYearSelect.innerHTML = '<option value="">-- Select School Year --</option>';
+        
+        // Fetch available school years from your backend
+        fetch('/api/school-years')
+            .then(res => res.json())
+            .then(data => {
+                const years = data.school_years || data.years || [];
+                if (data.success && years.length > 0) {
+                    // Sort years chronologically (earliest first: 2025-2026 before 2026-2027)
+                    const sortedYears = years.sort((a, b) => {
+                        const yearA = parseInt(a.split('-')[0]);
+                        const yearB = parseInt(b.split('-')[0]);
+                        return yearA - yearB;
+                    });
+                    
+                    sortedYears.forEach(year => {
+                        const option = document.createElement('option');
+                        option.value = year;
+                        option.textContent = year;
+                        schoolYearSelect.appendChild(option);
+                    });
+                    
+                    // Prefer current active year; fallback to earliest available
+                    if (sortedYears.length > 0) {
+                        const defaultYear = (typeof currentActiveYear !== 'undefined' && sortedYears.includes(currentActiveYear))
+                            ? currentActiveYear
+                            : sortedYears[0];
+                        schoolYearSelect.value = defaultYear;
+                        schoolYearSelect.dispatchEvent(new Event('change'));
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading school years:', error);
+            });
+    }
+
+    // Load quarters for selected school year
+    function loadQuartersForYear(schoolYear) {
+        const tableBody = document.getElementById('quartersTableBody');
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center"><i class="fas fa-spinner fa-spin me-2"></i>Loading quarters...</td></tr>';
+
+        fetch(`/api/quarters/${schoolYear}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.quarters && data.quarters.length > 0) {
+                    displayQuartersTable(data.quarters);
+                    
+                    // Also populate the form with existing quarters data
+                    populateQuartersForm(data.quarters);
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No quarters set up for this school year. Use the form above to create quarters.</td></tr>';
+                    clearQuartersForm();
+                }
+            })
+            .catch(error => {
+                console.error('Error loading quarters:', error);
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading quarters. Please try again.</td></tr>';
+            });
+    }
+
+    // Display quarters in table with improved status logic
+    function displayQuartersTable(quarters) {
+        const tableBody = document.getElementById('quartersTableBody');
+        tableBody.innerHTML = '';
+        
+        const today = new Date().toISOString().split('T')[0];
+        
+        quarters.forEach(quarter => {
+            const row = document.createElement('tr');
+            const startDate = quarter.start_date;
+            const endDate = quarter.end_date;
+            
+            // Determine status with "Finished" for past quarters
+            let status = 'upcoming';
+            let statusClass = 'badge-upcoming';
+            let statusText = 'Upcoming';
+            
+            if (startDate <= today && today <= endDate) {
+                status = 'active';
+                statusClass = 'badge-active';
+                statusText = 'Active';
+            } else if (today > endDate) {
+                status = 'finished';
+                statusClass = 'badge-finished';
+                statusText = 'Finished';
+            } else if (quarter.is_current) {
+                status = 'current';
+                statusClass = 'badge-current';
+                statusText = 'Current';
+            }
+            
+            row.innerHTML = `
+                <td>
+                    <div class="fw-semibold">${quarter.quarter_name}</div>
+                    <div class="quarter-progress">
+                        <div class="quarter-progress-bar" style="width: ${calculateProgress(startDate, endDate)}%"></div>
+                    </div>
+                </td>
+                <td>
+                    <span class="text-muted small">${formatDateDisplay(startDate)}</span>
+                </td>
+                <td>
+                    <span class="text-muted small">${formatDateDisplay(endDate)}</span>
+                </td>
+                <td>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </td>
+                <td>
+                    <button class="btn btn-quarter-action btn-outline-primary edit-quarter" data-quarter-id="${quarter.quarter_id}" title="Edit Quarter">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        // Add event listeners for edit buttons
+        attachQuarterActionListeners();
+    }
+
+    // Calculate progress percentage for visual indicator
+    function calculateProgress(startDate, endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const today = new Date();
+        
+        if (today < start) return 0;
+        if (today > end) return 100;
+        
+        const totalDuration = end - start;
+        const elapsed = today - start;
+        return Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+    }
+
+    // Format date for display (more compact)
+    function formatDateDisplay(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric',
+            year: 'numeric'
+        });
+    }
+
+    // Populate form with existing quarters data
+    function populateQuartersForm(quarters) {
+        quarters.forEach(quarter => {
+            const quarterNum = quarter.quarter_name.charAt(0); // Get 1, 2, 3, or 4
+            
+            // Convert ISO timestamp to YYYY-MM-DD format for date inputs
+            const startDate = new Date(quarter.start_date);
+            const endDate = new Date(quarter.end_date);
+            
+            // Format as YYYY-MM-DD
+            const startFormatted = startDate.toISOString().split('T')[0];
+            const endFormatted = endDate.toISOString().split('T')[0];
+            
+            // Set the form values
+            document.getElementById(`q${quarterNum}Start`).value = startFormatted;
+            document.getElementById(`q${quarterNum}End`).value = endFormatted;
+        });
+    }
+
+    // Clear quarters form
+    function clearQuartersForm() {
+        quartersForm.reset();
+    }
+
+    document.getElementById('clearQuartersForm').addEventListener('click', clearQuartersForm);
+
+    // Form submission for quarters
+    quartersForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const schoolYear = document.getElementById('schoolYear').value;
+        const formData = {
+            school_year: schoolYear,
+            quarters: [
+                {
+                    quarter_name: "1st Quarter",
+                    start_date: document.getElementById('q1Start').value,
+                    end_date: document.getElementById('q1End').value
+                },
+                {
+                    quarter_name: "2nd Quarter",
+                    start_date: document.getElementById('q2Start').value,
+                    end_date: document.getElementById('q2End').value
+                },
+                {
+                    quarter_name: "3rd Quarter",
+                    start_date: document.getElementById('q3Start').value,
+                    end_date: document.getElementById('q3End').value
+                },
+                {
+                    quarter_name: "4th Quarter",
+                    start_date: document.getElementById('q4Start').value,
+                    end_date: document.getElementById('q4End').value
+                }
+            ]
+        };
+
+        // Validate dates
+        for (let i = 0; i < formData.quarters.length; i++) {
+            const quarter = formData.quarters[i];
+            if (!quarter.start_date || !quarter.end_date) {
+                showToast('Please fill in all date fields.', 'danger');
+                return;
+            }
+            if (new Date(quarter.start_date) >= new Date(quarter.end_date)) {
+                showToast(`End date must be after start date for ${quarter.quarter_name}.`, 'danger');
+                return;
+            }
+        }
+
+        // Validate quarter sequence
+        for (let i = 1; i < formData.quarters.length; i++) {
+            const prevQuarter = formData.quarters[i - 1];
+            const currentQuarter = formData.quarters[i];
+            if (new Date(currentQuarter.start_date) <= new Date(prevQuarter.end_date)) {
+                showToast(`${currentQuarter.quarter_name} must start after ${prevQuarter.quarter_name} ends.`, 'danger');
+                return;
+            }
+        }
+
+        // Show confirmation
+        showConfirmationDialogue(
+            "Save School Quarters",
+            `Are you sure you want to save quarters for School Year ${schoolYear}? This will replace any existing quarters for this school year.`,
+            function onConfirm() {
+                const submitBtn = quartersForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Saving...';
+                submitBtn.disabled = true;
+
+                fetch('/api/quarters', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('School quarters saved successfully!', 'success');
+                        loadQuartersForYear(schoolYear);
+                        
+                        // Show success message with current active quarter
+                        const activeQuarter = data.active_quarter;
+                        if (activeQuarter) {
+                            showToast(`Current active quarter: ${activeQuarter.quarter_name}`, 'success', 5000);
+                        }
+                    } else {
+                        showToast(data.message || 'Failed to save quarters.', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Server error. Please try again.', 'danger');
+                })
+                .finally(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
+            }
+        );
+    });
+
+    function attachQuarterActionListeners() {
+        // Edit quarter
+        document.querySelectorAll('.edit-quarter').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const quarterId = this.getAttribute('data-quarter-id');
+                editQuarter(quarterId);
+            });
+        });
+    }
+
+    function editQuarter(quarterId) {
+        console.log('=== EDIT QUARTER DEBUG START ===');
+        console.log('Quarter ID being edited:', quarterId);
+        
+        // Fetch quarter data and populate modal for editing
+        fetch(`/api/quarters/${quarterId}`)
+            .then(res => res.json())
+            .then(data => {
+                console.log('API Response:', data);
+                
+                if (data.success && data.quarter) {
+                    const quarter = data.quarter;
+                    console.log('Quarter data received:', quarter);
+                    console.log('Start date from API:', quarter.start_date);
+                    console.log('End date from API:', quarter.end_date);
+                    
+                    // Populate the edit modal
+                    document.getElementById('editQuarterId').value = quarter.quarter_id;
+                    document.getElementById('editSchoolYear').value = quarter.school_year;
+                    document.getElementById('editQuarterName').value = quarter.quarter_name;
+                    
+                    // Format dates properly for date inputs (YYYY-MM-DD)
+                    // Handle both formats: "YYYY-MM-DD HH:MM:SS" and "YYYY-MM-DDTHH:MM:SS"
+                    const startDate = quarter.start_date.split('T')[0].split(' ')[0];
+                    const endDate = quarter.end_date.split('T')[0].split(' ')[0];
+                    
+                    console.log('Formatted start date:', startDate);
+                    console.log('Formatted end date:', endDate);
+                    
+                    document.getElementById('editStartDate').value = startDate;
+                    document.getElementById('editEndDate').value = endDate;
+                    
+                    console.log('Start date input value after setting:', document.getElementById('editStartDate').value);
+                    console.log('End date input value after setting:', document.getElementById('editEndDate').value);
+                    console.log('=== EDIT QUARTER DEBUG END ===');
+                    
+                    // Show the modal
+                    editQuarterModal.show();
+                } else {
+                    console.error('API returned success: false or no quarter data');
+                    showToast('Error loading quarter data.', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching quarter data:', error);
+                showToast('Error loading quarter data.', 'danger');
+            });
+    }
+
+    // Save edited quarter
+    document.getElementById('saveEditQuarterBtn').addEventListener('click', function() {
+        const quarterId = document.getElementById('editQuarterId').value;
+        const schoolYear = document.getElementById('editSchoolYear').value;
+        const startDate = document.getElementById('editStartDate').value;
+        const endDate = document.getElementById('editEndDate').value;
+        const quarterName = document.getElementById('editQuarterName').value;
+
+        if (!startDate || !endDate) {
+            showToast('Please fill in both start and end dates.', 'danger');
+            return;
+        }
+
+        if (new Date(startDate) >= new Date(endDate)) {
+            showToast('End date must be after start date.', 'danger');
+            return;
+        }
+
+        // Show loading state
+        const saveBtn = document.getElementById('saveEditQuarterBtn');
+        const originalText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Saving...';
+        saveBtn.disabled = true;
+
+        // Update the quarter
+        fetch(`/api/quarters/${quarterId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                start_date: startDate,
+                end_date: endDate,
+                school_year: schoolYear
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(`${quarterName} updated successfully!`, 'success');
+                editQuarterModal.hide();
+                // Reload the quarters for the current school year
+                loadQuartersForYear(schoolYear);
+            } else {
+                showToast(data.message || 'Failed to update quarter.', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Server error. Please try again.', 'danger');
+        })
+        .finally(() => {
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+        });
+    });
+
+    // Helper function to format dates
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+    }
+    {% endif %}
+    // ----------------- end quarters logic -----------------
+
+    // ============ SCHOOL YEAR TRANSITION LOGIC ============
+    {% if session.get('role') == 'Admin' %}
+    
+    let currentActiveYear = '2025-2026'; // Default
+    
+    // Switch Year button - toggle the selection card
+    document.getElementById('switchYearBtn')?.addEventListener('click', function() {
+        const card = document.getElementById('switchYearCard');
+        card.style.display = card.style.display === 'none' ? 'block' : 'none';
+    });
+    
+    // Load school years for transition
+    function loadTransitionSchoolYears() {
+        // First, load the current active school year
+        fetch('/api/current-school-year')
+            .then(res => res.json())
+            .then(data => {
+                const currentYear = data.school_year || data.current_school_year;
+                if (data.success && currentYear) {
+                    currentActiveYear = currentYear;
+                    document.getElementById('currentYearDisplay').textContent = currentYear;
+                }
+            })
+            .catch(err => console.error('Error loading current school year:', err));
+
+        fetch('/api/school-years')
+            .then(res => res.json())
+            .then(data => {
+                const years = data.school_years || data.years || [];
+                if (data.success && years.length > 0) {
+                    // Keep transition data in sync, but don't populate archive years from quarters.
+                }
+            })
+            .catch(err => console.error('Error loading school years:', err));
+
+        // Load archive filters from archived records only
+        fetch('/api/admin/archive-school-years')
+            .then(res => res.json())
+            .then(data => {
+                const archiveSelect = document.getElementById('archiveSchoolYear');
+                archiveSelect.innerHTML = '<option value="">-- All Years --</option>';
+
+                const archivedYears = data.school_years || [];
+                archivedYears.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    archiveSelect.appendChild(option);
+                });
+            })
+            .catch(err => console.error('Error loading archive school years:', err));
+    }
+
+    function handleSchoolYearSelection(selectedYear) {
+        if (selectedYear) {
+            currentActiveYear = selectedYear;
+            document.getElementById('currentYearDisplay').textContent = selectedYear;
+            document.getElementById('schoolYear').value = selectedYear;
+            quartersSetupCard.style.display = 'block';
+            
+            // IMPORTANT: Clear the form first before loading new quarters
+            clearQuartersForm();
+            
+            // Show the transition year displays
+            document.getElementById('transitionYearDisplay').value = selectedYear;
+            
+            // Auto-calculate next year
+            const [start, end] = selectedYear.split('-').map(Number);
+            const nextYear = `${end}-${end + 1}`;
+            document.getElementById('nextYearDisplay').value = nextYear;
+            
+            // Load quarters for this year
+            console.log('Loading quarters for year:', selectedYear); // Debug log
+            loadQuartersForYear(selectedYear);
+            
+            // Auto-close the switch year card after selection
+            setTimeout(() => {
+                document.getElementById('switchYearCard').style.display = 'none';
+            }, 300);
+        } else {
+            // Clear transition display
+            document.getElementById('transitionYearDisplay').value = '';
+            document.getElementById('nextYearDisplay').value = '';
+            document.getElementById('schoolYear').value = '';
+            quartersSetupCard.style.display = 'none';
+            document.getElementById('quartersTableBody').innerHTML =
+                '<tr><td colspan="5" class="text-center text-muted py-4">Select a school year to view quarters</td></tr>';
+        }
+    }
+
+    // Single change handler for the shared school year dropdown
+    document.getElementById('schoolYearSelect')?.addEventListener('change', function() {
+        const selectedYear = this.value;
+        console.log('School year selected:', selectedYear); // Debug log
+        handleSchoolYearSelection(selectedYear);
+    });
+
+    // Preview transition
+    document.getElementById('previewTransitionBtn')?.addEventListener('click', function() {
+        const currentYear = document.getElementById('transitionYearDisplay').value;
+        const nextYear = document.getElementById('nextYearDisplay').value;
+        
+        if (!currentYear || !nextYear) {
+            showToast('Please select a school year from Step 1 above', 'warning');
+            return;
+        }
+
+        this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Generating Preview...';
+        this.disabled = true;
+
+        fetch('/api/admin/school-year-transition-preview', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                current_school_year: currentYear,
+                next_school_year: nextYear
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const preview = data.preview.transitions;
+                document.getElementById('preview7to8').textContent = preview.grade_7_to_8;
+                document.getElementById('preview8to9').textContent = preview.grade_8_to_9;
+                document.getElementById('preview9to10').textContent = preview.grade_9_to_10;
+                document.getElementById('preview10toArchived').textContent = preview.grade_10_to_archived;
+                
+                document.getElementById('transitionPreview').style.display = 'block';
+                document.getElementById('executeTransitionBtn').disabled = false;
+                
+                showToast('Preview generated successfully', 'success');
+            } else {
+                showToast(data.message || 'Error generating preview', 'danger');
+            }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            showToast('Error generating preview', 'danger');
+        })
+        .finally(() => {
+            this.innerHTML = '<i class="fas fa-binoculars me-1"></i>Preview';
+            this.disabled = false;
+        });
+    });
+
+    // Execute transition
+    document.getElementById('transitionForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const currentYear = document.getElementById('transitionYearDisplay').value;
+        const nextYear = document.getElementById('nextYearDisplay').value;
+        
+        if (!currentYear || !nextYear) {
+            showToast('Please select a school year from Step 1 above', 'warning');
+            return;
+        }
+
+        showConfirmationDialogue(
+            'Execute School Year Transition',
+            `Ready to end ${currentYear} and transition to ${nextYear}?\n\nThis will:\n- Advance all student grades (7→8, 8→9, 9→10, 10→Archived)\n- Archive ALL student data from this year\n- Transition sections accordingly\n- Reset points for active students\n\n✓ All data is safely archived and viewable anytime.\n✓ You can rollback this transition if needed.`,
+            function() {
+                const btn = document.getElementById('executeTransitionBtn');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Executing...';
+                btn.disabled = true;
+
+                fetch('/api/admin/school-year-transition', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        current_school_year: currentYear,
+                        next_school_year: nextYear
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('School year transition completed successfully! ✓', 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showToast(data.message || 'Error executing transition', 'danger');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showToast('Error executing transition', 'danger');
+                })
+                .finally(() => {
+                    btn.innerHTML = '<i class="fas fa-play me-1"></i>Execute';
+                    btn.disabled = false;
+                });
+            }
+        );
+    });
+
+    // Search/load archives
+    document.getElementById('searchArchivesBtn')?.addEventListener('click', function() {
+        const schoolYear = document.getElementById('archiveSchoolYear').value;
+        const gradeLevel = document.getElementById('archiveGradeLevel').value;
+        
+        const query = new URLSearchParams();
+        if (schoolYear) query.append('school_year', schoolYear);
+        if (gradeLevel) query.append('year_level', gradeLevel);
+
+        fetch(`/api/admin/student-archives?${query}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    displayArchives(data.archives);
+                    const modal = new bootstrap.Modal(document.getElementById('studentArchivesModal'));
+                    modal.show();
+                } else {
+                    showToast(data.message || 'Error loading archives', 'danger');
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                showToast('Error loading archives', 'danger');
+            });
+    });
+
+    function displayArchives(archives) {
+        const tbody = document.getElementById('archivesTableBody');
+        tbody.innerHTML = '';
+        
+        if (archives.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No archives found</td></tr>';
+            return;
+        }
+
+        archives.forEach(archive => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="fw-semibold">${archive.student_name || 'Unknown'}</td>
+                <td class="small">${archive.student_email || '-'}</td>
+                <td>${archive.school_year || '-'}</td>
+                <td>${archive.year_level || '-'}</td>
+                <td>${archive.section || '-'}</td>
+                <td><span class="badge bg-${archive.status === 'Active' ? 'success' : 'secondary'}">${archive.status || 'Unknown'}</span></td>
+                <td>
+                    <button class="btn btn-xs btn-info" onclick="viewArchiveDetails(${archive.student_id})">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    window.viewArchiveDetails = function(studentId) {
+        fetch(`/api/admin/student-archives/${studentId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    displayArchiveDetails(data);
+                    const modal = new bootstrap.Modal(document.getElementById('archiveDetailsModal'));
+                    modal.show();
+                } else {
+                    showToast(data.message || 'Error loading details', 'danger');
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                showToast('Error loading details', 'danger');
+            });
+    };
+
+    function displayArchiveDetails(data) {
+        const student = data.student;
+        const archives = data.archive_history || [];
+        const pointsHistory = data.points_history || [];
+        
+        let html = `
+            <div class="mb-4">
+                <h6 class="mb-3">
+                    <i class="fas fa-user me-2"></i>${student.first_name} ${student.last_name}
+                </h6>
+                <p class="text-muted mb-2"><strong>Email:</strong> ${student.email}</p>
+                <p class="text-muted mb-2"><strong>Current Status:</strong> <span class="badge bg-${student.status === 'Active' ? 'success' : 'secondary'}">${student.status}</span></p>
+                <p class="text-muted"><strong>Current Grade:</strong> ${student.year_level}</p>
+            </div>
+        `;
+
+        if (archives.length > 0) {
+            html += '<h6 class="mb-3"><i class="fas fa-history me-2"></i>Grade History</h6>';
+            html += '<div class="table-responsive mb-4"><table class="table table-sm"><thead><tr><th>School Year</th><th>Grade</th><th>Section</th><th>Archived</th></tr></thead><tbody>';
+            
+            archives.forEach(arch => {
+                const archDate = new Date(arch.archived_at).toLocaleDateString();
+                html += `<tr><td>${arch.school_year}</td><td>${arch.year_level}</td><td>${arch.section || '-'}</td><td>${archDate}</td></tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+        }
+
+        if (pointsHistory.length > 0) {
+            html += '<h6 class="mb-3"><i class="fas fa-coins me-2"></i>Points History</h6>';
+            html += '<div class="table-responsive"><table class="table table-sm"><thead><tr><th>School Year</th><th>Total Points</th><th>Archived</th></tr></thead><tbody>';
+            
+            pointsHistory.forEach(ph => {
+                const archDate = new Date(ph.archived_at).toLocaleDateString();
+                html += `<tr><td>${ph.school_year}</td><td class="fw-semibold">${ph.total_earned}</td><td>${archDate}</td></tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+        }
+
+        document.getElementById('archiveDetailsContent').innerHTML = html;
+    }
+
+    // ============ ROLLBACK FUNCTIONALITY ============
+
+    // Load available years for rollback
+    function loadRollbackYears() {
+        console.log('Loading rollback years...');
+        const rollbackSelect = document.getElementById('rollbackYearSelect');
+        
+        fetch('/api/admin/archive-school-years')
+            .then(res => res.json())
+            .then(data => {
+                const years = data.school_years || [];
+                if (data.success && years.length > 0) {
+                    rollbackSelect.innerHTML = '<option value="">-- Select a school year to rollback --</option>';
+                    
+                    // Sort years chronologically (earliest first)
+                    const sortedYears = years.sort((a, b) => {
+                        const yearA = parseInt(a.split('-')[0]);
+                        const yearB = parseInt(b.split('-')[0]);
+                        return yearA - yearB;
+                    });
+                    
+                    sortedYears.forEach(year => {
+                        const opt = document.createElement('option');
+                        opt.value = year;
+                        opt.textContent = year;
+                        rollbackSelect.appendChild(opt);
+                    });
+                    
+                    console.log('Rollback years loaded:', sortedYears);
+                } else {
+                    rollbackSelect.innerHTML = '<option value="">No rollback data available</option>';
+                    console.log('No rollback years found');
+                }
+            })
+            .catch(err => {
+                console.error('Error loading rollback years:', err);
+                showToast('Error loading rollback options', 'danger');
+            });
+    }
+
+    // Enable/disable rollback buttons based on selection
+    document.getElementById('rollbackYearSelect')?.addEventListener('change', function() {
+        const hasSelection = this.value !== '';
+        document.getElementById('previewRollbackBtn').disabled = !hasSelection;
+        document.getElementById('executeRollbackBtn').disabled = !hasSelection;
+        document.getElementById('rollbackPreview').style.display = 'none'; // Hide preview when changing year
+    });
+
+    // Preview rollback
+    document.getElementById('previewRollbackBtn')?.addEventListener('click', function() {
+        const schoolYear = document.getElementById('rollbackYearSelect').value;
+        
+        if (!schoolYear) {
+            showToast('Please select a school year', 'warning');
+            return;
+        }
+
+        this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Generating Preview...';
+        this.disabled = true;
+
+        fetch('/api/admin/school-year-transition-rollback-preview', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ school_year: schoolYear })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.preview) {
+                const preview = data.preview;
+                document.getElementById('rollbackStudentCount').textContent = preview.students_to_restore || 0;
+                document.getElementById('rollbackPointsCount').textContent = preview.points_archives || 0;
+                document.getElementById('rollbackWarning').textContent = preview.warning || 'All data will be restored to the previous state.';
+                document.getElementById('rollbackPreview').style.display = 'block';
+                showToast('Rollback preview generated', 'info');
+            } else {
+                showToast(data.message || 'Error generating preview', 'danger');
+            }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            showToast('Error generating preview', 'danger');
+        })
+        .finally(() => {
+            this.innerHTML = '<i class="fas fa-binoculars me-1"></i>Preview Rollback';
+            this.disabled = false;
+        });
+    });
+
+    // Execute rollback
+    document.getElementById('rollbackForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const schoolYear = document.getElementById('rollbackYearSelect').value;
+        
+        if (!schoolYear) {
+            showToast('Please select a school year', 'warning');
+            return;
+        }
+
+        showConfirmationDialogue(
+            '⚠️ ROLLBACK SCHOOL YEAR',
+            `Are you absolutely sure you want to ROLLBACK to ${schoolYear}?\n\nThis will:\n- Restore all students to their previous grades/sections\n- Restore all point records\n- OVERWRITE current data\n\nThis action is IRREVERSIBLE except by re-running the transition.`,
+            function() {
+                const btn = document.getElementById('executeRollbackBtn');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Rolling Back...';
+                btn.disabled = true;
+
+                fetch('/api/admin/school-year-transition-rollback', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ school_year: schoolYear })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('✓ Rollback completed successfully! Restoring page...', 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+                    } else {
+                        showToast(data.message || 'Error executing rollback', 'danger');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showToast('Error executing rollback', 'danger');
+                })
+                .finally(() => {
+                    btn.innerHTML = '<i class="fas fa-undo me-1"></i>Execute Rollback';
+                    btn.disabled = false;
+                });
+            }
+        );
+    });
+
+    // ============ END ROLLBACK FUNCTIONALITY ============
+
+    // Load school years on page load
+    loadSchoolYears();
+    loadTransitionSchoolYears();
+    loadRollbackYears();  // Load rollback options
+    
+    // Also reload when quarters tab is shown
+    document.getElementById('quarters-tab')?.addEventListener('click', function() {
+        loadSchoolYears();
+        loadTransitionSchoolYears();
+        loadRollbackYears();  // Refresh rollback options too
+    });
+
+    {% endif %}
+
+    // ============ END SCHOOL YEAR TRANSITION LOGIC ============
+
+    // Toast notification function
+    function showToast(message, type = 'success', duration = 5000) {
+        // Remove any existing toasts
+        const existingToasts = document.querySelectorAll('.toast-notification');
+        existingToasts.forEach(toast => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+
+        const toast = document.createElement('div');
+        toast.className = `toast-notification ${type === 'error' || type === 'danger' ? 'error' : 'success'}`;
+        
+        let icon = 'fa-check-circle';
+        if (type === 'error' || type === 'danger') icon = 'fa-exclamation-circle';
+
+        toast.innerHTML = `
+            <div class="toast-content">
+                <i class="fas ${icon} me-2"></i>
+                ${message}
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Animate in
+        setTimeout(() => { 
+            toast.classList.add('show'); 
+        }, 10);
+        
+        // Auto remove after duration
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => { 
+                if (toast.parentNode) toast.parentNode.removeChild(toast); 
+            }, 300);
+        }, duration);
+        
+        // Also allow click to dismiss
+        toast.addEventListener('click', function() {
+            this.classList.remove('show');
+            setTimeout(() => { 
+                if (this.parentNode) this.parentNode.removeChild(this); 
+            }, 300);
+        });
+    }
+
+    // Prevent letters and enforce 09xxxxxxxxx format in mobile number
+    const phoneInput = document.querySelector('input[name="mobile_no"]');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            // Remove non-digits
+            let val = this.value.replace(/[^0-9]/g, '');
+            // Enforce max 11 digits
+            if (val.length > 11) val = val.slice(0, 11);
+            // Enforce starting with 09
+            if (val && !val.startsWith('09')) val = '09';
+            this.value = val;
+        });
+    }
+
+    // Confirmation dialogue helper
+    function showConfirmationDialogue(title, message, onConfirm) {
+        const overlay = document.getElementById('confirmationDialogue');
+        if (!overlay) {
+            // If confirmation dialogue doesn't exist, just call onConfirm directly
+            if (typeof onConfirm === 'function') onConfirm();
+            return;
+        }
+        
+        const titleEl = document.getElementById('confirmationDialogueTitle');
+        const messageEl = document.getElementById('confirmationDialogueMessage');
+        const confirmBtn = document.getElementById('confirmationDialogueConfirmBtn');
+        const cancelBtn = document.getElementById('confirmationDialogueCancelBtn');
+        
+        if (titleEl) titleEl.textContent = title;
+        if (messageEl) messageEl.textContent = message;
+        
+        overlay.style.display = 'flex';
+
+        confirmBtn.onclick = function() {
+            overlay.style.display = 'none';
+            if (typeof onConfirm === 'function') onConfirm();
+        };
+        
+        cancelBtn.onclick = function() {
+            overlay.style.display = 'none';
+        };
+    }
+});
+
+</script>
+
+{% endblock %}
+
+{% include 'partials/confirmation_dialouge.html' %}

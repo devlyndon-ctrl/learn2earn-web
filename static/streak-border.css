@@ -1,0 +1,79 @@
+/* Streak border base */
+.streak-border {
+    border-width: 3px;
+    border-style: solid;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-color: #9E9E9E; /* Grey (Beginner) */
+    width: 48px;
+    height: 48px;
+    position: relative;
+    --streak-color: #9E9E9E; /* Default streak color variable */
+}
+
+/* Streak color classes */
+.streak-border.streak-yellow { 
+    border-color: #FFD600; 
+    --streak-color: #FFD600;
+} /* Yellow (Early Streak) */
+.streak-border.streak-orange { 
+    border-color: #FF9800; 
+    --streak-color: #FF9800;
+} /* Orange (Consistent) */
+.streak-border.streak-red { 
+    border-color: #FF1744; 
+    --streak-color: #FF1744;
+} /* Bright Red (Strong) */
+.streak-border.streak-green { 
+    border-color: #00FF40; 
+    --streak-color: #00FF40;
+} /* Green (Elite) */
+.streak-border.streak-blue { 
+    border-color: #5E72E4; 
+    --streak-color: #5E72E4;
+} /* Blue (Veteran) */
+.streak-border.streak-purple, .streak-max { 
+    border-color: #8E24AA; 
+    --streak-color: #8E24AA;
+} /* Purple (Legendary) */
+
+/* Streak badge pill */
+.streak-badge {
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.70rem;
+    padding: 2px 7px 2px 5px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 2px solid #fff;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    background: var(--streak-color, #9E9E9E); /* Use CSS variable with fallback */
+}
+
+
+/* Streak lottie animation container */
+.streak-lottie {
+    width: 22px;
+    height: 22px;
+    display: inline-block;
+    margin-right: 3px;
+    vertical-align: middle;
+}
+
+/* Avatar image inside streak border */
+.streak-border img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}

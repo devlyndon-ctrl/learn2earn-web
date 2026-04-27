@@ -1,0 +1,1807 @@
+{% extends "base.html" %}
+{% block page_title %}Leaderboard{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='student_leaderboards.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+<!-- Add Lottie Player -->
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+{% endblock %}
+
+{% block main_content %}
+<div class="container">
+    <div class="stats-section">
+        <div class="stats-row">
+            <!-- Students Completed Card -->
+            <div class="students-completed-card" id="students-completed-card">
+                <div class="card-body">
+                    <div class="icon-container">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div class="stat-value" id="stat-total">0</div>
+                    <div class="stat-label">Students</div>
+                </div>
+            </div>
+
+            <!-- Average Points Card -->
+            <div class="avg-points-card" id="avg-points-card">
+                <div class="card-body">
+                    <div class="icon">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div class="stat-value" id="stat-avg">0</div>
+                    <div class="stat-label">Avg Points</div>
+                </div>
+            </div>
+
+            <!-- Top Points Card -->
+            <div class="top-points-card" id="top-points-card">
+                <div class="card-body">
+                    <div class="icon">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                    <div class="stat-value" id="stat-top">0</div>
+                    <div class="stat-label">Top Points</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="search-filter-section">
+        <div class="search-container">
+            <div class="filter-row">
+                <div class="custom-search-bar">
+                    <i class="fas fa-search search-prefix-icon"></i>
+                    <input type="text" placeholder="Search student name or section..." id="leaderboardSearchInput">
+                    <button class="search-clear-btn" id="searchClearBtn" style="display:none;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- School Year Selector -->
+                <div class="school-year-selector-wrapper">
+                    <select id="schoolYearSelector" class="school-year-select">
+                        <option value="">Loading school years...</option>
+                    </select>
+                    <i class="fas fa-book dropdown-arrow"></i>
+                </div>
+                
+                <!-- Improved Filter Tabs with Quarter Dropdown - All Time filter removed -->
+                <div class="filter-tabs time-period-filter">
+                    <button class="filter-tab active" data-period="current">
+                        <i class="fas fa-clock"></i>Current
+                    </button>
+                    <button class="filter-tab" data-period="week">
+                        <i class="fas fa-calendar-week"></i>Week
+                    </button>
+                    <button class="filter-tab" data-period="month">
+                        <i class="fas fa-calendar-alt"></i>Month
+                    </button>
+                    
+                    <!-- Quarter Dropdown Selector -->
+                    <div class="quarter-dropdown">
+                        <select id="quarterSelector" class="quarter-select">
+                            <option value="">Select Quarter</option>
+                            <!-- Options will be populated by JavaScript -->
+                        </select>
+                        <i class="fas fa-chevron-down dropdown-arrow"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- School Year Status Bar (Countdown) -->
+            <div id="schoolYearStatusBar" class="school-year-status-bar" style="display: none;">
+                <i class="fas fa-calendar-check"></i>
+                <span id="schoolYearStatusText"></span>
+            </div>
+        </div>
+    </div>
+        
+    <!-- KEEP STATIC: Hall of Fame Section -->
+    <!-- Hall of Fame Section with Flutter-inspired design -->
+    <div class="top-students" id="top-students-section">
+        <div class="top-performers-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="header-icon-container">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div class="header-text">
+                        <div class="header-title">TOP PERFORMERS</div>
+                        <div class="header-subtitle">Top 3 Champions</div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="countdown-timer">
+                        <i class="fa-solid fa-clock"></i>
+                        <span id="quarter-countdown"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading State - Initially visible, hidden when data loads -->
+        <div class="loading-container" id="top-performers-loading">
+            <div class="loading-content">
+                <!-- Circular container for Lottie animation - Matching Flutter design -->
+                <div class="loading-avatar-container">
+                    <div class="loading-avatar-circle">
+                        <lottie-player 
+                            src="{{ url_for('static', filename='image/animation/loading_animation_blue.json') }}"
+                            background="transparent" 
+                            speed="1" 
+                            style="width: 100%; height: 100%;"
+                            loop 
+                            autoplay>
+                        </lottie-player>
+                    </div>
+                </div>
+                
+                <div class="loading-text">
+                    <div class="loading-title">Loading Leaderboard</div>
+                    <div class="loading-subtitle">Tracking top performers and rankings...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Students List - Initially hidden, shown when data loads -->
+        <div class="students-list" id="students-list" style="display: none;">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+
+        <!-- Error State - Hidden by default, shown when data fails to load -->
+        <div class="error-container" id="top-performers-error" style="display: none;">
+            <!-- Error content will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- DYNAMIC: Leaderboard rows container - populated by JavaScript -->
+    <div id="leaderboard-rows-container">
+        <!-- Content will be populated by JavaScript -->
+    </div>
+
+    
+</div>
+
+<!-- IMPORTANT: My Progress Button - OUTSIDE container, BEFORE modal -->
+<button class="my-progress-btn" id="myProgressBtn">
+    <i class="fa-solid fa-chart-line"></i>
+    <span>My Progress</span>
+</button>
+
+<!-- Modal Bottom Sheet for My Progress - UPDATED WITH FLUTTER DESIGN -->
+<div class="modal-bottom-sheet" id="myProgressModal">
+    <div class="modal-sheet-content">
+        <div class="modal-handle"></div>
+        <button class="modal-close-btn" id="modalCloseBtn">
+            <i class="fa-solid fa-times"></i>
+        </button>
+        
+        <!-- Header section with gradient background -->
+        <div class="modal-header-section">
+            
+            <!-- Game-style header -->
+            <div class="modal-game-header">
+                <span>YOUR STATS</span>
+            </div>
+            
+            <!-- Avatar with modern container -->
+            <div class="modal-avatar-container">
+                <div class="modal-avatar-glow">
+                    <img class="modal-avatar-img" id="modalAvatarImg" src="" alt="Student Avatar" />
+                </div>
+            </div>
+            
+            <!-- User info -->
+            <div class="modal-user-info">
+                <div class="modal-user-name" id="modalUserName"></div>
+                <div class="modal-user-grade" id="modalUserGrade"></div>
+            </div>
+        </div>
+        
+        <!-- Main content with white background -->
+        <div class="modal-main-content">
+            <!-- Rank card with gradient background -->
+            <div class="modal-rank-card" id="modalRankCard">
+                <div class="modal-rank-icon">
+                    <i class="fa-solid" id="modalRankIcon"></i>
+                </div>
+                <div class="modal-rank-details">
+                    <div class="modal-rank-label">CLASS RANKING</div>
+                    <div class="modal-rank-value-container">
+                        <span class="modal-rank-value" id="modalRankValue"></span>
+                        <span class="modal-rank-total" id="modalRankTotal"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats grid -->
+            <div class="modal-stats-grid">
+                <div class="modal-stats-row">
+                    <div class="modal-stat-card" id="currentPointsCard">
+                        <div class="stat-icon">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-title">Current Points</div>
+                            <div class="stat-value-container">
+                                <span class="stat-value" id="currentPointsValue">0</span>
+                                <span class="stat-unit">PTS</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-stat-card" id="activitiesCompletedCard">
+                        <div class="stat-icon">
+                            <i class="fa-solid fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-title">Activities Completed</div>
+                            <div class="stat-value-container">
+                                <span class="stat-value" id="activitiesCompletedValue">0</span>
+                                <span class="stat-unit">ACT</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-stats-row">
+                    <div class="modal-stat-card" id="pointsNeededCard">
+                        <div class="stat-icon">
+                            <i class="fa-solid fa-flag"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-title">Points Needed</div>
+                            <div class="stat-value-container">
+                                <span class="stat-value" id="pointsNeededValue">0</span>
+                                <span class="stat-unit">PTS</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-stat-card" id="dailyAverageCard">
+                        <div class="stat-icon">
+                            <i class="fa-solid fa-calendar-alt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-title">Daily Average</div>
+                            <div class="stat-value-container">
+                                <span class="stat-value" id="dailyAverageValue">0</span>
+                                <span class="stat-unit">PTS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Weekly Progress Card - MOVED INSIDE CONTAINER -->
+            <div class="weekly-progress-section" style="margin: 40px 0;">
+                <div class="modal-weekly-progress" style="border-radius: 24px 24px 0 0;">
+                    <div style="background:#fff; border-radius:0 0 24px 24px; padding:24px;">
+                        <div class="weekly-progress-header">
+                            <div class="weekly-progress-icon">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
+                            <div class="weekly-progress-title-group">
+                                <div class="weekly-progress-title">WEEKLY PROGRESS</div>
+                                <div class="weekly-progress-desc">Last 7 days performance</div>
+                            </div>
+                        </div>
+                        <div class="weekly-progress-chart-container">
+                            <canvas id="studentWeeklyProgressChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Make current user ID available to JS
+const CURRENT_USER_ID = {{ session.get('user_id', '')|tojson }};
+
+// Global variables
+let allStudents = [];
+let currentPeriod = 'current';
+let currentQuarter = null;
+let currentSchoolYear = null;
+let availableSchoolYears = [];
+let currentSystemSchoolYear = null;
+
+// ============= SCHOOL YEAR FUNCTIONS =============
+async function loadSchoolYears() {
+    try {
+        console.log('🔄 Fetching available school years...');
+        
+        const response = await fetch('/api/student-leaderboard-school-years');
+        
+        if (!response.ok) {
+            console.error(`❌ API returned status ${response.status}: ${response.statusText}`);
+            return;
+        }
+        
+        const data = await response.json();
+        console.log('📥 School Years API Response:', data);
+        
+        if (data.success) {
+            availableSchoolYears = data.school_years || [];
+            currentSystemSchoolYear = data.current_school_year;
+            
+            console.log('📚 School Years:', availableSchoolYears);
+            console.log('🎓 Current System Year:', currentSystemSchoolYear);
+            
+            // Populate school year dropdown
+            const schoolYearSelect = document.getElementById('schoolYearSelector');
+            
+            if (!schoolYearSelect) {
+                console.error('❌ schoolYearSelector element not found!');
+                return;
+            }
+            
+            schoolYearSelect.innerHTML = '';
+            
+            availableSchoolYears.forEach((year, index) => {
+                const option = document.createElement('option');
+                option.value = year;
+                const label = year === currentSystemSchoolYear ? `${year} (Current)` : year;
+                option.textContent = label;
+                schoolYearSelect.appendChild(option);
+                console.log(`✅ Added school year option ${index + 1}: ${label}`);
+            });
+            
+            // Set default to current school year
+            if (currentSystemSchoolYear) {
+                schoolYearSelect.value = currentSystemSchoolYear;
+                currentSchoolYear = currentSystemSchoolYear;
+                console.log(`📍 Set default school year to: ${currentSchoolYear}`);
+            }
+            
+            // Update quarters when school year is selected
+            console.log(`🔄 Loading quarters for default school year: ${currentSchoolYear}`);
+            await loadQuartersForYear(currentSchoolYear);
+        } else {
+            console.error('❌ API returned success: false', data);
+        }
+    } catch (error) {
+        console.error('❌ Error loading school years:', error);
+    }
+}
+
+async function loadQuartersForYear(schoolYear) {
+    try {
+        if (!schoolYear || schoolYear.trim() === '') {
+            console.error('❌ School year is empty or invalid');
+            return;
+        }
+        
+        console.log(`🔄 Fetching quarters for school year: ${schoolYear}`);
+        
+        const url = `/api/student-leaderboard-quarters?school_year=${encodeURIComponent(schoolYear)}`;
+        console.log(`📡 API URL: ${url}`);
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            console.error(`❌ API returned status ${response.status}: ${response.statusText}`);
+            const errorText = await response.text();
+            console.error('Error details:', errorText);
+            return;
+        }
+        
+        const data = await response.json();
+        console.log(`📥 API Response:`, data);
+        
+        if (data.success) {
+            const quarters = data.quarters || [];
+            console.log(`✅ Successfully loaded ${quarters.length} quarters for ${schoolYear}`);
+            
+            if (quarters.length > 0) {
+                console.log(`📋 Quarters:`, quarters.map(q => ({ id: q.quarter_id, name: q.quarter_name, status: q.status })));
+            } else {
+                console.warn(`⚠️ No quarters found for school year ${schoolYear}`);
+            }
+            
+            // Check if school year has started (at least one quarter is active or finished)
+            const hasStarted = quarters.some(q => q.status === 'active' || q.status === 'finished');
+            
+            if (!hasStarted) {
+                // School year hasn't started yet - show message instead of loading
+                console.log(`⏳ School year ${schoolYear} hasn't started yet`);
+                showSchoolYearNotStartedMessage(schoolYear, quarters);
+            } else {
+                // School year has started - auto-select the active quarter
+                const activeQuarter = quarters.find(q => q.status === 'active');
+                if (activeQuarter) {
+                    console.log(`✅ Auto-selecting active quarter: ${activeQuarter.quarter_name}`);
+                    currentPeriod = `quarter${activeQuarter.quarter_id}`;
+                    // Don't fetch yet - just populate the dropdown and let the dropdown change event trigger the fetch
+                }
+            }
+            
+            // Update the quarter dropdown
+            updateQuarterDropdownForYear(quarters, schoolYear);
+            
+            // Update countdown status
+            updateSchoolYearCountdown(quarters, schoolYear);
+        } else {
+            console.error('❌ API returned success: false', data);
+            console.error('Error from API:', data.error);
+        }
+    } catch (error) {
+        console.error('❌ Error loading quarters:', error);
+        console.error('Stack trace:', error.stack);
+    }
+}
+
+function updateQuarterDropdownForYear(quarters, schoolYear) {
+    const quarterSelector = document.getElementById('quarterSelector');
+    
+    if (!quarterSelector) {
+        console.error('❌ quarterSelector element not found!');
+        return;
+    }
+    
+    console.log(`🔧 Updating quarter dropdown for ${schoolYear} with ${quarters.length} quarters`);
+    
+    // Validate quarters data
+    if (!Array.isArray(quarters)) {
+        console.error('❌ Quarters is not an array:', quarters);
+        quarters = [];
+    }
+    
+    // Clear all options
+    quarterSelector.innerHTML = '';
+    
+    if (quarters.length === 0) {
+        console.warn(`⚠️ No quarters returned for school year ${schoolYear}`);
+        return;
+    }
+    
+    console.log(`✅ Adding ${quarters.length} quarters to dropdown`);
+    
+    // Track added quarters to prevent duplicates
+    const addedQuarterIds = new Set();
+    let activeQuarterId = null;
+    
+    // Add quarter options
+    quarters.forEach((quarter, index) => {
+        // Skip if we've already added this quarter ID
+        if (addedQuarterIds.has(quarter.quarter_id)) {
+            console.warn(`⚠️ Duplicate quarter ID ${quarter.quarter_id} - skipping`);
+            return;
+        }
+        
+        addedQuarterIds.add(quarter.quarter_id);
+        
+        const option = document.createElement('option');
+        option.value = `quarter${quarter.quarter_id}`;
+        
+        let label = quarter.quarter_name || `Quarter ${index + 1}`;
+        
+        // Add status indicators
+        if (quarter.status === 'upcoming' && quarter.days_until !== null) {
+            label += ` (${quarter.days_until} days away)`;
+        } else if (quarter.status === 'finished') {
+            label += ' (Finished)';
+        } else if (quarter.status === 'active') {
+            label += ' (Active)';
+            activeQuarterId = quarter.quarter_id;
+        }
+        
+        option.textContent = label;
+        option.dataset.status = quarter.status;
+        option.dataset.quarterId = quarter.quarter_id;
+        option.dataset.schoolYear = quarter.school_year;
+        quarterSelector.appendChild(option);
+        console.log(`✅ Added quarter option: ${label} (ID: ${quarter.quarter_id}, Status: ${quarter.status})`);
+    });
+    
+    // Auto-select active quarter if exists
+    if (activeQuarterId) {
+        quarterSelector.value = `quarter${activeQuarterId}`;
+        currentPeriod = `quarter${activeQuarterId}`;
+        console.log(`✅ Auto-selected active quarter: quarter${activeQuarterId}`);
+        // Trigger change event to fetch data
+        quarterSelector.dispatchEvent(new Event('change'));
+    }
+    
+    console.log(`✅ Quarter dropdown updated - now has ${quarterSelector.options.length} total options`);
+}
+
+// New function to show "school year hasn't started" message
+function showSchoolYearNotStartedMessage(schoolYear, quarters) {
+    const leaderboardRowsContainer = document.getElementById('leaderboard-rows-container');
+    const topPerformersLoading = document.getElementById('top-performers-loading');
+    const studentsList = document.getElementById('students-list');
+    const errorContainer = document.getElementById('top-performers-error');
+    
+    // Hide loading and error
+    if (topPerformersLoading) topPerformersLoading.style.display = 'none';
+    if (studentsList) studentsList.style.display = 'none';
+    
+    // Clear leaderboard rows
+    if (leaderboardRowsContainer) {
+        leaderboardRowsContainer.innerHTML = '';
+    }
+    
+    // Show message in top performers section
+    if (errorContainer) {
+        errorContainer.style.display = 'flex';
+        errorContainer.style.alignItems = 'center';
+        errorContainer.style.justifyContent = 'center';
+        errorContainer.style.minHeight = '400px';
+        errorContainer.style.flexDirection = 'column';
+        
+        // Find first upcoming quarter
+        const upcomingQuarter = quarters.find(q => q.status === 'upcoming');
+        const startDate = upcomingQuarter ? new Date(upcomingQuarter.start_date) : null;
+        const daysAway = upcomingQuarter ? upcomingQuarter.days_until : null;
+        
+        let startMessage = 'The leaderboard will be available when the school year begins.';
+        if (startDate) {
+            const options = { month: 'short', day: 'numeric', year: 'numeric' };
+            const formattedDate = startDate.toLocaleDateString('en-US', options);
+            startMessage = `The leaderboard will be available when the school year begins on <strong>${formattedDate}</strong>`;
+            if (daysAway !== null) {
+                startMessage += ` (${daysAway} day${daysAway !== 1 ? 's' : ''} away)`;
+            }
+        }
+        
+        errorContainer.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 60px 40px;">
+                <lottie-player 
+                    src="{{ url_for('static', filename='image/animation/non_data_found.json') }}"
+                    background="transparent" 
+                    speed="1" 
+                    style="width: 140px; height: 140px; margin-bottom: 30px; display: block;"
+                    loop 
+                    autoplay>
+                </lottie-player>
+                <div style="font-size: 24px; font-weight: 700; color: #2c3e50; margin-bottom: 15px; text-align: center;">📅 School Year Not Started</div>
+                <div style="font-size: 16px; color: #7f8c8d; margin-bottom: 30px; line-height: 1.6; text-align: center;">
+                    ${startMessage}
+                </div>
+                <div style="font-size: 14px; color: #95a5a6; text-align: center;">
+                    Check back soon! Your leaderboard rankings will appear here when the quarter begins.
+                </div>
+            </div>
+        `;
+    }
+}
+
+// New function to show "future quarter" message when student selects an upcoming quarter
+function showFutureQuarterMessage(selectedOption) {
+    const leaderboardRowsContainer = document.getElementById('leaderboard-rows-container');
+    const topPerformersLoading = document.getElementById('top-performers-loading');
+    const studentsList = document.getElementById('students-list');
+    const errorContainer = document.getElementById('top-performers-error');
+    
+    // Hide loading and error
+    if (topPerformersLoading) topPerformersLoading.style.display = 'none';
+    if (studentsList) studentsList.style.display = 'none';
+    
+    // Clear leaderboard rows
+    if (leaderboardRowsContainer) {
+        leaderboardRowsContainer.innerHTML = '';
+    }
+    
+    // Show message in top performers section
+    if (errorContainer) {
+        errorContainer.style.display = 'flex';
+        errorContainer.style.alignItems = 'center';
+        errorContainer.style.justifyContent = 'center';
+        errorContainer.style.minHeight = '400px';
+        errorContainer.style.flexDirection = 'column';
+        
+        // Get start date from option (we need to fetch from backend or quarters array)
+        // For now, extract from quarters array stored globally
+        const quarterValue = selectedOption.value; // e.g., "quarter{uuid}"
+        const quarterId = selectedOption.dataset.quarterId;
+        
+        let startDate = null;
+        let daysAway = null;
+        let quarterLabel = selectedOption.textContent;
+        
+        console.log(`🔍 Looking for quarter ${quarterId} in availableQuarters`);
+        
+        // Find matching quarter from available quarters (reload from current school year)
+        async function getQuarterInfo() {
+            try {
+                const response = await fetch(`/api/quarters/${currentSchoolYear}`);
+                const data = await response.json();
+                const quarters = data.quarters || [];
+                const matchedQuarter = quarters.find(q => q.quarter_id === quarterId);
+                
+                if (matchedQuarter) {
+                    startDate = new Date(matchedQuarter.start_date);
+                    daysAway = matchedQuarter.days_until;
+                    
+                    let startMessage = `This quarter will start on <strong>${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</strong>`;
+                    if (daysAway !== null) {
+                        startMessage += ` (${daysAway} day${daysAway !== 1 ? 's' : ''} away)`;
+                    }
+                    
+                    errorContainer.innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 60px 40px;">
+                            <lottie-player 
+                                src="{{ url_for('static', filename='image/animation/non_data_found.json') }}"
+                                background="transparent" 
+                                speed="1" 
+                                style="width: 140px; height: 140px; margin-bottom: 30px; display: block;"
+                                loop 
+                                autoplay>
+                            </lottie-player>
+                            <div style="font-size: 24px; font-weight: 700; color: #2c3e50; margin-bottom: 15px; text-align: center;">⏳ Quarter Not Started</div>
+                            <div style="font-size: 16px; color: #7f8c8d; margin-bottom: 30px; line-height: 1.6; text-align: center;">
+                                ${startMessage}
+                            </div>
+                            <div style="font-size: 14px; color: #95a5a6; text-align: center;">
+                                Check back when this quarter begins to see the leaderboard rankings.
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('❌ Error fetching quarter info:', error);
+                
+                // Fallback message
+                errorContainer.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 60px 40px;">
+                        <lottie-player 
+                            src="{{ url_for('static', filename='image/animation/non_data_found.json') }}"
+                            background="transparent" 
+                            speed="1" 
+                            style="width: 140px; height: 140px; margin-bottom: 30px; display: block;"
+                            loop 
+                            autoplay>
+                        </lottie-player>
+                        <div style="font-size: 24px; font-weight: 700; color: #2c3e50; margin-bottom: 15px; text-align: center;">⏳ Quarter Not Started</div>
+                        <div style="font-size: 16px; color: #7f8c8d; margin-bottom: 30px; line-height: 1.6; text-align: center;">
+                            This quarter hasn't started yet.
+                        </div>
+                        <div style="font-size: 14px; color: #95a5a6; text-align: center;">
+                            Check back when this quarter begins to see the leaderboard rankings.
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        getQuarterInfo();
+    }
+}
+
+function updateSchoolYearCountdown(quarters, schoolYear) {
+    const statusBar = document.getElementById('schoolYearStatusBar');
+    const statusText = document.getElementById('schoolYearStatusText');
+    
+    if (!statusBar || !statusText) return;
+    
+    // Check if this is the current system school year
+    if (schoolYear === currentSystemSchoolYear) {
+        statusBar.style.display = 'none';
+        return;
+    }
+    
+    // If viewing an older school year, show archived status
+    statusBar.style.display = 'flex';
+    const yearNumber = schoolYear.split('-')[0]; // Get first year (e.g., "2025" from "2025-2026")
+    statusText.innerHTML = `<strong>📦 Archived Leaderboard</strong> - School Year <strong>${schoolYear}</strong>`;
+}
+
+
+// ============= WEEKLY POINTS API FUNCTIONS =============
+async function fetchWeeklyPoints(studentId) {
+    try {
+        const response = await fetch(`/api/weekly-points/${studentId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            return data.weekly_points;
+        } else {
+            console.error('Failed to fetch weekly points:', data.error);
+            return [0, 0, 0, 0, 0, 0, 0]; // Fallback data - all zeros
+        }
+    } catch (error) {
+        console.error('Error fetching weekly points:', error);
+        return [0, 0, 0, 0, 0, 0, 0]; // Fallback data - all zeros
+    }
+}
+
+// ============= ACTIVITIES COMPLETED API FUNCTION =============
+async function fetchActivitiesCompleted(studentId, period) {
+    try {
+        const response = await fetch(`/api/activities-completed/${studentId}?period=${period}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            return data.activities_completed;
+        } else {
+            console.error('Failed to fetch activities completed:', data.error);
+            return 0; // Fallback
+        }
+    } catch (error) {
+        console.error('Error fetching activities completed:', error);
+        return 0; // Fallback
+    }
+}
+
+// ============= FIXED MY PROGRESS FUNCTION =============
+async function showMyProgress() {
+    console.log('📊 Opening My Progress modal...');
+    
+    // Find current user in the filtered leaderboard
+    const currentUserIndex = allStudents.findIndex(student => student.id === CURRENT_USER_ID);
+    const currentUser = allStudents[currentUserIndex];
+    
+    if (!currentUser) {
+        alert('Your progress is not available in the current leaderboard view. Try changing the time period filter.');
+        return;
+    }
+
+    // Calculate rank (index + 1)
+    const rank = currentUserIndex >= 0 ? currentUserIndex + 1 : 'N/A';
+    const totalStudents = allStudents.length;
+
+    console.log('👤 Current user:', currentUser.name, 'Rank:', rank);
+
+    // Fetch actual data
+    const [weeklyPoints, activitiesCompleted] = await Promise.all([
+        fetchWeeklyPoints(CURRENT_USER_ID),
+        fetchActivitiesCompleted(CURRENT_USER_ID, currentPeriod)
+    ]);
+
+    console.log('📊 Fetched data:', { weeklyPoints, activitiesCompleted });
+
+    // CORRECT DAILY AVERAGE CALCULATION: Total Points ÷ Number of Days in Selected Period
+    const currentPoints = currentUser.points;
+    const daysInPeriod = getDaysInPeriod(currentPeriod);
+    
+    // Integer division (whole number only, no decimal) as per the breakdown
+    const dailyAverage = daysInPeriod > 0 ? Math.floor(currentPoints / daysInPeriod) : currentPoints;
+    
+    const pointsNeeded = currentUserIndex > 0 ? allStudents[currentUserIndex - 1].points - currentUser.points : 0;
+
+    console.log('📈 Daily Average Calculation:', {
+        currentPoints,
+        daysInPeriod,
+        dailyAverage,
+        calculation: `${currentPoints} ÷ ${daysInPeriod} = ${dailyAverage}`
+    });
+
+    // Update modal content
+    const modal = document.getElementById('myProgressModal');
+    const rankCard = document.getElementById('modalRankCard');
+    const headerSection = document.querySelector('.modal-header-section');
+    
+    if (!modal || !rankCard || !headerSection) {
+        console.error('❌ Modal elements not found!');
+        return;
+    }
+    
+    // Remove all rank classes first from both header and rank card
+    rankCard.classList.remove('rank-1', 'rank-2', 'rank-3', 'rank-4-plus');
+    headerSection.classList.remove('rank-1', 'rank-2', 'rank-3', 'rank-4-plus');
+    
+    // Add appropriate rank class based on position
+    let rankClass = 'rank-4-plus';
+    if (rank === 1) {
+        rankClass = 'rank-1';
+    } else if (rank === 2) {
+        rankClass = 'rank-2';
+    } else if (rank === 3) {
+        rankClass = 'rank-3';
+    }
+    
+    rankCard.classList.add(rankClass);
+    headerSection.classList.add(rankClass);
+    
+    // Set avatar
+    const avatarImg = document.getElementById('modalAvatarImg');
+    if (avatarImg) {
+        avatarImg.src = currentUser.avatar || '/static/image/default-avatar.png';
+        avatarImg.alt = currentUser.name;
+        avatarImg.onerror = function() {
+            this.src = '/static/image/default-avatar.png';
+        };
+    }
+    
+    // Set user info
+    const userNameElement = document.getElementById('modalUserName');
+    const userGradeElement = document.getElementById('modalUserGrade');
+    if (userNameElement) userNameElement.textContent = currentUser.name.toUpperCase();
+    if (userGradeElement) userGradeElement.textContent = `Grade ${currentUser.year_level || ''}${currentUser.section ? ' - ' + currentUser.section : ''}`.toUpperCase();
+    
+    // Set rank card
+    const rankValueElement = document.getElementById('modalRankValue');
+    const rankTotalElement = document.getElementById('modalRankTotal');
+    if (rankValueElement) rankValueElement.textContent = `#${rank}`;
+    if (rankTotalElement) rankTotalElement.textContent = `OF ${totalStudents}`;
+    
+    // Set rank icon based on position
+    const rankIcon = document.getElementById('modalRankIcon');
+    if (rankIcon) {
+        if (rank === 1) {
+            rankIcon.className = 'fa-solid fa-crown';
+        } else if (rank === 2) {
+            rankIcon.className = 'fa-solid fa-ribbon';
+        } else if (rank === 3) {
+            rankIcon.className = 'fa-solid fa-medal';
+        } else {
+            rankIcon.className = 'fa-solid fa-star';
+        }
+    }
+    
+    // Set stats values
+    const currentPointsElement = document.getElementById('currentPointsValue');
+    const activitiesElement = document.getElementById('activitiesCompletedValue');
+    const pointsNeededElement = document.getElementById('pointsNeededValue');
+    const dailyAverageElement = document.getElementById('dailyAverageValue');
+    
+    if (currentPointsElement) currentPointsElement.textContent = currentPoints;
+    if (activitiesElement) activitiesElement.textContent = activitiesCompleted;
+    if (pointsNeededElement) pointsNeededElement.textContent = pointsNeeded > 0 ? pointsNeeded : 0;
+    if (dailyAverageElement) dailyAverageElement.textContent = dailyAverage;
+    
+    // Show modal
+    console.log('🎯 Showing modal...');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+    // Render the chart AFTER modal is visible
+    setTimeout(() => {
+        const canvas = document.getElementById("studentWeeklyProgressChart");
+        if (!canvas) {
+            console.error('Canvas element not found');
+            return;
+        }
+        
+        const ctx = canvas.getContext('2d');
+        
+        // Destroy previous chart instance if exists
+        if (window.studentWeeklyProgressChart) {
+            window.studentWeeklyProgressChart.destroy();
+        }
+        
+        window.studentWeeklyProgressChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+                datasets: [{
+                    label: "Points Earned",
+                    lineTension: 0.3,
+                    backgroundColor: "rgba(16, 185, 129, 0.08)",
+                    borderColor: "#10B981",
+                    pointRadius: 5,
+                    pointBackgroundColor: "#10B981",
+                    pointBorderColor: "#fff",
+                    pointHoverRadius: 7,
+                    pointHoverBackgroundColor: "#10B981",
+                    pointHoverBorderColor: "#10B981",
+                    pointHitRadius: 10,
+                    pointBorderWidth: 2,
+                    data: weeklyPoints,
+                    fill: true
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                layout: { padding: { left: 10, right: 25, top: 25, bottom: 0 } },
+                scales: {
+                    xAxes: [{ 
+                        gridLines: { display: false, drawBorder: false }, 
+                        ticks: { maxTicksLimit: 7 } 
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            maxTicksLimit: 5,
+                            padding: 10,
+                            callback: function(value) { 
+                                if (value % 1 === 0) {
+                                    return value + ' pts'; 
+                                }
+                                return '';
+                            }
+                        },
+                        gridLines: {
+                            color: "rgb(234, 236, 244)",
+                            zeroLineColor: "rgb(234, 236, 244)",
+                            drawBorder: false,
+                            borderDash: [2],
+                            zeroLineBorderDash: [2]
+                        }
+                    }],
+                },
+                legend: { display: false },
+                tooltips: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#10B981",
+                    titleMarginBottom: 10,
+                    titleFontColor: '#6e707e',
+                    titleFontSize: 14,
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    intersect: false,
+                    mode: 'index',
+                    caretPadding: 10,
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            return 'Points: ' + tooltipItem.yLabel;
+                        }
+                    }
+                }
+            }
+        });
+    }, 300); // Wait 300ms for modal to be fully visible
+}
+
+// ============= IMPROVED DAYS IN PERIOD CALCULATION =============
+function getDaysInPeriod(period) {
+    const now = new Date();
+    
+    switch(period) {
+        case 'week':
+            return 7; // Last 7 days
+            
+        case 'month':
+            // Days in current month
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            return new Date(currentYear, currentMonth + 1, 0).getDate();
+            
+        case 'quarter1':
+        case 'quarter2':
+        case 'quarter3':
+        case 'quarter4':
+            // For quarters, we need to calculate based on quarter dates
+            // For now, using approximate values
+            return 90; // Approximately 90 days in a quarter
+            
+        case 'current':
+        default:
+            // For current (active quarter), use quarter days
+            // For now, using approximate quarter length
+            return 90;
+    }
+}
+
+// Close modal function
+function closeMyProgressModal() {
+    const modal = document.getElementById('myProgressModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scrolling
+    }
+}
+
+// ============= QUARTER MANAGEMENT FUNCTIONS =============
+async function initializeQuarterSystem() {
+    try {
+        console.log('📅 Initializing quarter system...');
+        const response = await fetch('/api/quarters/current');
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error('Failed to fetch quarters data');
+        }
+        
+        const quarters = data.quarters || [];
+        currentQuarter = data.current_quarter;
+        
+        // Update quarter dropdown
+        updateQuarterDropdown(quarters, currentQuarter);
+        
+        // Update countdown
+        updateQuarterCountdown(quarters, currentQuarter);
+        
+        // Auto-select current quarter if available
+        if (currentQuarter) {
+            const quarterNumber = extractQuarterNumber(currentQuarter.quarter_name);
+            if (quarterNumber) {
+                const quarterValue = `quarter${quarterNumber}`;
+                const quarterSelector = document.getElementById('quarterSelector');
+                if (quarterSelector) {
+                    quarterSelector.value = quarterValue;
+                    currentPeriod = quarterValue;
+                    console.log(`🔄 Auto-selected current quarter: ${quarterValue}`);
+                    
+                    // Update UI to show quarter is active
+                    updateFilterUIForQuarter();
+                }
+            }
+        }
+        
+        return { quarters, currentQuarter };
+        
+    } catch (error) {
+        console.error('❌ Error initializing quarter system:', error);
+        return { quarters: [], currentQuarter: null };
+    }
+}
+
+function extractQuarterNumber(quarterName) {
+    if (!quarterName) return null;
+    const match = quarterName.match(/\d+/);
+    return match ? parseInt(match[0]) : null;
+}
+
+function updateQuarterDropdown(quarters, currentQuarter) {
+    const quarterSelector = document.getElementById('quarterSelector');
+    if (!quarterSelector) return;
+    
+    // Clear existing options except the first one
+    quarterSelector.innerHTML = '<option value="">Select Quarter</option>';
+    
+    // Add quarter options
+    quarters.forEach(quarter => {
+        const quarterNumber = extractQuarterNumber(quarter.quarter_name);
+        if (quarterNumber) {
+            const option = document.createElement('option');
+            option.value = `quarter${quarterNumber}`;
+            option.textContent = quarter.quarter_name;
+            
+            // Mark current quarter
+            if (currentQuarter && quarter.id === currentQuarter.id) {
+                option.textContent += ' (Current)';
+                option.dataset.isCurrent = 'true';
+            }
+            
+            // Add status info
+            if (quarter.status === 'finished') {
+                option.textContent += ' (Finished)';
+            } else if (quarter.status === 'upcoming') {
+                option.textContent += ' (Upcoming)';
+            }
+            
+            quarterSelector.appendChild(option);
+        }
+    });
+}
+
+function updateFilterUIForQuarter() {
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const quarterSelector = document.getElementById('quarterSelector');
+    
+    // Remove active class from all time period tabs
+    filterTabs.forEach(tab => tab.classList.remove('active'));
+    
+    // Add visual indicator that quarter is active
+    if (quarterSelector) {
+        quarterSelector.classList.add('quarter-active');
+    }
+}
+
+function resetQuarterSelection() {
+    const quarterSelector = document.getElementById('quarterSelector');
+    if (quarterSelector) {
+        quarterSelector.value = '';
+        quarterSelector.classList.remove('quarter-active');
+    }
+}
+
+// ============= ENHANCED COUNTDOWN FUNCTION =============
+function updateQuarterCountdown(quarters, currentQuarter) {
+    let countdownElement = document.getElementById('quarter-countdown');
+    if (!countdownElement) return;
+    
+    if (currentQuarter && currentQuarter.status === 'active') {
+        const endDate = new Date(currentQuarter.end_date);
+        const today = new Date();
+        const timeRemaining = endDate - today;
+        
+        if (timeRemaining > 0) {
+            const daysRemaining = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
+            const quarterNumber = extractQuarterNumber(currentQuarter.quarter_name) || '?';
+            
+            countdownElement.textContent = `Q${quarterNumber}: ${daysRemaining} Day${daysRemaining !== 1 ? 's' : ''}`;
+            
+            // Color coding
+            if (daysRemaining <= 7) {
+                countdownElement.style.color = '#EF4444'; // Red for 1 week or less
+            } else if (daysRemaining <= 14) {
+                countdownElement.style.color = '#F59E0B'; // Amber for 2 weeks or less
+            } else {
+                countdownElement.style.color = '#FFFFFF'; // White
+            }
+        } else {
+            const quarterNumber = extractQuarterNumber(currentQuarter.quarter_name) || '?';
+            countdownElement.textContent = `Q${quarterNumber}: Ended`;
+            countdownElement.style.color = '#6B7280';
+        }
+    } else if (currentQuarter && currentQuarter.status === 'finished') {
+        const quarterNumber = extractQuarterNumber(currentQuarter.quarter_name) || '?';
+        countdownElement.textContent = `Q${quarterNumber}: Finished`;
+        countdownElement.style.color = '#6B7280';
+    } else {
+        countdownElement.textContent = 'No Active Quarter';
+        countdownElement.style.color = '#6B7280';
+    }
+}
+
+// ============= LEADERBOARD DATA FUNCTIONS =============
+function fetchLeaderboard(period = 'current') {
+    if (window.isLoading) {
+        console.log('⏳ Already loading...');
+        return;
+    }
+
+    window.isLoading = true;
+    console.log(`📊 Fetching leaderboard for period: ${period}, school_year: ${currentSchoolYear}`);
+    
+    // Show loading state - ONLY in top performers section
+    showLoading();
+
+    const url = currentSchoolYear 
+        ? `/api/student-leaderboard?period=${period}&school_year=${currentSchoolYear}`
+        : `/api/student-leaderboard?period=${period}`;
+    
+    fetch(url)
+        .then(response => {
+            console.log(`📡 Response status: ${response.status}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('✅ Data received:', data);
+            
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to load leaderboard');
+            }
+            
+            allStudents = data.students || [];
+            updateStats(data.stats || {total: 0, avg: 0, top: 0});
+            renderTopThree(allStudents);
+            filterStudents();
+        })
+        .catch(error => {
+            console.error('❌ Error:', error);
+            showErrorInTopPerformers(error.message);
+        })
+        .finally(() => {
+            window.isLoading = false;
+        });
+}
+
+// ============= UI UPDATE FUNCTIONS =============
+function showLoading() {
+    // Show loading in top performers section
+    const topPerformersLoading = document.getElementById('top-performers-loading');
+    const studentsList = document.getElementById('students-list');
+    const errorContainer = document.getElementById('top-performers-error');
+    
+    if (topPerformersLoading) topPerformersLoading.style.display = 'flex';
+    if (studentsList) studentsList.style.display = 'none';
+    if (errorContainer) errorContainer.style.display = 'none';
+    
+    // Clear main leaderboard container - don't show loading animation there
+    const leaderboardRowsContainer = document.getElementById('leaderboard-rows-container');
+    if (leaderboardRowsContainer) {
+        leaderboardRowsContainer.innerHTML = '';
+    }
+}
+
+function hideTopPerformersLoading() {
+    const topPerformersLoading = document.getElementById('top-performers-loading');
+    const studentsList = document.getElementById('students-list');
+    const errorContainer = document.getElementById('top-performers-error');
+    
+    if (topPerformersLoading) topPerformersLoading.style.display = 'none';
+    if (studentsList) studentsList.style.display = 'flex';
+    if (errorContainer) errorContainer.style.display = 'none';
+}
+
+// UPDATED FUNCTION: Show error inside Top Performers section using the shared template
+function showErrorInTopPerformers(message) {
+    const topPerformersLoading = document.getElementById('top-performers-loading');
+    const studentsList = document.getElementById('students-list');
+    const errorContainer = document.getElementById('top-performers-error');
+    
+    // Hide loading and students list, show error
+    if (topPerformersLoading) topPerformersLoading.style.display = 'none';
+    if (studentsList) studentsList.style.display = 'none';
+    
+    if (errorContainer) {
+        errorContainer.style.display = 'flex';
+        errorContainer.style.alignItems = 'center';
+        errorContainer.style.justifyContent = 'center';
+        errorContainer.style.minHeight = '400px';
+        
+        // Load the error template using fetch
+        fetch('/partials/showError')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load error template');
+                }
+                return response.text();
+            })
+            .then(html => {
+                errorContainer.innerHTML = html;
+                // Add event listener to retry button - calls fetchLeaderboard for this page
+                const retryButton = document.getElementById('retryButton');
+                if (retryButton) {
+                    retryButton.addEventListener('click', function() {
+                        fetchLeaderboard(currentPeriod); // This page's specific function
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading error template:', error);
+                // Fallback to basic error message
+                errorContainer.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h3 style="color: #DB2D2D;">Connection Error</h3>
+                        <p>${message}</p>
+                        <button onclick="fetchLeaderboard(currentPeriod)" style="padding: 10px 20px; background: #5e72e4; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            });
+    }
+    
+    // Also clear the main leaderboard
+    const leaderboardRowsContainer = document.getElementById('leaderboard-rows-container');
+    if (leaderboardRowsContainer) {
+        leaderboardRowsContainer.innerHTML = '';
+    }
+}
+
+function updateStats(stats) {
+    console.log('📈 Updating stats:', stats);
+    
+    // Animate the stat values
+    animateValue('stat-total', 0, stats.total || 0, 800);
+    animateValue('stat-avg', 0, stats.avg || 0, 800);
+    animateValue('stat-top', 0, stats.top || 0, 800);
+}
+
+function animateValue(id, start, end, duration) {
+    const element = document.getElementById(id);
+    if (!element) return;
+    
+    const range = end - start;
+    const increment = range / (duration / 16);
+    let current = start;
+    
+    const timer = setInterval(() => {
+        current += increment;
+        if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+            element.textContent = Math.round(end);
+            clearInterval(timer);
+        } else {
+            element.textContent = Math.round(current);
+        }
+    }, 16);
+}
+
+// ============= FILTER AND RENDER =============
+function filterStudents() {
+    const searchInput = document.getElementById('leaderboardSearchInput');
+    const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    let filteredStudents = allStudents;
+
+    if (searchTerm) {
+        filteredStudents = allStudents.filter(student => {
+            const name = (student.name || '').toLowerCase();
+            const section = (student.section || '').toLowerCase();
+            return name.includes(searchTerm) || section.includes(searchTerm);
+        });
+        console.log(`🔍 Filtered to ${filteredStudents.length} students`);
+    }
+
+    renderLeaderboard(filteredStudents);
+}
+
+function renderLeaderboard(students) {
+    console.log(`🎨 Rendering ${students.length} students`);
+    
+    const leaderboardRowsContainer = document.getElementById('leaderboard-rows-container');
+    if (!leaderboardRowsContainer) return;
+    
+    leaderboardRowsContainer.innerHTML = '';
+    
+    if (!students || students.length === 0) {
+        leaderboardRowsContainer.innerHTML = `
+            <div class="no-students-message" style="text-align: center; padding: 60px 20px;">
+                <lottie-player 
+                    src="{{ url_for('static', filename='image/animation/non_data_found.json') }}"
+                    background="transparent" 
+                    speed="1" 
+                    style="width: 120px; height: 120px; margin-bottom: 20px;"
+                    loop 
+                    autoplay>
+                </lottie-player>
+                <div style="font-size: 20px; font-weight: 600; color: #2c3e50; margin-bottom: 10px;">No Students Found</div>
+                <div style="font-size: 16px; color: #7f8c8d; margin-bottom: 30px;">Try adjusting your search or filter criteria</div>
+            </div>
+        `;
+        return;
+    }
+
+    students.forEach((student, index) => {
+        const rank = index + 1;
+        const row = createLeaderboardRow(student, rank);
+        row.classList.add('fade-in');
+        leaderboardRowsContainer.appendChild(row);
+    });
+    
+    console.log('✨ Leaderboard rendered successfully');
+}
+
+function createLeaderboardRow(student, rank) {
+    const row = document.createElement('div');
+    let rankClass = '';
+    let rankCircleHTML = '';
+    
+    // Determine rank styling
+    if (rank === 1) {
+        rankClass = 'rank-1';
+        rankCircleHTML = `<div class="rank-circle gold"><i class="fa-solid fa-crown"></i></div>`;
+    } else if (rank === 2) {
+        rankClass = 'rank-2';
+        rankCircleHTML = `<div class="rank-circle silver"><i class="fa-solid fa-ribbon"></i></div>`;
+    } else if (rank === 3) {
+        rankClass = 'rank-3';
+        rankCircleHTML = `<div class="rank-circle bronze"><i class="fa-solid fa-medal"></i></div>`;
+    } else {
+        rankCircleHTML = `<div class="rank-circle">${rank}</div>`;
+    }
+
+    // Add current-user class if this is the logged-in user
+    let currentUserClass = '';
+    if (student.id === CURRENT_USER_ID) {
+        currentUserClass = 'current-user';
+    }
+
+    row.className = `leaderboard-row ${rankClass} ${currentUserClass}`;
+    row.innerHTML = `
+        ${rankCircleHTML}
+        <div class="student-avatar">
+            <img src="${student.avatar || '/static/image/default-avatar.png'}" 
+                 alt="${student.name}" 
+                 onerror="this.src='/static/image/default-avatar.png'"
+                 style="width:40px;height:40px;border-radius:50%;object-fit:cover;" />
+        </div>
+        <div class="student-info">
+            <div class="student-name">${student.name}</div>
+            <div class="student-grade">
+              Grade ${student.year_level ? student.year_level : ''}${student.section ? ' - ' + student.section : ''}
+            </div>
+        </div>
+        <div class="student-points-box modern-mobile-points">
+            <span class="points-icon-gradient">
+                <i class="fa-solid fa-bolt"></i>
+            </span>
+            <span class="student-points">${student.points}</span>
+        </div>
+    `;
+    
+    return row;
+}
+
+function renderTopThree(students) {
+    const list = document.getElementById('students-list');
+    const errorContainer = document.getElementById('top-performers-error');
+    
+    if (!list) return;
+    
+    // Hide loading and error, show students list
+    hideTopPerformersLoading();
+    if (errorContainer) errorContainer.style.display = 'none';
+
+    // Clear existing content first
+    list.innerHTML = '';
+
+    // Get top 3 students
+    const top3 = students.slice(0, 3);
+
+    // If no students, show empty state
+    if (top3.length === 0) {
+        list.innerHTML = `
+            <div class="no-top-performers" style="text-align: center; padding: 40px 20px; color: #64748b;">
+                <lottie-player 
+                    src="{{ url_for('static', filename='image/animation/non_data_found.json') }}"
+                    background="transparent" 
+                    speed="1" 
+                    style="width: 100px; height: 100px; margin: 0 auto 20px;"
+                    loop 
+                    autoplay>
+                </lottie-player>
+                <div style="font-size: 16px; font-weight: 500;">No top performers found</div>
+            </div>
+        `;
+        return;
+    }
+
+    // Podium order: 2nd, 1st, 3rd
+    const podiumOrder = [1, 0, 2];
+    const podiumStyles = [
+        {
+            rank: 2,
+            class: 'rank-2',
+            avatarClass: 'rank-2-avatar',
+            badgeClass: 'rank-2-badge',
+            label: '2ND',
+            rankColor: '#64748B',
+            pointsIcon: 'fa-star',
+            icon: 'fa-ribbon'
+        },
+        {
+            rank: 1,
+            class: 'rank-1',
+            avatarClass: 'rank-1-avatar',
+            badgeClass: 'rank-1-badge',
+            label: '1ST',
+            rankColor: '#F5A623',
+            pointsIcon: 'fa-star',
+            icon: 'fa-crown'
+        },
+        {
+            rank: 3,
+            class: 'rank-3',
+            avatarClass: 'rank-3-avatar',
+            badgeClass: 'rank-3-badge',
+            label: '3RD',
+            rankColor: '#8B5CF6',
+            pointsIcon: 'fa-star',
+            icon: 'fa-medal'
+        }
+    ];
+
+    podiumOrder.forEach((i, idx) => {
+        const student = top3[i];
+        if (!student) return; // Skip if no student for this position
+        
+        const style = podiumStyles[idx];
+        const firstName = (student.name || '').split(' ')[0];
+        const points = student.points || 0;
+
+        // Avatar image (fill circle)
+        let avatarHTML;
+        if (student.avatar) {
+            avatarHTML = `<img src="${student.avatar}" alt="${firstName}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;" />`;
+        } else {
+            avatarHTML = `<img src="/static/image/default-avatar.png" alt="${firstName}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;" />`;
+        }
+
+        const studentDiv = document.createElement('div');
+        studentDiv.className = `student ${style.class} fade-in`;
+        studentDiv.innerHTML = `
+            <div class="student-content">
+                <div class="student-avatar game-style-avatar ${style.avatarClass}">
+                    ${avatarHTML}
+                    <span class="avatar-badge ${style.badgeClass}">
+                        <span class="avatar-badge-inner">
+                            <i class="fa-solid ${style.icon}"></i>
+                        </span>
+                    </span>
+                </div>
+            </div>
+            <div class="student-platform" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <div class="hof-rank-label rank-${style.rank}">${style.label}</div>
+                <div class="student-name" style="font-weight:700;font-size:20px;margin-bottom:8px;text-align:center;">${firstName}</div>
+                <div class="hof-points-pill rank-${style.rank}" style="justify-content:center;margin-top:4px;">
+                    <span class="student-points" style="color:#fff;font-weight:700;">${points}</span>
+                </div>
+            </div>
+        `;
+        list.appendChild(studentDiv);
+    });
+}
+
+// ============= INITIALIZATION =============
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Leaderboard initialized');
+    
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const leaderboardRowsContainer = document.getElementById('leaderboard-rows-container');
+    const searchInput = document.getElementById('leaderboardSearchInput');
+    const searchClearBtn = document.getElementById('searchClearBtn');
+    const myProgressBtn = document.getElementById('myProgressBtn');
+    const myProgressModal = document.getElementById('myProgressModal');
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+    const quarterSelector = document.getElementById('quarterSelector');
+    const schoolYearSelector = document.getElementById('schoolYearSelector');
+
+    window.isLoading = false;
+
+    // Debug: Check if elements exist
+    console.log('🔍 Element check:', {
+        myProgressBtn: !!myProgressBtn,
+        myProgressModal: !!myProgressModal,
+        modalCloseBtn: !!modalCloseBtn,
+        quarterSelector: !!quarterSelector,
+        schoolYearSelector: !!schoolYearSelector
+    });
+
+    // Load school years first
+    console.log('💫 Starting loadSchoolYears()...');
+    loadSchoolYears().then(() => {
+        console.log('✅ loadSchoolYears() completed');
+    }).catch(err => {
+        console.error('❌ loadSchoolYears() failed:', err);
+    });
+
+    // Attach event listener to school year selector
+    if (schoolYearSelector) {
+        schoolYearSelector.addEventListener('change', async function() {
+            const selectedYear = this.value;
+            console.log(`🎓 School year selector changed to: ${selectedYear}`);
+            
+            if (selectedYear) {
+                // Update current school year variable
+                currentSchoolYear = selectedYear;
+                
+                // Reset the quarter selector to default option
+                const quarterSelector = document.getElementById('quarterSelector');
+                if (quarterSelector) {
+                    quarterSelector.value = '';
+                    console.log('🔄 Quarter selector reset to default');
+                }
+                
+                // Reset period to 'current' and update UI
+                currentPeriod = 'current';
+                filterTabs.forEach(tab => tab.classList.remove('active'));
+                const currentTab = document.querySelector('.filter-tab[data-period="current"]');
+                if (currentTab) {
+                    currentTab.classList.add('active');
+                    console.log('✅ Activated "Current" period tab');
+                }
+                
+                console.log(`📥 Loading quarters for school year: ${currentSchoolYear}...`);
+                // Load quarters for the selected school year
+                await loadQuartersForYear(currentSchoolYear);
+                
+                console.log('✅ School year changed - waiting for user to select time period or quarter');
+                // Don't auto-fetch - let user select a time period or quarter first
+            } else {
+                console.warn('⚠️ No school year selected');
+            }
+        });
+        console.log('✅ School year selector event listener attached');
+    } else {
+        console.error('❌ School year selector not found!');
+    }
+
+    // Attach event listener to My Progress button
+    if (myProgressBtn) {
+        myProgressBtn.addEventListener('click', showMyProgress);
+        console.log('✅ My Progress button event listener attached');
+    } else {
+        console.error('❌ My Progress button not found!');
+    }
+
+    // Close modal when clicking on the close button
+    if (modalCloseBtn) {
+        modalCloseBtn.addEventListener('click', closeMyProgressModal);
+        console.log('✅ Modal close button event listener attached');
+    }
+
+    // Close modal when clicking outside
+    if (myProgressModal) {
+        myProgressModal.addEventListener('click', function(e) {
+            if (e.target === myProgressModal) {
+                closeMyProgressModal();
+            }
+        });
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeMyProgressModal();
+        }
+    });
+
+    // ============= SEARCH FUNCTIONALITY =============
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const value = this.value.trim();
+            if (searchClearBtn) {
+                searchClearBtn.style.display = value ? 'block' : 'none';
+            }
+            filterStudents();
+        });
+    }
+
+    if (searchClearBtn) {
+        searchClearBtn.addEventListener('click', function() {
+            if (searchInput) {
+                searchInput.value = '';
+                searchClearBtn.style.display = 'none';
+                filterStudents();
+            }
+        });
+    }
+
+    // Initialize quarter system first but DON'T fetch data until user selects
+    initializeQuarterSystem().then(({ quarters, currentQuarter }) => {
+        // Don't fetch data on initialization - wait for user selection
+        console.log('✅ Quarter system ready - waiting for user selection');
+    });
+
+    // ============= QUARTER SELECTOR EVENT LISTENER =============
+    if (quarterSelector) {
+        quarterSelector.addEventListener('change', function() {
+            const selectedQuarter = this.value;
+            const selectedOption = this.options[this.selectedIndex];
+            
+            console.log(`🎯 Quarter selector changed to: ${selectedQuarter}`);
+            
+            if (selectedQuarter) {
+                // Get the school year and status from the selected option
+                const schoolYearFromOption = selectedOption.dataset.schoolYear;
+                const quarterStatus = selectedOption.dataset.status;
+                const quarterId = selectedOption.dataset.quarterId;
+                
+                if (schoolYearFromOption) {
+                    console.log(`📅 Selected quarter school year: ${schoolYearFromOption}`);
+                }
+                console.log(`📊 Selected quarter status: ${quarterStatus}`);
+                
+                // Remove active class from all time period filter tabs
+                filterTabs.forEach(t => t.classList.remove('active'));
+                
+                // Update UI to show quarter is active
+                updateFilterUIForQuarter();
+                
+                // Update current period to the selected quarter
+                currentPeriod = selectedQuarter;
+                console.log(`🔄 Switching to quarter: ${currentPeriod}`);
+                
+                // Check if the selected quarter is upcoming (hasn't started yet)
+                if (quarterStatus === 'upcoming') {
+                    console.log(`⏳ Selected quarter is upcoming - showing message instead of leaderboard`);
+                    showFutureQuarterMessage(selectedOption);
+                } else {
+                    // Fetch leaderboard data for the selected quarter
+                    console.log('📊 Fetching leaderboard data for selected quarter...');
+                    fetchLeaderboard(currentPeriod);
+                }
+            } else {
+                // If "Select Quarter" is chosen, reset to current
+                console.log('🔄 Quarter selector reset to default - resetting to current period');
+                resetQuarterSelection();
+                if (filterTabs.length > 0) {
+                    filterTabs[0].classList.add('active'); // Activate "Current" tab
+                }
+                currentPeriod = 'current';
+                console.log('📊 Fetching leaderboard data for current period...');
+                fetchLeaderboard(currentPeriod);
+            }
+        });
+        console.log('✅ Quarter selector event listener attached');
+    } else {
+        console.error('❌ Quarter selector not found!');
+    }
+    fetch(`/api/weekly-points/${CURRENT_USER_ID}`)
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) return;
+        
+        // Calculate total weekly points
+        const weeklyTotal = data.weekly_points.reduce((a, b) => a + b, 0);
+        
+        // Create and display weekly total badge INSIDE the card
+        const weeklyProgressCard = document.querySelector('.modal-weekly-progress');
+        if (weeklyProgressCard) {
+            // Remove existing badge if any
+            const existingBadge = weeklyProgressCard.querySelector('.weekly-total-badge');
+            if (existingBadge) {
+                existingBadge.remove();
+            }
+            
+            // Create new badge using your existing CSS classes
+            const weeklyBadge = document.createElement('div');
+            weeklyBadge.className = 'weekly-total-badge';
+            weeklyBadge.innerHTML = `
+                <span>+${weeklyTotal}</span>
+                <span>pts</span>
+            `;
+            
+            // Insert badge at the beginning of the weekly progress card
+            weeklyProgressCard.insertBefore(weeklyBadge, weeklyProgressCard.firstChild);
+        }
+        
+        var ctx = document.getElementById("studentWeeklyProgressChart").getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+                datasets: [{
+                    label: "Points Earned",
+                    lineTension: 0.3,
+                    backgroundColor: "rgba(116, 133, 232, 0.08)",
+                    borderColor: "#7485e8",
+                    pointRadius: 5,
+                    pointBackgroundColor: "#7485e8",
+                    pointBorderColor: "#fff",
+                    pointHoverRadius: 7,
+                    pointHoverBackgroundColor: "#7485e8",
+                    pointHoverBorderColor: "#7485e8",
+                    pointHitRadius: 10,
+                    pointBorderWidth: 2,
+                    data: data.weekly_points, // Array of 7 numbers
+                    fill: true
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                layout: { padding: { left: 10, right: 25, top: 25, bottom: 0 } },
+                scales: {
+                    xAxes: [{ gridLines: { display: false, drawBorder: false }, ticks: { maxTicksLimit: 7 } }],
+                    yAxes: [{
+                        ticks: {
+                            maxTicksLimit: 5,
+                            padding: 10,
+                            callback: function(value) { return value + ' pts'; }
+                        },
+                        gridLines: {
+                            color: "rgb(234, 236, 244)",
+                            zeroLineColor: "rgb(234, 236, 244)",
+                            drawBorder: false,
+                            borderDash: [2],
+                            zeroLineBorderDash: [2]
+                        }
+                    }],
+                },
+                legend: { display: false },
+                tooltips: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#7485e8",
+                    titleMarginBottom: 10,
+                    titleFontColor: '#6e707e',
+                    titleFontSize: 14,
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    intersect: false,
+                    mode: 'index',
+                    caretPadding: 10,
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            return 'Points: ' + tooltipItem.yLabel;
+                        }
+                    }
+                }
+            }
+        });
+    });
+
+    // ============= FILTER TABS EVENT LISTENERS =============
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Update active state
+            filterTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Reset quarter selection when time period is selected
+            resetQuarterSelection();
+            
+            // Update current period and fetch
+            currentPeriod = this.getAttribute('data-period');
+            console.log(`🔄 Switching to period: ${currentPeriod}`);
+            fetchLeaderboard(currentPeriod);
+        });
+    });
+
+    // Update quarter countdown every hour
+    setInterval(() => {
+        if (currentQuarter) {
+            updateQuarterCountdown([], currentQuarter);
+        }
+    }, 60 * 60 * 1000);
+
+    console.log('🎬 Initialization complete');
+});
+</script>
+{% endblock %}

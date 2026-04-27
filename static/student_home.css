@@ -1,0 +1,1782 @@
+/* Student Home Custom Styles */
+.student-header-wrapper {
+    max-width: 1200px;
+    margin: 1rem auto;
+    padding: 0 1rem;
+    background: linear-gradient(135deg, #EF4444 0%, #EF4444 100%);
+    border-radius: 20px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.student-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.5rem 1.5rem 1.5rem 1.5rem;
+    position: relative;
+}
+
+.header-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.greeting-row {
+    margin-bottom: 0.5rem;
+}
+
+.greeting {
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+}
+
+.wave {
+    margin-left: 5px;
+    font-size: 1.2rem;
+}
+
+.headline {
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: 900;
+    line-height: 1.2;
+    margin: 0 0 6px 0;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -0.3px;
+}
+
+.subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0 0 16px 0;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Animated Progress Bar */
+.animated-progress-container {
+    width: 140px;
+    margin-bottom: 12px;
+}
+
+.animated-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.animated-progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.8) 100%);
+    box-shadow: 0 2px 4px rgba(255, 255, 255, 0.4);
+    width: 0%;
+    transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.motivation-pinalaki {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    font-weight: 500;
+    font-style: italic;
+    font-family: 'Inter', sans-serif;
+    margin-top: 0.5rem;
+}
+
+/* Improved Graduation Icon */
+.graduation-icon-container {
+    margin-left: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.graduation-icon-inner {
+    position: relative;
+    width: 68px;
+    height: 68px;
+    padding: 14px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 3px 8px rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: float-icon 3s ease-in-out infinite;
+}
+
+@keyframes float-icon {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-3px); }
+}
+
+.graduation-icon-inner i {
+    color: #fff;
+    font-size: 28px;
+    animation: subtle-pulse 4s ease-in-out infinite;
+}
+
+@keyframes subtle-pulse {
+    0%, 100% { transform: scale(0.95); }
+    50% { transform: scale(1); }
+}
+
+.graduation-sparkle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    opacity: 0;
+    animation: sparkle-appear 3s ease-in-out infinite;
+}
+
+@keyframes sparkle-appear {
+    0%, 100% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 1; transform: scale(1); }
+}
+
+/* Stats Section */
+.stats-main-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.stat-cards-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}
+
+.points-card, .streak-card {
+    background: #FFFFFF;
+    border-radius: 24px;
+    box-shadow: 0 4px 24px rgba(94, 114, 228, 0.08);
+    padding: 24px;
+    margin: 0;
+    max-width: 240px;
+    box-sizing: border-box;
+    flex: 1;
+    min-width: 220px;
+    min-height: 200px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.points-card:hover, .streak-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(94,114,228,0.18);
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.points-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.points-label {
+    color: #10B981;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.points-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: #000000;
+    line-height: 1.1;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.points-unit {
+    font-size: 14px;
+    color: #9CA3AF;
+    font-weight: 600;
+    text-transform: lowercase;
+}
+
+.points-change {
+    color: #6B7280;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.points-icon-shimmer {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(90deg, rgba(16,185,129,0.18) 0%, #fff 50%, rgba(16,185,129,0.18) 100%);
+    border: 1.5px solid #10B981;
+    box-shadow: 0 2px 8px rgba(16,185,129,0.18);
+    overflow: hidden;
+}
+
+.points-icon-shimmer i.star-icon {
+    color: #10B981;
+    font-size: 16px;
+    z-index: 1;
+}
+
+/* Updated Streak Card Styles */
+.streak-card .card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+}
+
+.streak-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+    justify-content: center;
+}
+
+.streak-main-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 4px 0;
+}
+
+.streak-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.streak-label {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.streak-value {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.streak-unit {
+    font-size: 14px;
+    color: #9CA3AF;
+    font-weight: 600;
+    text-transform: lowercase;
+}
+
+.streak-status {
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 12px;
+    padding: 4px 12px;
+    margin-top: 2px;
+}
+
+#streak-lottie-container {
+    width: 45px;
+    height: 45px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+/* Weekly Progress Card */
+.weekly-progress-card {
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 4px 24px rgba(94, 114, 228, 0.08);
+    padding: 32px 28px 28px 28px;
+    margin: 0 !important;
+    max-width: 540px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.weekly-progress-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 8px;
+}
+
+.weekly-progress-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(102,126,234,0.18);
+    color: #fff;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.weekly-progress-header-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.weekly-progress-label {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #667eea;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+
+.weekly-progress-title {
+    font-size: 1.18rem;
+    font-weight: 900;
+    color: #111827;
+    letter-spacing: -0.3px;
+}
+
+.weekly-progress-circle {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-ring {
+    width: 80px;
+    height: 80px;
+    transform: rotate(-90deg);
+}
+
+.progress-ring-bg {
+    fill: none;
+    stroke: #f3f4f6;
+    stroke-width: 3;
+}
+
+.progress-ring-bar {
+    fill: none;
+    stroke: #667eea;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 113;
+    stroke-dashoffset: 64;
+    transition: stroke-dashoffset 0.5s;
+}
+
+.weekly-progress-percent {
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 900;
+    color: #667eea;
+    pointer-events: none;
+}
+
+.weekly-progress-bar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.weekly-progress-bar-label {
+    color: #6B7280;
+    font-size: 0.98rem;
+    font-weight: 600;
+}
+
+.weekly-progress-bar-value {
+    color: #667eea;
+    font-size: 0.98rem;
+    font-weight: 700;
+}
+
+.weekly-progress-bar {
+    width: 100%;
+    height: 12px;
+    background: #f3f4f6;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.weekly-progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 6px;
+    transition: width 0.5s;
+}
+
+.weekly-progress-days-list {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px 0 8px 0;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    position: relative;
+}
+
+.weekly-progress-day {
+    width: 48px;
+    height: 56px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1.5px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: border 0.2s, background 0.2s;
+}
+
+.weekly-progress-day.completed {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 1.5px solid #667eea;
+}
+
+.weekly-progress-day.today {
+    border: 2px solid #10B981;
+    box-shadow: 0 4px 12px rgba(16,185,129,0.12);
+}
+
+.weekly-progress-day.today .day-label {
+    color: #10B981;
+    font-weight: 800;
+}
+
+.weekly-progress-day.today .day-points {
+    color: #10B981;
+    font-weight: 800;
+}
+
+.weekly-progress-day .day-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #6B7280;
+}
+
+.weekly-progress-day.completed .day-label {
+    color: #fff;
+}
+
+.weekly-progress-day .day-points {
+    font-size: 0.95rem;
+    font-weight: 800;
+}
+
+.weekly-progress-day.completed .day-points {
+    color: #fff;
+    opacity: 0.92;
+}
+
+.weekly-progress-stats-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f9fafb;
+    border-radius: 16px;
+    border: 1.5px solid #e5e7eb;
+    box-shadow: 0 1px 4px rgba(102,126,234,0.04);
+    padding: 18px 10px;
+    margin-top: 10px;
+    gap: 10px;
+}
+
+.weekly-progress-stat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 0;
+    justify-content: center;
+}
+
+.stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    margin-right: 8px;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #32325d;
+    line-height: 1.1;
+}
+
+.stat-label {
+    font-size: 0.95rem;
+    color: #6B7280;
+    font-weight: 600;
+    line-height: 1.1;
+}
+
+/* Achievements Section */
+.achievements-section {
+    margin-bottom: 2rem;
+}
+
+.achievements-row-scroll {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    overflow-x: auto;
+    gap: 1.2rem;
+    padding-bottom: 8px;
+    scroll-behavior: smooth;
+    max-height: none;
+    height: auto;
+}
+
+.achievements-row-scroll::-webkit-scrollbar {
+    height: 8px;
+    width: 0px;
+}
+
+.achievements-row-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db #fff;
+}
+
+.achievements-row-scroll::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+}
+
+.achievements-row-scroll::-webkit-scrollbar-track {
+    background: #fff;
+}
+
+.achievement-card-modern {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05), 0 6px 20px rgba(102,126,234,0.20);
+    border: 2px solid transparent;
+    margin-bottom: 1rem;
+    padding: 1.5rem 1.2rem;
+    transition: box-shadow 0.3s, border 0.3s;
+    position: relative;
+    min-width: 280px;
+    max-width: 320px;
+    width: 320px;
+    box-sizing: border-box;
+    height: 260px;
+    min-height: 260px;
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s cubic-bezier(.77,0,.175,1), transform 0.7s cubic-bezier(.77,0,.175,1);
+    flex-shrink: 0;
+}
+
+.achievement-card-modern.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.achievement-card-modern .content-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    height: 100%;
+    justify-content: flex-start;
+}
+
+.achievement-card-modern .header-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.achievement-card-modern .icon-section {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #f3f4f6;
+    box-shadow: 0 2px 8px rgba(102,126,234,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.achievement-card-modern .achievement-title {
+    font-weight: 700;
+    font-size: 0.98rem;
+    color: #1F2937;
+    letter-spacing: -0.3px;
+    flex: 1 1 0;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    margin-bottom: 0;
+    line-height: 1.3;
+    min-width: 0;
+    word-wrap: break-word;
+}
+
+.achievement-card-modern .achievement-title.long-title {
+    font-size: 0.85rem;
+    line-height: 1.2;
+    word-break: break-word;
+}
+
+.achievement-card-modern .achievement-status {
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    margin-left: 8px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.achievement-card-modern .achievement-status.claimed {
+    border-color: #10B981;
+    background: #10B9811A;
+    color: #10B981;
+}
+
+.achievement-card-modern .achievement-status.unlocked {
+    border-color: #6366F1;
+    background: #6366F11A;
+    color: #6366F1;
+}
+
+.achievement-card-modern .achievement-status.in-progress {
+    border-color: #6B7280;
+    background: #F3F4F6;
+    color: #6B7280;
+}
+
+.achievement-card-modern .achievement-desc {
+    font-size: 0.92rem;
+    color: #757575;
+    line-height: 1.4;
+    margin-bottom: 0.1rem;
+    max-width: 100%;
+    overflow: visible;
+    text-overflow: unset;
+    white-space: normal;
+    min-width: 0;
+    word-wrap: break-word;
+}
+
+.achievement-desc-with-parenthetical {
+    display: block;
+}
+
+.parenthetical-text {
+    font-size: 0.8rem;
+    color: #9E9E9E;
+    font-style: italic;
+    margin-top: 2px;
+    display: block;
+}
+
+.achievement-card-modern .progress-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: #757575;
+    margin-bottom: 0.3rem;
+    width: 100%;
+}
+
+.achievement-card-modern .progress-bar-bg {
+    width: 100%;
+    max-width: 100%;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    position: relative;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+}
+
+.achievement-card-modern .progress-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #6366f1 0%, #6366f1cc 100%);
+    box-shadow: 0 2px 8px rgba(102,126,234,0.25);
+    transition: width 0.8s cubic-bezier(.77,0,.175,1);
+}
+
+.achievement-card-modern .claim-btn {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: auto;
+}
+
+.achievement-card-modern .claim-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99,102,241,0.35);
+}
+
+.achievement-card-modern .claim-btn:disabled {
+    background: #bbb;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.achievement-card-modern .progress-value {
+    color: #6366F1;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.achievement-card-modern.highlighted {
+    border: 2px solid #10B981;
+    box-shadow: 0 6px 24px rgba(16,185,129,0.12);
+}
+
+.streak-lottie-achievement {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Streak Achievement Colors */
+.streak-achievement-7   { --streak-color: #9E9E9E; }
+.streak-achievement-14  { --streak-color: #FBC02D; }
+.streak-achievement-21  { --streak-color: #FF9800; }
+.streak-achievement-28  { --streak-color: #FF1744; }
+.streak-achievement-35  { --streak-color: #00FF40; }
+.streak-achievement-49  { --streak-color: #5E72E4; }
+.streak-achievement-50  { --streak-color: #8E24AA; }
+.streak-achievement-75  { --streak-color: #8E24AA; }
+.streak-achievement-100 { --streak-color: #8E24AA; }
+
+.achievement-card-modern.streak-achievement {
+    border: 2px solid var(--streak-color);
+}
+
+.achievement-card-modern.streak-achievement .icon-section {
+    background: color-mix(in srgb, var(--streak-color) 15%, transparent) !important;
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--streak-color) 25%, transparent);
+}
+
+.achievement-card-modern.streak-achievement .icon-section i,
+.achievement-card-modern.streak-achievement .icon-section span {
+    color: var(--streak-color) !important;
+}
+
+.achievement-card-modern.streak-achievement .progress-bar-fill {
+    background: var(--streak-color) !important;
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--streak-color) 25%, transparent);
+}
+
+.achievement-card-modern.streak-achievement .progress-value {
+    color: var(--streak-color) !important;
+}
+
+.achievement-card-modern.streak-achievement .claim-btn {
+    background: var(--streak-color) !important;
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--streak-color) 25%, transparent);
+}
+
+.achievement-card-modern.streak-achievement .claim-btn:active {
+    background: color-mix(in srgb, var(--streak-color) 80%, black) !important;
+}
+
+.achievement-card-modern:not(.streak-achievement) {
+    border: 2px solid #10B981;
+}
+
+.achievement-card-modern:not(.streak-achievement) .icon-section {
+    background: color-mix(in srgb, #10B981 15%, transparent) !important;
+    box-shadow: 0 2px 8px color-mix(in srgb, #10B981 25%, transparent);
+}
+
+.achievement-card-modern:not(.streak-achievement) .icon-section i,
+.achievement-card-modern:not(.streak-achievement) .icon-section span {
+    color: #10B981 !important;
+}
+
+.achievement-card-modern:not(.streak-achievement) .progress-bar-fill {
+    background: #10B981 !important;
+    box-shadow: 0 2px 8px color-mix(in srgb, #10B981 25%, transparent);
+}
+
+.achievement-card-modern:not(.streak-achievement) .progress-value {
+    color: #10B981 !important;
+}
+
+.achievement-card-modern:not(.streak-achievement) .claim-btn {
+    background: #10B981 !important;
+    box-shadow: 0 2px 8px color-mix(in srgb, #10B981 25%, transparent);
+}
+
+.achievement-card-modern:not(.streak-achievement) .claim-btn:active {
+    background: color-mix(in srgb, #10B981 80%, black) !important;
+}
+
+/* Recent Activity Section */
+.recent-activity-section {
+    margin-bottom: 2rem;
+}
+
+.activity-title-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.activity-gradient-bar {
+    width: 4px;
+    height: 24px;
+    background: linear-gradient(135deg, #5e72e4, #8a2be2);
+    border-radius: 2px;
+    margin-right: 12px;
+}
+
+.activity-title-text {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: #32325d;
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.enhanced-activity-card {
+    box-shadow: 0 4px 16px rgba(31,41,55,0.08), 0 2px 6px rgba(31,41,55,0.04);
+    border-radius: 1.25rem;
+    padding: 1.5rem 1.5rem 1.2rem 1.5rem;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: flex-start;
+    border: 1.5px solid rgba(128,128,128,0.06);
+    background: #fff;
+}
+
+.enhanced-activity-icon-container {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.7rem;
+    margin-right: 1.1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    flex-shrink: 0;
+}
+
+.activity-card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.activity-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.activity-card-title {
+    font-weight: 600;
+    color: #32325d;
+}
+
+.activity-card-status {
+    color: #8898aa;
+    font-size: 0.9rem;
+}
+
+.activity-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.activity-footer-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: #f9fafb;
+    border-radius: 16px;
+    border: 1px solid rgba(160,160,160,0.10);
+    padding: 0.32rem 0.7rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #757575;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.activity-footer-badge i {
+    color: #9e9e9e;
+    font-size: 1.1rem;
+    margin-right: 0.25rem;
+}
+
+.activity-footer-points {
+    display: inline-block;
+    border-radius: 16px;
+    padding: 0.32rem 0.7rem;
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: -0.2px;
+    border: 1.2px solid;
+    margin-left: 0.5rem;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.activity-footer-points.gained {
+    background: rgba(94,114,228,0.10);
+    color: #5e72e4;
+    border-color: rgba(94,114,228,0.40);
+}
+
+.activity-footer-points.lost {
+    background: rgba(239,68,68,0.10);
+    color: #EF4444;
+    border-color: rgba(239,68,68,0.40);
+}
+
+/* Modal Styles */
+.premium-claim-dialog {
+    background: linear-gradient(180deg, #fff 0%, #fafbff 100%);
+    border-radius: 24px;
+    box-shadow: 0 10px 32px rgba(0,0,0,0.15);
+    padding: 2.2rem 1.5rem 1.5rem 1.5rem;
+    width: 340px;
+    max-width: 95vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1061;
+}
+
+.premium-icon-bg {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 5px 15px rgba(99,102,241,0.3);
+    margin-bottom: 1.2rem;
+}
+
+.premium-icon-bg i {
+    color: #fff;
+    font-size: 2.2rem;
+}
+
+.premium-dialog-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.premium-dialog-subtitle {
+    color: #6b7280;
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+    text-align: center;
+}
+
+.premium-dialog-points-row {
+    background: linear-gradient(90deg, #fffbeB 0%, #fef3c7 100%);
+    border-radius: 14px;
+    border: 1.5px solid #fcd34d55;
+    padding: 0.7rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #92400e;
+    margin-bottom: 1.5rem;
+}
+
+.premium-dialog-points-row i {
+    color: #f59e0b;
+    font-size: 1.2rem;
+}
+
+.premium-dialog-actions {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+
+.premium-cancel-btn, .premium-claim-btn {
+    flex: 1;
+    padding: 0.7rem 0;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+}
+
+.premium-cancel-btn {
+    background: #fff;
+    color: #6b7280;
+    border: 1.5px solid #e5e7eb;
+}
+
+.premium-claim-btn {
+    background: #6366f1;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.18);
+}
+
+.premium-claim-btn:active {
+    background: #4f46e5;
+}
+
+/* NLP Modal Styles - Fixed Positioning */
+.nlp-modal {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(94,114,228,0.15), 0 0 0 1px rgba(255,255,255,0.9), inset 0 1px 0 0 rgba(255,255,255,0.6);
+    padding: 2.5rem 2rem 2rem 2rem;
+    width: 420px;
+    max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+    z-index: 1061;
+}
+
+@keyframes modalSlideIn {
+    0% { 
+        transform: translateY(20px) scale(0.95); 
+        opacity: 0; 
+    }
+    100% { 
+        transform: translateY(0) scale(1); 
+        opacity: 1; 
+    }
+}
+
+.nlp-modal-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 15% 20%, rgba(94, 114, 228, 0.05) 0%, transparent 20%),
+        radial-gradient(circle at 85% 30%, rgba(138, 43, 226, 0.05) 0%, transparent 20%),
+        radial-gradient(circle at 50% 80%, rgba(94, 114, 228, 0.03) 0%, transparent 20%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.nlp-modal-icon-bg {
+    width: 80px;
+    height: 80px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #5e72e4 0%, #8a2be2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(94,114,228,0.25), inset 0 1px 0 rgba(255,255,255,0.2);
+    margin-bottom: 1.75rem;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.nlp-modal-icon-bg::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+    border-radius: 22px;
+}
+
+.nlp-modal-icon-bg i {
+    color: #fff;
+    font-size: 2rem;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    z-index: 1;
+}
+
+.nlp-modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #5e72e4;
+    margin-bottom: 1rem;
+    text-align: center;
+    letter-spacing: -0.01em;
+    z-index: 1;
+    position: relative;
+}
+
+.nlp-modal-title::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(to right, #5e72e4, #8a2be2);
+    margin: 0.5rem auto 0;
+    border-radius: 2px;
+}
+
+.nlp-modal-feedback {
+    color: #6b7280;
+    font-size: 0.95rem;
+    margin-bottom: 0.7rem;
+    text-align: center;
+    font-weight: 400;
+    font-style: italic;
+    line-height: 1.4;
+    opacity: 0.85;
+}
+
+.nlp-modal-motivation {
+    color: #5e72e4;
+    font-size: 1.18rem;
+    margin-bottom: 2.25rem;
+    text-align: center;
+    font-weight: 700;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+}
+
+.nlp-modal-decoration {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.decoration-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(94, 114, 228, 0.08) 0%, rgba(138, 43, 226, 0.08) 100%);
+}
+
+.circle-1 {
+    width: 120px;
+    height: 120px;
+    top: -40px;
+    right: -40px;
+}
+
+.circle-2 {
+    width: 80px;
+    height: 80px;
+    bottom: -20px;
+    left: -20px;
+}
+
+.circle-3 {
+    width: 60px;
+    height: 60px;
+    bottom: 40px;
+    right: 30px;
+}
+
+.nlp-modal-btn {
+    background: linear-gradient(135deg, #5e72e4 0%, #8a2be2 100%);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 1rem 0;
+    font-weight: 600;
+    font-size: 1.05rem;
+    cursor: pointer;
+    width: 90% !important;
+    min-width: 220px !important;
+    max-width: 340px;
+    margin: 0 auto;
+    box-shadow: 0 4px 12px rgba(94,114,228,0.25), inset 0 1px 0 rgba(255,255,255,0.2);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.nlp-modal-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.nlp-modal-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(94,114,228,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.nlp-modal-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(94,114,228,0.25), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.nlp-modal-btn:hover::before {
+    opacity: 1;
+}
+
+.btn-icon {
+    font-size: 1.1rem;
+    transition: transform 0.2s ease;
+}
+
+.nlp-modal-btn:hover .btn-icon {
+    transform: scale(1.1);
+}
+
+/* Points Change Text */
+#main-points-change {
+    color: #10B981 !important;
+    background: rgba(16,185,129,0.10) !important;
+}
+
+/* Modal Positioning Fixes */
+.modal-dialog.nlp-dialog-centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0 auto;
+}
+
+.modal-content {
+    border: none;
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+/* Ensure proper modal stacking */
+.modal {
+    z-index: 1050;
+}
+
+.modal-backdrop {
+    z-index: 1040;
+}
+
+/* Weekly progress update animations */
+.weekly-progress-percent.updating {
+    animation: pulseUpdate 0.5s ease-in-out;
+}
+
+.weekly-progress-bar-fill.updating {
+    animation: slideUpdate 0.5s ease-out;
+}
+
+.day-points.points-updated {
+    animation: bounceUpdate 0.6s ease;
+}
+
+.points-value.updating {
+    animation: countUp 0.8s ease-out;
+}
+
+@keyframes pulseUpdate {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes slideUpdate {
+    0% { transform: scaleX(0.95); }
+    100% { transform: scaleX(1); }
+}
+
+@keyframes bounceUpdate {
+    0%, 20%, 60%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-5px); }
+    80% { transform: translateY(-2px); }
+}
+
+@keyframes countUp {
+    0% { 
+        transform: scale(1);
+        color: #10B981;
+    }
+    50% { 
+        transform: scale(1.1);
+        color: #059669;
+    }
+    100% { 
+        transform: scale(1);
+        color: inherit;
+    }
+}
+
+/* Add this to your student_home.css file */
+.achievement-card-modern .progress-bar-fill.claimed {
+    background: linear-gradient(90deg, #10B981 0%, #059669 100%) !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4) !important;
+}
+
+/* For streak achievements that are claimed */
+.achievement-card-modern.streak-achievement .progress-bar-fill.claimed {
+    background: var(--streak-color) !important;
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--streak-color) 40%, transparent) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .student-header {
+        padding: 1.25rem 1.25rem 1.25rem 1.25rem;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .header-content {
+        text-align: center;
+        align-items: center;
+    }
+    
+    .graduation-icon-container {
+        margin-left: 0;
+        align-self: center;
+    }
+    
+    .animated-progress-container {
+        align-self: center;
+    }
+    
+    .headline {
+        font-size: 18px;
+    }
+    
+    .subtitle {
+        font-size: 13px;
+    }
+    
+    .greeting {
+        font-size: 15px;
+    }
+    
+    .graduation-icon-inner {
+        width: 60px;
+        height: 60px;
+        padding: 12px;
+    }
+    
+    .graduation-icon-inner i {
+        font-size: 24px;
+    }
+    
+    .stats-main-row {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .points-card, .streak-card, .weekly-progress-card {
+        max-width: 100%;
+        margin: 0;
+    }
+    
+    .weekly-progress-card {
+        padding: 16px 8px 16px 8px;
+        border-radius: 18px;
+        max-width: 100%;
+    }
+    
+    .weekly-progress-header {
+        gap: 10px;
+    }
+    
+    .weekly-progress-header-text .weekly-progress-title {
+        font-size: 1rem;
+    }
+    
+    .weekly-progress-day {
+        width: 38px;
+        height: 44px;
+        border-radius: 8px;
+    }
+    
+    .weekly-progress-stats-container {
+        flex-direction: column;
+        gap: 12px;
+        padding: 10px 4px;
+    }
+    
+    .weekly-progress-stat {
+        justify-content: flex-start;
+    }
+    
+    .achievement-card-modern {
+        min-width: 220px;
+        width: 220px;
+        max-width: 100%;
+        min-height: 200px;
+        height: 200px;
+    }
+    
+    .achievement-card-modern .header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .achievement-card-modern .achievement-status {
+        margin-left: 0;
+        align-self: flex-start;
+    }
+    
+    .enhanced-activity-card {
+        padding: 1rem;
+        border-radius: 1rem;
+    }
+    
+    .enhanced-activity-icon-container {
+        width: 44px;
+        height: 44px;
+        font-size: 1.2rem;
+        margin-right: 0.7rem;
+    }
+    
+    .motivation-pinalaki {
+        font-size: 1rem;
+    }
+    
+    .nlp-modal {
+        width: 95vw;
+        padding: 2rem 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .student-header-wrapper {
+        margin: 0.5rem auto;
+        border-radius: 16px;
+    }
+    
+    .student-header {
+        padding: 1rem 1rem 1rem 1rem;
+    }
+    
+    .headline {
+        font-size: 16px;
+    }
+    
+    .subtitle {
+        font-size: 12px;
+    }
+    
+    .greeting {
+        font-size: 14px;
+    }
+    
+    .motivation-pinalaki {
+        font-size: 11px;
+    }
+    
+    .graduation-icon-inner {
+        width: 52px;
+        height: 52px;
+        padding: 10px;
+    }
+    
+    .graduation-icon-inner i {
+        font-size: 20px;
+    }
+    
+    .animated-progress-container {
+        width: 120px;
+    }
+    
+    .animated-progress-bar {
+        height: 6px;
+    }
+    
+    .achievement-card-modern {
+        max-width: 100%;
+        padding: 1rem 0.7rem;
+    }
+    
+    .achievement-card-modern .progress-bar-bg {
+        max-width: 100%;
+    }
+    
+    .achievement-card-modern .icon-section {
+        width: 38px;
+        height: 38px;
+        font-size: 1.2rem;
+    }
+    
+    .achievement-card-modern .achievement-title {
+        font-size: 1rem;
+    }
+    
+    .achievement-card-modern .achievement-desc {
+        font-size: 0.92rem;
+    }
+    
+    .achievement-card-modern .progress-row {
+        font-size: 0.95rem;
+    }
+    
+    .achievement-card-modern .claim-btn {
+        font-size: 0.95rem;
+        padding: 0.6rem 0;
+    }
+    
+    .nlp-modal {
+        padding: 1.5rem 1rem;
+    }
+    
+    .nlp-modal-title {
+        font-size: 1.3rem;
+    }
+    
+    .nlp-modal-motivation {
+        font-size: 1rem;
+    }
+}
+
+/* Fix for modal backdrop and positioning */
+.modal.show {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-dialog {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Ensure body scrolls normally when modal is open */
+body.modal-open {
+    overflow: auto;
+    padding-right: 0 !important;
+}
+
+/* NLP Modal Positioning Fix */
+.modal-dialog.nlp-dialog-centered {
+    position: fixed !important;
+    top: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    margin: 0 !important;
+    width: 420px;
+    max-width: 90vw;
+    z-index: 1060;
+}
+
+.modal.show .modal-dialog.nlp-dialog-centered {
+    transform: translateX(-50%) translateY(0) !important;
+}
+
+.modal-content.nlp-modal {
+    margin-top: 0;
+    animation: modalSlideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalSlideDown {
+    0% { 
+        transform: translateY(-20px); 
+        opacity: 0; 
+    }
+    100% { 
+        transform: translateY(0); 
+        opacity: 1; 
+    }
+}
+
+/* Remove any conflicting modal styles */
+body.nlp-modal-active *:not(.modal.show):not(.modal.show *):not(.modal-backdrop.show) {
+    pointer-events: none !important;
+    user-select: none !important;
+}
+
+body.nlp-modal-active .modal.show,
+body.nlp-modal-active .modal.show * {
+    pointer-events: auto !important;
+    user-select: auto !important;
+}
+
+.modal-backdrop {
+    display: none !important;
+}
+
+.modal {
+    z-index: 1050 !important;
+}
+
+.modal-dialog {
+    z-index: 1051 !important;
+}
+
+.modal-content {
+    z-index: 1052 !important;
+}
+
+/* Enhanced Weekly Progress Circle */
+.weekly-progress-circle {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-ring {
+    width: 60px;
+    height: 60px;
+    transform: rotate(-90deg);
+}
+
+.progress-ring-bg {
+    fill: none;
+    stroke: #f3f4f6;
+    stroke-width: 4;
+}
+
+.progress-ring-bar {
+    fill: none;
+    stroke: #667eea;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: 113;
+    stroke-dashoffset: 113;
+    transition: stroke-dashoffset 0.8s ease-in-out;
+}
+
+.weekly-progress-percent {
+    position: absolute;
+    left: 0; 
+    right: 0; 
+    top: 0; 
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    color: #667eea;
+    pointer-events: none;
+}
+
+/* Animation for circle progress */
+.progress-ring-bar {
+    animation: circleProgress 1s ease-out;
+}
+
+@keyframes circleProgress {
+    from {
+        stroke-dashoffset: 113;
+    }
+}   

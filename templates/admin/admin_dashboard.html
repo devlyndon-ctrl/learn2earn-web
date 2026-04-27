@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+
+{% block title %}Learn2Earn - Admin Dashboard{% endblock %}
+
+{% block page_title %}Administrator Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 2rem 0 rgba(136, 152, 170, .15);
+    margin-bottom: 2rem;
+    overflow: hidden;
+    }
+
+    .card-header {
+        background-color: white;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1.25rem 1.5rem;
+        font-weight: 600;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .user-role {
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .role-teacher {
+        background-color: rgba(45, 206, 137, 0.1);
+        color: var(--success-color);
+    }
+    
+    .role-student {
+        background-color: rgba(54, 162, 235, 0.1);
+        color: var(--info-color);
+    }
+    
+    .role-admin {
+        background-color: rgba(251, 99, 64, 0.1);
+        color: var(--warning-color);
+    }
+    
+    .activity-item {
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .activity-date {
+        font-size: 0.75rem;
+        color: var(--secondary-color);
+    }
+    
+    .activity-user {
+        font-weight: 600;
+    }
+    
+    .activity-action {
+        color: var(--secondary-color);
+    }
+    
+    .user-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .user-item:last-child {
+        border-bottom: none;
+    }
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        margin-right: 1rem;
+    }
+    
+    .user-info {
+        flex: 1;
+    }
+    
+    .user-name {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .user-details {
+        font-size: 0.85rem;
+        color: var(--secondary-color);
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Dashboard Content -->
+<div id="dashboard-content">
+    <div class="row mb-4">
+        <!-- Stats Cards -->
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card card-1">
+                <div class="icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="stat-value">{{ total_teachers }}</h3>
+                <p class="stat-label">Total Teachers</p>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card card-2">
+                <div class="icon">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h3 class="stat-value">{{ total_students }}</h3>
+                <p class="stat-label">Total Students</p>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card card-3">
+                <div class="icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h3 class="stat-value">{{ total_points_awarded }}</h3>
+                <p class="stat-label">Points Awarded</p>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card card-4">
+                <div class="icon">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <h3 class="stat-value">324</h3>
+                <p class="stat-label">Rewards Redeemed</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Analytics Charts (replaces User Management) -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Key Analytics Charts</h5>
+                    <button class="btn btn-sm btn-admin" onclick="window.location.href='/admin_analytics'">View Full Analytics</button>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6>User Activity</h6>
+                        <canvas id="dashboardUserActivityChart" height="120"></canvas>
+                    </div>
+                    <div class="mb-4">
+                        <h6>Monthly Points Trend</h6>
+                        <canvas id="dashboardMonthlyPointsChart" height="120"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Recent Activity -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div id="recent-activity-list">
+                        <!-- Recent activities will be loaded here by JS -->
+                        <div class="text-muted text-center" id="activity-loading">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Toast notification function (green and red only)
+function showToast(message, type = 'success', duration = 5000) {
+    // Remove any existing toasts
+    const existingToasts = document.querySelectorAll('.toast-notification');
+    existingToasts.forEach(toast => {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+    });
+
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type === 'error' || type === 'danger' ? 'error' : 'success'}`;
+    
+    let icon = 'fa-check-circle';
+    if (type === 'error' || type === 'danger') icon = 'fa-exclamation-circle';
+
+    toast.innerHTML = `
+        <div class="toast-content">
+            <i class="fas ${icon} me-2"></i>
+            ${message}
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => { 
+        toast.classList.add('show'); 
+    }, 10);
+    
+    // Auto remove after duration
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => { 
+            if (toast.parentNode) toast.parentNode.removeChild(toast); 
+        }, 300);
+    }, duration);
+    
+    // Also allow click to dismiss
+    toast.addEventListener('click', function() {
+        this.classList.remove('show');
+        setTimeout(() => { 
+            if (this.parentNode) this.parentNode.removeChild(this); 
+        }, 300);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    showToast('Dashboard Loaded Successfully', 'success', 3000);
+
+    // --- Recent Activity (already present) ---
+    fetch('/api/recent-admin-activities')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('recent-activity-list');
+            container.innerHTML = '';
+            if (data.success && data.activities.length > 0) {
+                data.activities.forEach(act => {
+                    const user = act.user_info || {};
+                    const name = user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : 'System';
+                    const role = user.role ? ` (${user.role})` : '';
+                    let dateStr = '';
+                    if (act.created_at) {
+                        const dt = new Date(act.created_at);
+                        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                        dateStr = dt.toLocaleDateString('en-US', options) + ' ' +
+                            dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                    }
+                    container.insertAdjacentHTML('beforeend', `
+                        <div class="activity-item">
+                            <div class="d-flex justify-content-between">
+                                <span class="activity-user">${name}<small class="text-muted">${role}</small></span>
+                                <span class="activity-date">${dateStr}</span>
+                            </div>
+                            <p class="activity-action mb-0">
+                                <strong>${act.activity || ''}</strong>: ${act.action || ''}<br>
+                            </p>
+                        </div>
+                    `);
+                });
+            } else {
+                container.innerHTML = '<div class="text-muted text-center">No recent activities found.</div>';
+            }
+        })
+        .catch(() => {
+            const container = document.getElementById('recent-activity-list');
+            container.innerHTML = '<div class="text-muted text-center">Failed to load recent activities.</div>';
+        });
+
+    // --- Fetch analytics data for dashboard charts ---
+    fetch('/api/admin-analytics-summary')
+        .then(response => response.json())
+        .then(data => {
+            // User Activity Chart
+            const userActivityCtx = document.getElementById('dashboardUserActivityChart').getContext('2d');
+            new Chart(userActivityCtx, {
+                type: 'line',
+                data: {
+                    labels: data.day_labels,
+                    datasets: [{
+                        label: 'Logins',
+                        data: data.daily_logins,
+                        borderColor: 'rgba(78, 115, 223, 1)',
+                        backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                        fill: true
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+
+            // Monthly Points Trend Chart
+            const monthlyPointsCtx = document.getElementById('dashboardMonthlyPointsChart').getContext('2d');
+            new Chart(monthlyPointsCtx, {
+                type: 'line',
+                data: {
+                    labels: data.monthly_points_labels,
+                    datasets: [{
+                        label: 'Points Awarded',
+                        data: data.monthly_points_data,
+                        borderColor: 'rgba(54, 185, 204, 1)',
+                        backgroundColor: 'rgba(54, 185, 204, 0.1)',
+                        fill: true
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+
+            // Engagement Breakdown Chart
+            const engagementBreakdownCtx = document.getElementById('dashboardEngagementBreakdownChart').getContext('2d');
+            new Chart(engagementBreakdownCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Teachers', 'Students', 'Admins'],
+                    datasets: [{
+                        data: data.engagement_breakdown,
+                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc']
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: true } } }
+            });
+        });
+});
+</script>
+{% endblock %}

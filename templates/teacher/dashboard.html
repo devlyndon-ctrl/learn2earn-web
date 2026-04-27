@@ -1,0 +1,712 @@
+{% extends "base.html" %}
+
+{% block title %}Learn2Earn - Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block main_content %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+<link rel="stylesheet" href="/static/streak-border.css">
+<div class="container-fluid px-0">
+    <!-- Stats Row -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stats-card card-1">
+                <div class="icon">
+                    <i class="fas fa-users"></i>
+                </div>  
+                <h3 class="stat-value" id="activeStudents">0</h3>
+                <p class="stat-label">My Active Students</p>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stats-card card-2">
+                <div class="icon">
+                    <i class="fas fa-award"></i>
+                </div>
+                <h3 class="stat-value" id="pointsAwarded">0</h3>
+                <p class="stat-label">Points Awarded (This Month)</p>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stats-card card-3">
+                <div class="icon">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <h3 class="stat-value" id="rewardsRedeemed">0</h3>
+                <p class="stat-label">Rewards Redeemed (This Month)</p>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stats-card card-4">
+                <div class="icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="stat-value" id="engagementRate">0%</h3>
+                <p class="stat-label">Class Engagement (This Week)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State - Placed below stats cards -->
+    <div class="loading-container" id="dashboardLoadingMessage">
+        <div class="loading-content">
+            <!-- Circular container for Lottie animation -->
+            <div class="loading-avatar-container">
+                <div class="loading-avatar-circle">
+                    <lottie-player 
+                        src="{{ url_for('static', filename='image/animation/loading_animation_blue.json') }}"
+                        background="transparent" 
+                        speed="1" 
+                        style="width: 100%; height: 100%;"
+                        loop 
+                        autoplay>
+                    </lottie-player>
+                </div>
+            </div>
+            
+            <div class="loading-text">
+                <div class="loading-title">Loading Dashboard</div>
+                <div class="loading-subtitle">Almost there! Your dashboard is being prepared</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error State Container -->
+    <div class="error-container" id="dashboardErrorMessage" style="display: none;">
+        <!-- Error content will be populated by JavaScript -->
+    </div>
+
+    <!-- Dashboard Content (hidden until loaded) -->
+    <div id="dashboardContent" style="display: none;">
+        <!-- Top Students Table -->
+        <div class="row mt-4">
+            <div class="col-lg-8 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Top Performing Students</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table align-items-center mb-0" id="topStudentsTable">
+                                <thead>
+                                    <tr>
+                                        <th class="align-middle" style="width:220px;">Student</th>
+                                        <th class="align-middle text-center" style="width:100px;">Points</th>
+                                        <th class="align-middle text-center" style="width:100px;">Rewards Redeemed</th>
+                                        <th class="align-middle text-center" style="width:140px;">Participation (7d)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Filled by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Empty State for Top Students -->
+                        <div id="topStudentsEmpty" style="display: none;">
+                            <div class="empty-state text-center py-5">
+                                <div class="empty-icon mb-3">
+                                    <i class="fas fa-users fa-3x text-muted"></i>
+                                </div>
+                                <h5 class="text-muted">No Students Yet</h5>
+                                <p class="text-muted mb-4">Admin will assign students to you by grade and section</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Recent Activity -->
+            <div class="col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Recent Awards</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush" id="recentAwardsList">
+                            <!-- Filled by JS -->
+                        </ul>
+                        <!-- Empty State for Recent Awards -->
+                        <!-- In the Recent Awards empty state section -->
+                        <div id="recentAwardsEmpty" style="display: none;">
+                            <div class="empty-state text-center py-5">
+                                <div class="empty-icon mb-3">
+                                    <i class="fas fa-award fa-3x text-muted"></i>
+                                </div>
+                                <h5 class="text-muted">No Awards Yet</h5>
+                                <p class="text-muted mb-4">Start awarding points to students to see recent activity</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="/static/js/streak.js"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<script>
+    // Global loading state tracker for Dashboard
+    window.dashboardLoadingState = {
+        stats: false,
+        students: false,
+        awards: false,
+        hasError: false,
+        allLoaded: false
+    };
+    
+    // Flag to prevent multiple toast notifications
+    let dashboardToastShown = false;
+
+    // Function to check if all dashboard data has loaded
+    function checkDashboardDataLoaded() {
+        const state = window.dashboardLoadingState;
+        
+        // Only proceed if all three data types have been processed AND not already loaded
+        if (state.stats && state.students && state.awards && !state.allLoaded) {
+            state.allLoaded = true;
+            setTimeout(() => {
+                showDashboardContent();
+                // Only show toast if it hasn't been shown yet
+                if (!dashboardToastShown) {
+                    dashboardToastShown = true;
+                    showToast('Dashboard loaded succesfully!', 'success', 3000);
+                }
+            }, 100);
+        }
+    }
+
+    // DON'T set hasError = true on individual failures
+    function handleDashboardDataLoadError(dataType, error) {
+        console.error(`Dashboard ${dataType} load error:`, error);
+        window.dashboardLoadingState[dataType] = true; // Mark as attempted
+        // Remove: window.dashboardLoadingState.hasError = true;
+        checkDashboardDataLoaded();
+    }
+
+    // Show/hide loading and content states
+    function showDashboardLoading() {
+        const loadingMessage = document.getElementById('dashboardLoadingMessage');
+        const errorMessage = document.getElementById('dashboardErrorMessage');
+        const content = document.getElementById('dashboardContent');
+        
+        if (loadingMessage) loadingMessage.style.display = 'flex';
+        if (errorMessage) errorMessage.style.display = 'none';
+        if (content) content.style.display = 'none';
+    }
+
+    function showDashboardError() {
+        const loadingMessage = document.getElementById('dashboardLoadingMessage');
+        const errorMessage = document.getElementById('dashboardErrorMessage');
+        const content = document.getElementById('dashboardContent');
+        
+        if (loadingMessage) loadingMessage.style.display = 'none';
+        if (content) content.style.display = 'none';
+        
+        if (errorMessage) {
+            errorMessage.style.display = 'flex';
+            errorMessage.style.alignItems = 'center';
+            errorMessage.style.justifyContent = 'center';
+            errorMessage.style.minHeight = '400px';
+            
+            // Load the error template using fetch
+            fetch('/partials/showError')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load error template');
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    errorMessage.innerHTML = html;
+                    // Add event listener to retry button - calls location.reload() for this page
+                    const retryButton = document.getElementById('retryButton');
+                    if (retryButton) {
+                        retryButton.addEventListener('click', function() {
+                            location.reload(); // Reload the page to retry
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading error template:', error);
+                    // Fallback to basic error message
+                    errorMessage.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <h3 style="color: #DB2D2D;">Connection Error</h3>
+                            <p>Unable to load dashboard data. Please check your connection.</p>
+                            <button onclick="location.reload()" style="padding: 10px 20px; background: #5e72e4; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                                Retry
+                            </button>
+                        </div>
+                    `;
+                });
+        }
+    }
+
+    function showDashboardContent() {
+        const loadingMessage = document.getElementById('dashboardLoadingMessage');
+        const errorMessage = document.getElementById('dashboardErrorMessage');
+        const content = document.getElementById('dashboardContent');
+        
+        if (loadingMessage) loadingMessage.style.display = 'none';
+        if (errorMessage) errorMessage.style.display = 'none';
+        if (content) content.style.display = 'block';
+        console.log('Dashboard content shown');
+    }
+
+    // Function to get participation display text (same as students.js)
+    function getParticipationDisplay(student) {
+        if (typeof student.participation_percent === "number") {
+            return student.participation_percent + "%";
+        }
+        return student.participation_friendly || "No data";
+    }
+
+    // Function to show/hide empty states
+    function toggleEmptyStates(students, awards) {
+        const topStudentsEmpty = document.getElementById('topStudentsEmpty');
+        const recentAwardsEmpty = document.getElementById('recentAwardsEmpty');
+        const topStudentsTable = document.querySelector('#topStudentsTable');
+        const recentAwardsList = document.getElementById('recentAwardsList');
+
+        // Toggle top students empty state
+        if (students.length === 0) {
+            topStudentsTable.style.display = 'none';
+            topStudentsEmpty.style.display = 'block';
+        } else {
+            topStudentsTable.style.display = 'table';
+            topStudentsEmpty.style.display = 'none';
+        }
+
+        // Toggle recent awards empty state
+        if (awards.length === 0) {
+            recentAwardsList.style.display = 'none';
+            recentAwardsEmpty.style.display = 'block';
+        } else {
+            recentAwardsList.style.display = 'block';
+            recentAwardsEmpty.style.display = 'none';
+        }
+    }
+
+document.addEventListener('DOMContentLoaded', function() {
+    showDashboardLoading();
+    
+    // Load all data in parallel instead of sequentially
+    Promise.all([
+        fetchWithTimeout('/api/my-students').then(r => r.json()).catch(err => {
+            console.warn('Students failed, using fallback:', err);
+            return { success: true, students: [] }; // Empty fallback
+        }),
+        fetchWithTimeout('/api/dashboard-stats').then(r => r.json()).catch(err => {
+            console.warn('Stats failed, using fallback:', err);
+            return { 
+                success: true, 
+                points_awarded_this_month: 0,
+                rewards_redeemed_this_month: 0 
+            };
+        }),
+        fetchWithTimeout('/api/all-awards').then(r => r.json()).catch(err => {
+            console.warn('Awards failed, using fallback:', err);
+            return { success: true, awards: [] };
+        })
+    ])
+    .then(([studentsData, statsData, awardsData]) => {
+        // Process all data together
+        processStudentsData(studentsData);
+        processStatsData(statsData);
+        processAwardsData(awardsData);
+        
+        window.dashboardLoadingState.students = true;
+        window.dashboardLoadingState.stats = true;
+        window.dashboardLoadingState.awards = true;
+        
+        // REMOVED: showDashboardContent() and showToast() calls here
+        // Let checkDashboardDataLoaded() handle showing content
+        checkDashboardDataLoaded();
+    })
+    .catch(err => {
+        console.error('Dashboard load error:', err);
+        handleDashboardDataLoadError('combined', err);
+    });
+});
+
+function processStudentsData(data) {
+    console.log('Processing students data:', data);
+    if (data.success) {
+        // Update Active Students count
+        document.getElementById('activeStudents').textContent = data.students.length;
+        
+        // Calculate engagement rate (students with any participation this week)
+        const engaged = data.students.filter(s => s.participation_this_week > 0).length;
+        const engagementRate = data.students.length ? Math.round((engaged / data.students.length) * 100) : 0;
+        document.getElementById('engagementRate').textContent = engagementRate + '%';
+
+        // Top students table
+        const tbody = document.querySelector('#topStudentsTable tbody');
+        const top = [...data.students].sort((a, b) => b.points - a.points).slice(0, 5);
+        
+        if (top.length > 0) {
+            tbody.innerHTML = top.map(s => {
+                const streak = s.streak || 0;
+                let mainColor = '#9E9E9E';
+                if (streak < 7) mainColor = '#9E9E9E';
+                else if (streak < 15) mainColor = '#FFD600';
+                else if (streak < 22) mainColor = '#FF9800';
+                else if (streak < 29) mainColor = '#FF1744';
+                else if (streak < 36) mainColor = '#00FF40';
+                else if (streak < 50) mainColor = '#5E72E4';
+                else mainColor = '#8E24AA';
+                const streakClass = getStreakClass(streak);
+
+                return `
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="student-avatar" style="position:relative;">
+                                <span class="avatar streak-border ${streakClass}">
+                                    <img src="${s.pic || '/static/image/default-avatar.png'}" alt="avatar">
+                                </span>
+                                <span style="
+                                    position:absolute;
+                                    bottom:-6px;
+                                    left:50%;
+                                    transform:translateX(-50%);
+                                    background:#ffffff;
+                                    color:${mainColor};
+                                    font-weight:700;
+                                    font-size:0.70rem;
+                                    padding:2px 7px 2px 5px;
+                                    border-radius:12px;
+                                    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+                                    border:2px solid ${mainColor};
+                                    z-index:2;
+                                    display:flex;
+                                    align-items:center;
+                                ">
+                                    ${
+                                        streak < 7
+                                            ? `<span class="material-icons-round" style="font-size:1rem;margin-right:2px;">local_fire_department</span>`
+                                            : `<span class="streak-lottie-top" data-streak="${streak}" style="width:22px;height:22px;display:inline-block;margin-right:3px;"></span>`
+                                    }
+                                    ${streak}
+                                </span>
+                            </div>
+                            <div class="student-info">
+                                <div class="student-name">${s.name}</div>
+                                <div class="student-grade-section" style="font-size:0.85em;color:#adb5bd;">
+                                    ${s.grade && s.section ? `Grade ${s.grade} - Section ${s.section}` : 'No class'}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-center" style="vertical-align:middle;">
+                        <div class="points-badge">
+                            <span class="points-icon-gradient">
+                                <i class="fa-solid fa-star"></i>
+                            </span>
+                            <span class="student-points">${s.points}</span>
+                        </div>
+                    </td>
+                    <td class="text-center" style="vertical-align:middle;">
+                        <span class="badge rewards-badge">
+                            <i class="fas fa-gift me-1"></i>${s.total_rewards_redeemed || 0}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge participation-badge">${getParticipationDisplay(s)}</span>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+
+            // Animate streaks in Top Students table
+            setTimeout(() => {
+                document.querySelectorAll('.streak-lottie-top').forEach(el => {
+                    const streak = parseInt(el.getAttribute('data-streak'), 10) || 0;
+                    let jsonPath = getStreakAnimationPath(streak);
+
+                    if (streak >= 7) {
+                        lottie.loadAnimation({
+                            container: el,
+                            renderer: 'svg',
+                            loop: true,
+                            autoplay: true,
+                            path: jsonPath
+                        });
+                    }
+                });
+            }, 300);
+        }
+
+        window.dashboardLoadingState.students = true;
+        console.log('Students data loaded and rendered');
+        checkDashboardDataLoaded();
+    } else {
+        throw new Error(data.message || 'Failed to load students data');
+    }
+}
+
+function processStatsData(data) {
+    console.log('Processing stats data:', data);
+    if (data.success) {
+        document.getElementById('pointsAwarded').textContent = data.points_awarded_this_month;
+        document.getElementById('rewardsRedeemed').textContent = data.rewards_redeemed_this_month;
+        window.dashboardLoadingState.stats = true;
+        console.log('Stats data loaded and rendered');
+        checkDashboardDataLoaded();
+    } else {
+        throw new Error(data.message || 'Failed to load dashboard stats');
+    }
+}
+
+function processAwardsData(data) {
+    console.log('Processing awards data:', data);
+    if (data.success) {
+        const recent = data.awards.slice(0, 5); // Get only 5 most recent
+        const recentAwardsList = document.getElementById('recentAwardsList');
+        
+        if (recent.length > 0) {
+            recentAwardsList.innerHTML = recent.map(a => {
+                const imgSrc = a.pic || '/static/image/default-avatar.png';
+                const streak = a.streak || 0;
+                let mainColor = '#9E9E9E';
+                if (streak < 7) mainColor = '#9E9E9E';
+                else if (streak < 15) mainColor = '#FFD600';
+                else if (streak < 22) mainColor = '#FF9800';
+                else if (streak < 29) mainColor = '#FF1744';
+                else if (streak < 36) mainColor = '#00FF40';
+                else if (streak < 50) mainColor = '#5E72E4';
+                else mainColor = '#8E24AA';
+                const streakClass = getStreakClass(streak);
+
+                return `
+    <li class="list-group-item px-3 py-3" style="display:flex;align-items:center;gap:18px;">
+        <div style="position:relative;width:48px;height:48px;flex-shrink:0;">
+            <span class="avatar streak-border ${streakClass}" style="width:48px;height:48px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                <img src="${imgSrc}" alt="avatar" style="width:100%;height:100%;object-fit:cover;">
+            </span>
+            <span style="
+                position:absolute;
+                bottom:-6px;
+                left:50%;
+                transform:translateX(-50%);
+                background:#ffffff;
+                color:${mainColor};
+                font-weight:700;
+                font-size:0.70rem;
+                padding:2px 7px 2px 5px;
+                border-radius:12px;
+                box-shadow:0 2px 8px rgba(0,0,0,0.08);
+                border:2px solid ${mainColor};
+                z-index:2;
+                display:flex;
+                align-items:center;
+            ">
+                ${
+                    streak < 7
+                        ? `<span class="material-icons-round" style="font-size:1rem;margin-right:2px;">local_fire_department</span>`
+                        : `<span class="streak-lottie-recent" data-streak="${streak}" style="width:22px;height:22px;display:inline-block;margin-right:3px;"></span>`
+                }
+                ${streak}
+            </span>
+        </div>
+        <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:1rem;line-height:1.2;">${a.student}</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
+                <div class="points-badge">
+                    <span class="points-icon-gradient">
+                        <i class="fa-solid fa-star"></i>
+                    </span>
+                    <span class="student-points">${a.points}</span>
+                </div>
+                ${getCategoryBadge(a.category)}
+            </div>
+            ${
+                a.note && !/^Completed task:/i.test(a.note)
+                    ? `<div style="font-size:0.92em;color:#6c757d;margin-top:2px;">${a.note}</div>`
+                    : ''
+            }
+        </div>
+        <div style="text-align:right;min-width:70px;">
+            <span class="text-muted small">${timeAgo(a.date)}</span>
+        </div>
+    </li>
+    `;
+            }).join('');
+
+            // Animate streaks in Recent Awards
+            setTimeout(() => {
+                document.querySelectorAll('.streak-lottie-recent').forEach(el => {
+                    const streak = parseInt(el.getAttribute('data-streak'), 10) || 0;
+                    let jsonPath = getStreakAnimationPath(streak);
+
+                    if (streak >= 7) {
+                        lottie.loadAnimation({
+                            container: el,
+                            renderer: 'svg',
+                            loop: true,
+                            autoplay: true,
+                            path: jsonPath
+                        });
+                    }
+                });
+            }, 300);
+        }
+
+        // Update empty states after all data is loaded
+        fetch('/api/my-students')
+            .then(res => res.json())
+            .then(studentsData => {
+                if (studentsData.success) {
+                    toggleEmptyStates(studentsData.students, data.awards);
+                }
+            })
+            .catch(err => {
+                console.error('Error fetching students for empty state:', err);
+            });
+
+        window.dashboardLoadingState.awards = true;
+        console.log('Awards data loaded and rendered');
+        checkDashboardDataLoaded();
+    } else {
+        throw new Error(data.message || 'Failed to load awards data');
+    }
+}
+
+// Fallback function to calculate stats from all-awards if dashboard-stats endpoint doesn't exist
+function fetchFallbackStats() {
+    console.log('Using fallback stats calculation...');
+    fetch('/api/all-awards')
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Points awarded this month
+                const now = new Date();
+                const thisMonth = now.getMonth();
+                const thisYear = now.getFullYear();
+                let points = 0, rewards = 0;
+                data.awards.forEach(a => {
+                    const date = new Date(a.date);
+                    if (date.getMonth() === thisMonth && date.getFullYear() === thisYear) {
+                        points += a.points;
+                        // Count as reward if it's a reward redemption (you might need to adjust this logic)
+                        if (a.category && a.category.toLowerCase().includes('reward')) rewards += 1;
+                    }
+                });
+                document.getElementById('pointsAwarded').textContent = points;
+                document.getElementById('rewardsRedeemed').textContent = rewards;
+                window.dashboardLoadingState.stats = true;
+                console.log('Fallback stats loaded and rendered');
+                checkDashboardDataLoaded();
+            } else {
+                throw new Error(data.message || 'Failed to load fallback stats');
+            }
+        })
+        .catch(err => {
+            console.error('Error in fallback stats:', err);
+            handleDashboardDataLoadError('stats', err);
+        });
+}
+
+function getStreakAnimationPath(streak) {
+    if (streak < 15) return '/static/image/streak-animation/yellow_fire.json';
+    else if (streak < 22) return '/static/image/streak-animation/orange.json';
+    else if (streak < 29) return '/static/image/streak-animation/brightred_fire.json';
+    else if (streak < 36) return '/static/image/streak-animation/green_fire.json';
+    else if (streak < 50) return '/static/image/streak-animation/blue_fire.json';
+    else return '/static/image/streak-animation/purple_fire.json';
+}
+
+function timeAgo(dateString) {
+    const now = new Date();
+    const date = new Date(dateString);
+    const seconds = Math.floor((now - date) / 1000);
+
+    if (isNaN(seconds)) return '';
+    if (seconds < 60) return `${seconds} second${seconds !== 1 ? 's' : ''} ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days} day${days !== 1 ? 's' : ''} ago`;
+    const weeks = Math.floor(days / 7);
+    if (days < 30) return `${weeks} week${weeks !== 1 ? 's' : ''} ago`;
+    return date.toLocaleDateString();
+}
+
+function getCategoryBadge(category) {
+    switch (category) {
+        case 'Academic Achievement':
+            return `<span class="badge bg-primary text-white"><i class="fas fa-graduation-cap me-1"></i> Academic</span>`;
+        case 'Positive Behavior':
+            return `<span class="badge bg-success text-white"><i class="fas fa-smile-beam me-1"></i> Behavior</span>`;
+        case 'Class Participation':
+            return `<span class="badge bg-info text-white"><i class="fas fa-users me-1"></i> Participation</span>`;
+        case 'Perfect Attendance':
+            return `<span class="badge bg-warning text-white"><i class="fas fa-calendar-check me-1"></i> Attendance</span>`;
+        case 'Homework Completion':
+            return `<span class="badge bg-secondary text-white"><i class="fas fa-book me-1"></i> Homework</span>`;
+        case 'Improvement':
+            return `<span class="badge bg-dark text-white"><i class="fas fa-arrow-up me-1"></i> Improvement</span>`;
+        case 'Leadership':
+            return `<span class="badge bg-danger text-white"><i class="fas fa-chess-king me-1"></i> Leadership</span>`;
+        case 'Teamwork':
+            return `<span class="badge bg-teal text-white" style="background-color:#20c997;"><i class="fas fa-handshake me-1"></i> Teamwork</span>`;
+        case 'Custom':
+            return `<span class="badge bg-light text-white"><i class="fas fa-star me-1"></i> Custom</span>`;
+        case 'Activity':
+            return `<span class="badge bg-info text-white"><i class="fas fa-tasks me-1"></i> Activity</span>`;
+        default:
+            return `<span class="badge bg-secondary text-white">${category}</span>`;
+    }
+}
+
+function getStreakClass(streak) {
+    if (streak < 7) return '';
+    if (streak < 15) return 'streak-yellow';
+    if (streak < 22) return 'streak-orange';
+    if (streak < 29) return 'streak-red';
+    if (streak < 36) return 'streak-green';
+    if (streak < 50) return 'streak-blue';
+    return 'streak-purple';
+}
+
+function fetchWithTimeout(url, timeout = 5000) {
+    return Promise.race([
+        fetch(url),
+        new Promise((_, reject) =>
+            setTimeout(() => reject(new Error(`Timeout: ${url}`)), timeout)
+        )
+    ]);
+}
+</script>
+
+<style>
+.empty-state {
+    padding: 2rem 1rem;
+}
+
+.empty-icon {
+    opacity: 0.6;
+}
+
+.empty-state h5 {
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+</style>
+{% endblock %}
+
+{% endblock %}

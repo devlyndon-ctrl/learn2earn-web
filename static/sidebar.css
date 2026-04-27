@@ -1,0 +1,410 @@
+/* Apply collapsed state immediately from localStorage */
+html[data-sidebar-collapsed='true'] .sidebar {
+    width: 80px;
+}
+
+html[data-sidebar-collapsed='true'] .sidebar.collapsed {
+    width: 80px;
+}
+
+html[data-sidebar-collapsed='true'] .main-content {
+    margin-left: 80px;
+}
+
+html[data-sidebar-collapsed='true'] .sidebar .logo h4,
+html[data-sidebar-collapsed='true'] .sidebar .logo .brand-tagline {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    margin: 0;
+}
+
+html[data-sidebar-collapsed='true'] .sidebar .toggle-btn i {
+    transform: rotate(180deg);
+}
+
+/* Modern Sidebar Styles */
+.sidebar {
+    width: 280px;
+    background-color: #5e72e4;
+    background: linear-gradient(135deg, #5e72e4 0%, #4c63d2 50%, #3b4ec4 100%);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 30px rgba(94, 114, 228, 0.3), 0 0 2rem 0 rgba(136, 152, 170, .15);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    border-right: none;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.sidebar.collapsed {
+    width: 80px;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    padding: 16px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    min-height: 80px; /* Fixed height to prevent resizing */
+    box-sizing: border-box;
+}
+
+.sidebar .logo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    min-height: 45px;
+    flex: 1;
+}
+
+.sidebar.collapsed .logo {
+    justify-content: center;
+}
+
+.sidebar .logo img {
+    height: 45px !important;
+    width: 45px !important;
+    flex-shrink: 0;
+    object-fit: contain;
+    display: block;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1;
+}
+
+.sidebar .logo-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    line-height: 1;
+}
+
+.sidebar .logo h4 {
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: opacity 0.3s ease;
+    color: #ffffff;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.sidebar .logo .brand-tagline {
+    font-size: 9px !important;
+    color: rgba(255, 255, 255, 0.8);
+    white-space: normal;
+    transition: opacity 0.3s ease;
+    line-height: 1.2;
+    max-width: 120px;
+    margin: 0;
+    word-wrap: break-word;
+}
+
+.sidebar.collapsed .logo h4,
+.sidebar.collapsed .logo .brand-tagline {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    margin: 0;
+}
+
+.toggle-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #ffffff;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* Sidebar Menu */
+.sidebar-menu {
+    list-style: none;
+    padding: 16px 0;
+    flex: 1;
+    overflow-y: auto;
+    margin: 0;
+    min-height: 0;
+}
+
+.menu-item {
+    margin-bottom: 4px;
+    position: relative;
+}
+
+.menu-item a {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    margin: 0 12px;
+    border-radius: 8px;
+    border: none;
+}
+
+.menu-item a i {
+    font-size: 18px;
+    width: 24px;
+    margin-right: 16px;
+    text-align: center;
+    transition: margin 0.3s ease;
+}
+
+.menu-item a span {
+    white-space: nowrap;
+    transition: opacity 0.3s ease;
+    font-weight: 500;
+}
+
+.sidebar.collapsed .menu-item a span {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+}
+
+.menu-item a:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.menu-item.active a {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.menu-item.active a::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 20px;
+    width: 4px;
+    background: #ffffff;
+    border-radius: 0 4px 4px 0;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+    padding: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    flex-shrink: 0;
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    border: none;
+}
+
+.logout-btn i {
+    font-size: 18px;
+    width: 24px;
+    margin-right: 16px;
+    text-align: center;
+    transition: margin 0.3s ease;
+}
+
+.logout-btn span {
+    white-space: nowrap;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed .logout-btn span {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+}
+
+.logout-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    text-decoration: none;
+    color: #ffffff;
+}
+
+/* Main Content Adjustment */
+.main-content {
+    flex: 1;
+    padding: 30px;
+    transition: all 0.3s ease;
+    overflow-y: auto;
+    margin-left: 300px; /* Match sidebar width */
+}
+
+.sidebar.collapsed ~ .main-content {
+    margin-left: 80px; /* Match collapsed sidebar width */
+}
+
+/* Tooltip for collapsed state */
+.sidebar.collapsed .menu-item a::after,
+.sidebar.collapsed .logout-btn::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #1e293b;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    margin-left: 10px;
+    pointer-events: none;
+}
+
+.sidebar.collapsed .menu-item a:hover::after,
+.sidebar.collapsed .logout-btn:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Scrollbar Styling */
+.sidebar-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-menu::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: 70px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+    }
+    
+    .sidebar.collapsed {
+        width: 100%;
+        height: 70px;
+    }
+    
+    .sidebar-header {
+        border-bottom: none;
+        padding: 0;
+    }
+    
+    .sidebar-menu {
+        display: flex;
+        padding: 0;
+        overflow-x: auto;
+        flex: 1;
+        justify-content: center;
+        margin: 0 16px;
+    }
+    
+    .menu-item {
+        margin-bottom: 0;
+        margin-right: 4px;
+    }
+    
+    .menu-item a {
+        padding: 10px 16px;
+        border-radius: 8px;
+        margin: 0;
+    }
+    
+    .menu-item.active a::before {
+        display: none;
+    }
+    
+    .menu-item.active a {
+        border-bottom: 3px solid #ffffff;
+    }
+    
+    .sidebar-footer {
+        padding: 0;
+        border-top: none;
+    }
+    
+    .logout-btn {
+        padding: 10px 16px;
+    }
+    
+    .sidebar.collapsed .sidebar-menu,
+    .sidebar.collapsed .sidebar-footer {
+        display: none;
+    }
+    
+    .main-content {
+        padding: 20px;
+    }
+    
+    /* Hide tooltips on mobile */
+    .sidebar.collapsed .menu-item a::after,
+    .sidebar.collapsed .logout-btn::after {
+        display: none;
+    }
+}
+
+/* Ensure body has flex layout */
+body {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f8fafc;
+    color: #1e293b;
+}
+
+/* Remove any conflicting styles from existing sidebar */
+.nav.flex-column {
+    display: none; /* Hide old navigation structure */
+}
+
+.sidebar .nav-item {
+    display: none; /* Hide old navigation items */
+}

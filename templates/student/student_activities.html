@@ -1,0 +1,2602 @@
+{% extends "base.html" %}
+
+{% block title %}
+Learn2Earn - My Activities  
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='student_activities.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block page_title %}
+My Activities
+{% endblock %}
+
+{% block main_content %}
+<div class="student-home-container">
+    
+    <!-- Stats Section -->
+    <div class="stats-section">
+        <div class="stats-row">
+            <div class="points-card">
+                <div class="card-body">
+                    <div class="icon-container">
+                        <i class="fas fa-star star-icon"></i>
+                    </div>
+                    <div class="stat-value" id="totalPointsValue">0</div>
+                    <div class="stat-label">Total Points</div>
+                </div>
+            </div>
+            
+            <div class="streak-card">
+                <div class="card-body">
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-value">0</div>
+                    <div class="days-text">Completed</div>
+                </div>
+            </div>
+            
+            <div class="progress-card">
+                <div class="card-body">
+                    <div class="icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-value">0</div>
+                    <div class="days-text">Progress</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Updated Search and Filter Section -->
+    <div class="search-filter-section">
+        <div class="search-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search tasks...">
+            </div>
+                <!-- Add this after the stats section and before the search-filter section -->
+            <div class="custom-teacher-dropdown" id="customTeacherDropdown">
+                <button class="teacher-dropdown-toggle" id="teacherDropdownToggle">
+                    <img src="/static/image/default-avatar.png" alt="Teacher" class="teacher-dropdown-avatar" id="selectedTeacherAvatar">
+                    <span class="teacher-dropdown-info">
+                        <span class="teacher-dropdown-name" id="selectedTeacherName">All Teachers</span>
+                        <span class="teacher-dropdown-subject" id="selectedTeacherSubject">Select a teacher</span>
+                    </span>
+                    <i class="fas fa-chevron-down" style="margin-left: auto; font-size: 0.9em;"></i>
+                </button>
+                <div class="teacher-dropdown-menu" id="teacherDropdownMenu">
+                    <button class="teacher-dropdown-option" data-teacher-id="all">
+                        <img src="/static/image/default-avatar.png" alt="All Teachers" class="teacher-dropdown-avatar">
+                        <div class="teacher-dropdown-info">
+                            <span class="teacher-dropdown-name">All Teachers</span>
+                            <span class="teacher-dropdown-subject">View activities from all teachers</span>
+                        </div>
+                        <span class="teacher-dropdown-active-badge" id="allTeachersBadge">ALL</span>
+                    </button>
+                </div>
+            </div>
+            <div class="filter-tabs-container">
+                <div class="filter-tabs">
+                    <button class="filter-tab active gradient-tab">
+                        <i class="fas fa-filter"></i> All
+                    </button>
+                    <button class="filter-tab gradient-tab">
+                        <i class="fas fa-clipboard-list"></i> To Do
+                        <span class="tab-badge" id="toDoBadge" style="display:none;"></span>
+                    </button>
+                    <button class="filter-tab gradient-tab">
+                        <i class="fas fa-hourglass-half"></i> Pending
+                    </button>
+                    <button class="filter-tab gradient-tab">
+                        <i class="fas fa-check-circle"></i> Completed
+                    </button>
+                    <button class="filter-tab gradient-tab">
+                        <i class="fas fa-bell"></i> Due Soon
+                        <span class="tab-badge" id="dueSoonBadge" style="display:none;"></span>
+                    </button>
+                    <button class="filter-tab gradient-tab">
+                        <i class="fas fa-times-circle"></i> Denied
+                    </button>
+                    <button class="filter-tab small-tab gradient-tab">
+                        <i class="fas fa-award"></i> Awarded
+                    </button>
+                    <!-- Sort icon tab (no text) -->
+                    <button id="sortOptionsBtn" class="filter-tab gradient-tab" title="Sort Options">
+                        <i class="fas fa-sort"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-container" id="activitiesLoadingMessage">
+        <div class="loading-content">
+            <!-- Circular container for Lottie animation -->
+            <div class="loading-avatar-container">
+                <div class="loading-avatar-circle">
+                    <lottie-player 
+                        src="{{ url_for('static', filename='image/animation/loading_animation_blue.json') }}"
+                        background="transparent" 
+                        speed="1" 
+                        style="width: 100%; height: 100%;"
+                        loop 
+                        autoplay>
+                    </lottie-player>
+                </div>
+            </div>
+            
+            <div class="loading-text">
+                <div class="loading-title">Loading Activities</div>
+                <div class="loading-subtitle">Almost there! Your activities are being prepared</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error State Container -->
+    <div class="error-container" id="activitiesErrorMessage" style="display: none;">
+        <!-- Error content will be populated by JavaScript -->
+    </div>
+
+    <!-- Tasks List Section -->
+    <div class="tasks-section">
+        <div class="tasks-container">
+            <div class="task-list" id="taskListContainer">
+                <!-- Tasks will be rendered here dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- Your existing tasks section -->
+</div>
+
+<!-- Updated To-Do Activity Modal with New File Upload Design -->
+<div class="modal fade" id="toDoActivityModal" tabindex="-1" aria-labelledby="toDoActivityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content activity-modal-content">
+            <!-- Header with Gradient -->
+            <div class="activity-modal-header">
+                <div class="activity-modal-gradient" id="activityModalGradient">
+                    <!-- Badge will be inserted here -->
+                    <div id="activityModalBadge" class="activity-modal-badge"></div>
+                    
+                    <!-- Icon -->
+                    <div class="activity-modal-icon">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    
+                    <!-- Title -->
+                    <h2 class="activity-modal-title">Activity Details</h2>
+                    
+                    <!-- Subtitle -->
+                    <p class="activity-modal-desc">Review the activity information below</p>
+                </div>
+            </div>
+            
+            <!-- Body Content -->
+            <div class="modal-body activity-modal-body" id="toDoActivityModalBody"></div>
+            
+            <!-- Footer -->
+            <div class="modal-footer activity-modal-footer" id="activityModalFooter">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="handleSubmitProof()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Image Proof Modal -->
+<div class="modal fade" id="imageProofModal" tabindex="-1" aria-labelledby="imageProofModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageProofModalLabel">Activity Images</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="proofImage" src="" alt="Proof Image" class="img-fluid" style="max-height: 70vh; object-fit: contain;">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Sort Options Modal to use Bootstrap modal -->
+<div class="modal fade" id="sortOptionsModal" tabindex="-1" aria-labelledby="sortOptionsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="sort-options-header">
+                <div class="sort-options-header-left">
+                    <div class="sort-options-icon-circle">
+                        <i class="fas fa-sliders-h"></i>
+                    </div>
+                    <div class="sort-options-content">
+                        <span class="sort-options-title">Sort Activities</span>
+                        <span class="sort-options-subtitle">Choose how to organize your tasks</span>
+                    </div>
+                </div>
+                <button type="button" class="close-sort-options" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="sort-options-list">
+                <div class="sort-option" data-sort="deadline">
+                    <div class="sort-option-icon-container">
+                        <i class="fas fa-calendar-alt sort-option-icon"></i>
+                    </div>
+                    <div class="sort-option-content">
+                        <div class="sort-option-title">By Deadline</div>
+                        <div class="sort-option-desc">Sort activities by due date</div>
+                    </div>
+                    <div class="sort-option-check">
+                        <i class="fas fa-check"></i>
+                    </div>
+                </div>
+                <div class="sort-option" data-sort="priority">
+                    <div class="sort-option-icon-container">
+                        <i class="fas fa-exclamation sort-option-icon"></i>
+                    </div>
+                    <div class="sort-option-content">
+                        <div class="sort-option-title">By Priority</div>
+                        <div class="sort-option-desc">Sort activities by importance</div>
+                    </div>
+                    <div class="sort-option-check">
+                        <i class="fas fa-check"></i>
+                    </div>
+                </div>
+                <div class="sort-option" data-sort="points">
+                    <div class="sort-option-icon-container">
+                        <i class="fas fa-star sort-option-icon"></i>
+                    </div>
+                    <div class="sort-option-content">
+                        <div class="sort-option-title">By Points</div>
+                        <div class="sort-option-desc">Sort activities by reward points</div>
+                    </div>
+                    <div class="sort-option-check">
+                        <i class="fas fa-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Updated Awarded Details Modal - Flutter Design -->
+<div class="modal fade" id="awardedDetailsModal" tabindex="-1" aria-labelledby="awardedDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-md">
+    <div class="modal-content award-modal-content">
+      <!-- Header Section with Gradient Background -->
+      <div class="award-modal-header">
+        <div class="award-header-gradient">
+          <!-- Star Pattern Background -->
+          <div class="star-pattern">
+            <i class="fas fa-star star-bg star-1"></i>
+            <i class="fas fa-star star-bg star-2"></i>
+            <i class="fas fa-star star-bg star-3"></i>
+            <i class="fas fa-star star-bg star-4"></i>
+          </div>
+          
+          <!-- Trophy Icon -->
+          <div class="trophy-container">
+            <div class="trophy-icon-circle">
+              <i class="fas fa-trophy trophy-icon"></i>
+            </div>
+          </div>
+          
+          <!-- Title -->
+          <h2 class="congratulations-title">Congratulations!</h2>
+          
+          <!-- Points and Category Badges Container (centered) -->
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+            <div class="points-badge" id="awardPointsBadge">
+                <i class="fas fa-star points-star"></i>
+                <span class="points-value" id="awardPointsValue">+0</span>
+                <span class="points-label">Points</span>
+            </div>
+            <div class="category-badge" id="awardCategoryBadge" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Section -->
+      <div class="award-modal-body">
+        <!-- Teacher Info Card -->
+        <div class="teacher-info-card">
+          <div class="teacher-avatar">
+            <img id="teacherAvatar" src="" alt="Teacher">
+          </div>
+          <div class="teacher-details">
+            <div class="awarded-by-label">
+              <i class="fas fa-graduation-cap"></i>
+              Awarded by
+            </div>
+            <div class="teacher-name" id="teacherName">Teacher</div>
+            <div class="teacher-subject" id="teacherSubject"></div>
+          </div>
+        </div>
+
+        <!-- Date Card -->
+        <div class="date-card">
+          <div class="date-icon">
+            <i class="fas fa-calendar-alt"></i>
+          </div>
+          <div class="date-details">
+            <div class="date-label">Date Awarded</div>
+            <div class="date-value" id="awardDate">Not set</div>
+          </div>
+        </div>
+
+        <!-- Note Section -->
+        <div class="note-card" id="noteCard" style="display: none;">
+          <div class="note-header">
+            <i class="fas fa-quote-left"></i>
+            <span class="note-title">Message from Teacher</span>
+          </div>
+          <div class="note-content">
+            <p id="teacherNote"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER MOVED OUTSIDE BODY - ALWAYS VISIBLE -->
+      <div class="activity-modal-footer award-modal-footer">
+          <button type="button" class="awesome-btn" data-bs-dismiss="modal" style="width: 100%;">
+              <span>Awesome!</span>
+              <i class="fas fa-check-circle"></i>
+          </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toastNotification" class="toast-notification"></div>
+
+<!-- Modern File Upload Handler -->
+<script>
+class ModernFileUploadManager {
+    constructor(containerId) {
+        this.container = document.getElementById(containerId);
+        this.selectedFiles = []; // Now stores objects with file and metadata
+        this.maxFileSize = 50 * 1024 * 1024; // 50MB
+        this.maxTotalSize = 200 * 1024 * 1024; // 200MB
+        this.maxFileCount = 10;
+        this.totalSize = 0;
+    }
+
+    // Get file type and color
+    getFileType(filename) {
+        const ext = filename.split('.').pop().toLowerCase();
+        
+        const types = {
+            'pdf': 'pdf',
+            'doc': 'document', 'docx': 'document', 'txt': 'document', 'rtf': 'document', 'odt': 'document',
+            'xls': 'spreadsheet', 'xlsx': 'spreadsheet', 'csv': 'spreadsheet',
+            'ppt': 'presentation', 'pptx': 'presentation',
+            'jpg': 'image', 'jpeg': 'image', 'png': 'image', 'gif': 'image', 'webp': 'image', 'bmp': 'image',
+            'zip': 'archive', 'rar': 'archive', '7z': 'archive',
+            'mp4': 'video', 'mov': 'video', 'avi': 'video', 'wmv': 'video', 'mkv': 'video', 'flv': 'video',
+            'mp3': 'audio', 'wav': 'audio', 'm4a': 'audio', 'aac': 'audio', 'flac': 'audio', 'ogg': 'audio'
+        };
+        
+        return types[ext] || 'default';
+    }
+
+    // Get icon for file type
+    getFileIcon(fileType) {
+        const icons = {
+            'pdf': 'fa-file-pdf',
+            'document': 'fa-file-word',
+            'spreadsheet': 'fa-file-excel',
+            'presentation': 'fa-file-powerpoint',
+            'image': 'fa-image',
+            'archive': 'fa-file-archive',
+            'video': 'fa-file-video',
+            'audio': 'fa-file-audio',
+            'default': 'fa-file'
+        };
+        
+        return icons[fileType] || icons['default'];
+    }
+
+    // Get file type label
+    getFileTypeLabel(fileType) {
+        const labels = {
+            'pdf': 'PDF',
+            'document': 'DOC',
+            'spreadsheet': 'SHEET',
+            'presentation': 'PPT',
+            'image': 'IMG',
+            'archive': 'ZIP',
+            'video': 'VIDEO',
+            'audio': 'AUDIO',
+            'default': 'FILE'
+        };
+        
+        return labels[fileType] || labels['default'];
+    }
+
+    // Format bytes
+    formatBytes(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    // Add files - store with metadata
+    addFiles(files) {
+        const validFiles = [];
+        const errors = [];
+
+        for (let file of files) {
+            // Check file size
+            if (file.size > this.maxFileSize) {
+                errors.push(`${file.name}: Exceeds 50MB limit`);
+                continue;
+            }
+
+            // Check total size
+            if (this.totalSize + file.size > this.maxTotalSize) {
+                errors.push(`${file.name}: Would exceed 200MB total limit`);
+                continue;
+            }
+
+            // Check file count
+            if (this.selectedFiles.length + validFiles.length >= this.maxFileCount) {
+                errors.push(`Maximum ${this.maxFileCount} files per submission`);
+                break;
+            }
+
+            // Store file with metadata
+            validFiles.push({
+                file: file,
+                originalName: file.name,
+                size: file.size,
+                type: file.type,
+                lastModified: file.lastModified
+            });
+            this.totalSize += file.size;
+        }
+
+        this.selectedFiles.push(...validFiles);
+
+        if (errors.length > 0) {
+            showToast(errors.slice(0, 3).join('\n'), true);
+        }
+
+        this.render();
+    }
+
+    // Remove file
+    removeFile(index) {
+        if (index >= 0 && index < this.selectedFiles.length) {
+            this.totalSize -= this.selectedFiles[index].size;
+            this.selectedFiles.splice(index, 1);
+            this.render();
+        }
+    }
+
+    // Clear all files
+    clearAll() {
+        this.selectedFiles = [];
+        this.totalSize = 0;
+        this.render();
+    }
+
+    // Render upload container
+    render() {
+        if (!this.container) return;
+
+        const hasFiles = this.selectedFiles.length > 0;
+        const progressPercent = (this.totalSize / this.maxTotalSize) * 100;
+
+        let html = `
+            <div class="upload-files-container">
+                <!-- Header -->
+                <div class="upload-files-header">
+                    <div class="upload-files-header-content">
+                        <div class="upload-files-header-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-files-header-text">
+                            <p class="upload-files-header-title">Upload Proof Files</p>
+                            <p class="upload-files-header-subtitle">
+                                ${hasFiles ? `${this.selectedFiles.length} file(s) ready` : 'Attach documents or media'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="upload-files-body">
+        `;
+
+        // Storage section (show only if files selected)
+        if (hasFiles) {
+            html += `
+                <div class="upload-storage-section">
+                    <div class="storage-header">
+                        <span class="storage-label">Storage Used</span>
+                        <span class="storage-value">${this.formatBytes(this.totalSize)}</span>
+                    </div>
+                    <div class="storage-bar-container">
+                        <div class="storage-bar-fill" style="width: ${Math.min(progressPercent, 100)}%"></div>
+                    </div>
+                    <div class="storage-footer">
+                        <span class="storage-usage">${this.formatBytes(this.totalSize)} / 200 MB (${progressPercent.toFixed(0)}%)</span>
+                        <button class="storage-clear-btn" onclick="fileUploadManager.clearAll()">Clear All</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Selected files grid
+        if (hasFiles) {
+            html += `
+                <div class="upload-files-list-section">
+                    <label class="upload-files-list-label">Selected Files</label>
+                    <div class="upload-files-grid">
+            `;
+
+            this.selectedFiles.forEach((fileObj, index) => {
+                const fileType = this.getFileType(fileObj.originalName);
+                const fileIcon = this.getFileIcon(fileType);
+                const fileLabel = this.getFileTypeLabel(fileType);
+
+                html += `
+                    <div class="upload-file-item file-type-${fileType}">
+                        <div class="upload-file-icon">
+                            <div class="upload-file-icon-box">
+                                <i class="fas ${fileIcon}"></i>
+                            </div>
+                            <span class="upload-file-type">${fileLabel}</span>
+                        </div>
+                        <button class="upload-file-remove" onclick="fileUploadManager.removeFile(${index})" title="Remove file">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <div class="file-size-info">${this.formatBytes(fileObj.size)}</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+            `;
+        } else {
+            // Upload prompt
+            html += `
+                <div class="upload-prompt-container" onclick="document.querySelector('.file-upload-input').click()">
+                    <div class="upload-prompt-icon">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <p class="upload-prompt-text">Click to upload files</p>
+                    <p class="upload-prompt-subtext">Max 10 files, 50MB each, 200MB total</p>
+                </div>
+            `;
+        }
+
+        // Action buttons
+        html += `
+                    <div class="upload-buttons-container">
+                        ${!hasFiles ? `
+                        <button class="upload-button upload-button-primary" onclick="document.querySelector('.file-upload-input').click()">
+                            <i class="fas fa-folder-open"></i>
+                            <span>Select Files</span>
+                        </button>
+                        ` : `
+                        <button class="upload-button upload-button-primary" onclick="handleSubmitProof()">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Submit Files</span>
+                        </button>
+                        <button class="upload-button upload-button-secondary" onclick="fileUploadManager.clearAll()">
+                            <i class="fas fa-times"></i>
+                            <span>Clear Selection</span>
+                        </button>
+                        `}
+                    </div>
+                </div>
+            </div>
+
+            <input type="file" class="file-upload-input" multiple accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.zip,.mp4,.mp3,.wav" 
+                onchange="fileUploadManager.addFiles(Array.from(this.files)); this.value = '';">
+        `;
+
+        this.container.innerHTML = html;
+    }
+
+    // Get files for upload (returns array of file objects with metadata)
+    getFiles() {
+        return this.selectedFiles;
+    }
+}
+
+// Initialize file upload manager
+let fileUploadManager;
+
+// Update getUploadProofSectionHTML to use new Flutter design
+function getUploadProofSectionHTML() {
+    return `
+    <div class="activity-modal-section" style="margin-top: 20px;">
+        <!-- Upload Proof Header (matching ACTIVITY DETAILS style) -->
+        <div style="background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%); border-radius: 12px; padding: 16px 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+            <div style="background: rgba(255,255,255,0.2); border-radius: 8px; padding: 8px 10px;">
+                <i class="fas fa-cloud-upload-alt" style="color: white; font-size: 18px;"></i>
+            </div>
+            <div style="color: white; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Add Files or Links as Proof</div>
+        </div>
+        <div id="fileUploadContainer"></div>
+    </div>
+    `;
+}
+
+// Update showTaskDetailsModal to initialize file upload
+function initializeFileUpload() {
+    const container = document.getElementById('fileUploadContainer');
+    if (container) {
+        // Check if task is denied or past due - don't initialize upload if it is
+        if (window.currentTask && (window.currentTask.status === 'Denied' || window.currentTask.status === 'Past Due')) {
+            container.innerHTML = '<p style="color: #EF4444; text-align: center; padding: 20px;">Cannot upload files to a past-due task.</p>';
+            return;
+        }
+        // Always create a new instance when initializing
+        fileUploadManager = new ModernFileUploadManager('fileUploadContainer');
+        fileUploadManager.render();
+    }
+}
+// Updated handleSubmitProof
+window.handleSubmitProof = function() {
+    // Check if current task is denied or past due
+    if (window.currentTask && (window.currentTask.status === 'Denied' || window.currentTask.status === 'Past Due')) {
+        showToast('This task is past due and can no longer accept submissions.', true);
+        return;
+    }
+    
+    if (!fileUploadManager || fileUploadManager.getFiles().length === 0) {
+        showToast('Please select at least one file to upload.', true);
+        return;
+    }
+
+    showConfirmationDialog(
+        'Submit Files',
+        `Are you sure you want to submit ${fileUploadManager.getFiles().length} file(s)? Once submitted, you cannot make changes.`,
+        async () => {
+            await submitFilesToServer();
+        }
+    );
+};
+
+// Updated file submission with original filename preservation
+async function submitFilesToServer() {
+    try {
+        showLoadingState(true);
+        const fileObjects = fileUploadManager.getFiles();
+
+        if (fileObjects.length === 0) {
+            showToast('No files selected.', true);
+            return;
+        }
+
+        // Upload all files and collect metadata
+        const uploadedUrls = [];
+        const fileMetadata = [];
+        
+        for (const fileObj of fileObjects) {
+            const formData = new FormData();
+            formData.append('file', fileObj.file);
+            // IMPORTANT: Send the original filename separately
+            formData.append('original_filename', fileObj.originalName);
+
+            const res = await fetch('/api/upload-proof-image', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await res.json();
+            if (data.success && data.url) {
+                uploadedUrls.push(data.url);
+                // Capture complete file metadata from upload response
+                fileMetadata.push({
+                    original_filename: data.original_filename || fileObj.originalName,
+                    filename: data.filename,
+                    file_size: data.file_size || fileObj.size,
+                    mime_type: data.content_type || fileObj.type
+                });
+            } else {
+                throw new Error(data.message || `Upload failed for ${fileObj.originalName}`);
+            }
+        }
+
+        // Submit to backend with file metadata
+        const submitRes = await fetch('/api/submit-task-proof', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                task_id: window.currentTaskId,
+                image_urls: uploadedUrls,
+                file_metadata: fileMetadata
+            })
+        });
+
+        const submitData = await submitRes.json();
+
+        if (submitData.success) {
+            showToast('Files submitted successfully!', false);
+            const modal = bootstrap.Modal.getInstance(document.getElementById('toDoActivityModal'));
+            if (modal) modal.hide();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            throw new Error(submitData.message || 'Submission failed');
+        }
+
+    } catch (error) {
+        console.error('Submission error:', error);
+        showToast('Error: ' + error.message, true);
+    } finally {
+        showLoadingState(false);
+    }
+}
+
+// Helper function to show/hide loading state
+function showLoadingState(show) {
+    const submitBtn = document.querySelector('.activity-modal-footer .btn-primary');
+    if (submitBtn) {
+        if (show) {
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            submitBtn.disabled = true;
+        } else {
+            submitBtn.innerHTML = 'Submit';
+            submitBtn.disabled = false;
+        }
+    }
+}
+
+// Update modal opening to initialize file upload
+document.addEventListener('DOMContentLoaded', function() {
+    // In your showTaskDetailsModal function, after setting innerHTML of toDoActivityModalBody, add:
+    const modalElement = document.getElementById('toDoActivityModal');
+    if (modalElement) {
+        modalElement.addEventListener('shown.bs.modal', function() {
+            setTimeout(() => {
+                // IMPORTANT FIX: Reinitialize fileUploadManager only when needed
+                const container = document.getElementById('fileUploadContainer');
+                if (container) {
+                    // Check if task is denied or past due - don't initialize upload if it is
+                    if (window.currentTask && (window.currentTask.status === 'Denied' || window.currentTask.status === 'Past Due')) {
+                        container.innerHTML = '<p style="color: #EF4444; text-align: center; padding: 20px; font-weight: 600;">Cannot upload files to a past-due task.</p>';
+                        return;
+                    }
+                    // Create new instance if it doesn't exist, or reinitialize if container is empty
+                    if (!fileUploadManager || !document.getElementById('fileUploadContainer')) {
+                        fileUploadManager = new ModernFileUploadManager('fileUploadContainer');
+                    } else {
+                        // Update the container reference
+                        fileUploadManager.container = document.getElementById('fileUploadContainer');
+                    }
+                    fileUploadManager.render();
+                }
+            }, 100);
+        });
+        
+        // Reset file upload manager when modal is hidden
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            if (fileUploadManager) {
+                fileUploadManager.clearAll();
+                // Clear the manager reference to force reinitialization next time
+                fileUploadManager = null;
+            }
+        });
+    }
+});
+</script>
+
+<script>
+    /* Jinja2 templating: student ID will be injected here */
+    const rawStudentId = "{{ session['user_id'] }}";
+    window.currentStudentId = parseInt(rawStudentId, 10) || rawStudentId;
+
+    // Global loading state tracker for Activities page
+    window.activitiesLoadingState = {
+        tasks: false,
+        stats: false,
+        allLoaded: false
+    };
+
+    // Store uploaded proof images
+    let uploadedProofs = [];
+
+    // Toast Notification Utility
+    let toastTimeoutId = null;
+    function showToast(message, isError = false, duration = 3000) {
+        // Remove any existing toasts
+        const existingToasts = document.querySelectorAll('.toast-notification');
+        existingToasts.forEach(toast => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification' + (isError ? ' error' : ' success');
+        toast.innerHTML = `
+            <div class="toast-content">
+                <i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'} me-2"></i>
+                ${message}
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        // Animate in
+        setTimeout(() => { 
+            toast.classList.add('show'); 
+        }, 10);
+
+        // Auto remove after duration
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => { 
+                if (toast.parentNode) toast.parentNode.removeChild(toast); 
+            }, 300);
+        }, duration);
+
+        // Allow click to dismiss
+        toast.addEventListener('click', function() {
+            this.classList.remove('show');
+            setTimeout(() => { 
+                if (this.parentNode) this.parentNode.removeChild(this); 
+            }, 300);
+        });
+    }
+
+
+
+    // Remove proof function
+    window.removeProof = function(index) {
+        if (index >= 0 && index < uploadedProofs.length) {
+            // Revoke the object URL to free memory
+            URL.revokeObjectURL(uploadedProofs[index].url);
+            // Remove from array
+            uploadedProofs.splice(index, 1);
+            // Re-render the upload section
+            updateUploadProofContainer();
+            console.log('Proof removed at index:', index);
+        }
+    };
+
+    // Function to show confirmation dialog
+    function showConfirmationDialog(title, message, onConfirm) {
+        const dialog = document.getElementById('confirmationDialogue');
+        const titleElement = document.getElementById('confirmationDialogueTitle');
+        const messageElement = document.getElementById('confirmationDialogueMessage');
+        const confirmBtn = document.getElementById('confirmationDialogueConfirmBtn');
+        const cancelBtn = document.getElementById('confirmationDialogueCancelBtn');
+
+        // Set dialog content
+        titleElement.textContent = title;
+        messageElement.textContent = message;
+
+        // Remove any existing event listeners
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+        // Add new event listeners
+        newConfirmBtn.addEventListener('click', function() {
+            dialog.style.display = 'none';
+            onConfirm();
+        });
+
+        newCancelBtn.addEventListener('click', function() {
+            dialog.style.display = 'none';
+        });
+
+        // Show dialog
+        dialog.style.display = 'flex';
+    }
+
+    // Separate function to handle actual server submission
+    async function submitProofToServer() {
+        try {
+            showLoadingState(true);
+            console.log('Starting proof submission for task:', window.currentTaskId);
+
+            // 1. Upload all images to Supabase Storage
+            const uploadedUrls = [];
+            const fileMetadata = [];
+            
+            for (const proof of uploadedProofs) {
+                console.log('Uploading file:', proof.name);
+
+                const formData = new FormData();
+                formData.append('file', proof.file);
+                formData.append('original_filename', proof.name);
+
+                const res = await fetch('/api/upload-proof-image', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+                if (data.success && data.url) {
+                    uploadedUrls.push(data.url);
+                    // Capture original filename metadata
+                    fileMetadata.push({
+                        original_filename: data.original_filename || proof.name
+                    });
+                    console.log('Successfully uploaded:', data.url);
+                } else {
+                    throw new Error(data.message || 'Upload failed for ' + proof.name);
+                }
+            }
+
+            console.log('All images uploaded. URLs:', uploadedUrls);
+
+            // 2. Submit array of URLs and metadata to backend
+            const submitRes = await fetch('/api/submit-task-proof', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    task_id: window.currentTaskId,
+                    image_urls: uploadedUrls,
+                    file_metadata: fileMetadata
+                })
+            });
+
+            const submitData = await submitRes.json();
+            console.log('Submission response:', submitData);
+
+            if (submitData.success) {
+                // Show success toast
+                showToast('Proof submitted successfully!', false);
+                // Close modal and refresh
+                const modal = bootstrap.Modal.getInstance(document.getElementById('toDoActivityModal'));
+                if (modal) modal.hide();
+                location.reload();
+            } else {
+                throw new Error(submitData.message || 'Submission failed');
+            }
+
+        } catch (error) {
+            console.error('Submission error:', error);
+            showToast('Error submitting proof: ' + error.message, true);
+        } finally {
+            showLoadingState(false);
+            // Clean up object URLs
+            uploadedProofs.forEach(proof => URL.revokeObjectURL(proof.url));
+            uploadedProofs = [];
+        }
+    }
+
+    // Fixed JavaScript code for the task modal functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        let allTasks = [];
+        let currentFilter = 'All';
+        let currentSort = null;
+        let selectedTeacherId = 'all';
+
+        // Teacher dropdown elements
+        const customTeacherDropdown = document.getElementById('customTeacherDropdown');
+        const teacherDropdownToggle = document.getElementById('teacherDropdownToggle');
+        const teacherDropdownMenu = document.getElementById('teacherDropdownMenu');
+        const selectedTeacherAvatar = document.getElementById('selectedTeacherAvatar');
+        const selectedTeacherName = document.getElementById('selectedTeacherName');
+        const selectedTeacherSubject = document.getElementById('selectedTeacherSubject');
+
+        // Teacher dropdown functionality
+        if (teacherDropdownToggle && teacherDropdownMenu) {
+            teacherDropdownToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                teacherDropdownMenu.classList.toggle('open');
+                teacherDropdownToggle.classList.toggle('active');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (customTeacherDropdown && !customTeacherDropdown.contains(e.target)) {
+                    teacherDropdownMenu.classList.remove('open');
+                    teacherDropdownToggle.classList.remove('active');
+                }
+            });
+        }
+
+        // ✅ FIXED: Teacher selection function - PROPERLY IMPLEMENTED
+        function selectTeacherForActivities(teacherId, teacherName, teacherSubject, teacherAvatar) {
+            console.log('Selecting teacher:', teacherId, teacherName);
+            
+            selectedTeacherAvatar.src = teacherAvatar;
+            selectedTeacherName.textContent = teacherName;
+            selectedTeacherSubject.textContent = teacherSubject;
+
+            // Update active badges
+            document.querySelectorAll('.teacher-dropdown-active-badge').forEach(badge => {
+                badge.style.display = 'none';
+            });
+
+            if (teacherId === 'all') {
+                document.getElementById('allTeachersBadge').style.display = 'inline-block';
+            } else {
+                const selectedOption = document.querySelector(`[data-teacher-id="${teacherId}"] .teacher-dropdown-active-badge`);
+                if (selectedOption) {
+                    selectedOption.style.display = 'inline-block';
+                }
+            }
+
+            // Close dropdown
+            teacherDropdownMenu.classList.remove('open');
+            teacherDropdownToggle.classList.remove('active');
+
+            // Update global variable
+            selectedTeacherId = teacherId;
+
+            // ✅ FIXED: Reset filter tab to "All" before rendering
+            const allTab = document.querySelector('.filter-tab:not(#sortOptionsBtn)');
+            if (allTab) {
+                document.querySelectorAll('.filter-tab:not(#sortOptionsBtn)').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                allTab.classList.add('active');
+                currentFilter = 'All';
+            }
+
+            // ✅ NOW render tasks with the new teacher filter applied
+            console.log(`Teacher filter applied: ${teacherId}, Current filter: ${currentFilter}`);
+            renderTasks();
+        }
+
+        // ✅ FIXED: Get selected teacher ID
+        function getSelectedTeacherIdForActivities() {
+            return selectedTeacherId;
+        }
+
+        // ✅ FIXED: Populate teacher dropdown - CORRECTED VERSION
+        function populateTeacherDropdownForActivities(assignedTeachers) {
+            if (!teacherDropdownMenu) return;
+            
+            // Clear existing options
+            teacherDropdownMenu.innerHTML = '';
+
+            // Add "All Teachers" option first
+            const allTeachersOption = document.createElement('button');
+            allTeachersOption.className = 'teacher-dropdown-option';
+            allTeachersOption.setAttribute('data-teacher-id', 'all');
+            allTeachersOption.innerHTML = `
+                <img src="/static/image/default-avatar.png" alt="All Teachers" class="teacher-dropdown-avatar">
+                <div class="teacher-dropdown-info">
+                    <span class="teacher-dropdown-name">All Teachers</span>
+                    <span class="teacher-dropdown-subject">View activities from all teachers</span>
+                </div>
+                <span class="teacher-dropdown-active-badge" id="allTeachersBadge">ALL</span>
+            `;
+
+            // Add click event for "All Teachers"
+            allTeachersOption.addEventListener('click', function() {
+                selectTeacherForActivities('all', 'All Teachers', 'View activities from all teachers', '/static/image/default-avatar.png');
+            });
+
+            teacherDropdownMenu.appendChild(allTeachersOption);
+
+            // Add individual teacher options
+            assignedTeachers.forEach(teacher => {
+                const teacherOption = document.createElement('button');
+                teacherOption.className = 'teacher-dropdown-option';
+                teacherOption.setAttribute('data-teacher-id', teacher.id);
+
+                teacherOption.innerHTML = `
+                    <img src="${teacher.avatar || '/static/image/default-avatar.png'}" alt="${teacher.name}" class="teacher-dropdown-avatar"
+                        onerror="this.src='/static/image/default-avatar.png'">
+                    <div class="teacher-dropdown-info">
+                        <span class="teacher-dropdown-name">${teacher.name}</span>
+                        <span class="teacher-dropdown-subject">${teacher.subject || 'General'}</span>
+                    </div>
+                    <span class="teacher-dropdown-active-badge" style="display: none;">SELECTED</span>
+                `;
+
+                teacherOption.addEventListener('click', function() {
+                    selectTeacherForActivities(
+                        teacher.id, 
+                        teacher.name, 
+                        teacher.subject || 'General', 
+                        teacher.avatar || '/static/image/default-avatar.png'
+                    );
+                });
+
+                teacherDropdownMenu.appendChild(teacherOption);
+            });
+        }
+
+        // Function to check if all data has loaded
+        function checkAllDataLoaded() {
+            const state = window.activitiesLoadingState;
+            if (!state.allLoaded && state.tasks && state.stats) {
+                state.allLoaded = true;
+                showToast('Activities Loaded Successfully!', false);
+            }
+        }
+
+        // Function to handle loading errors
+        function handleDataLoadError(dataType) {
+            window.activitiesLoadingState[dataType] = true; // Mark as loaded (but failed)
+            checkAllDataLoaded();
+        }
+
+        // Update points display
+        function updatePointsDisplay() {
+            fetch('/api/student-points')
+                .then(res => res.json())
+                .then( data => {
+                    if (data.success) {
+                        document.querySelector('#totalPointsValue').textContent = data.points;
+                        window.activitiesLoadingState.stats = true;
+                        checkAllDataLoaded();
+                    } else {
+                        handleDataLoadError('stats');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading stats:', error);
+                    handleDataLoadError('stats');
+                });
+        }
+
+        updatePointsDisplay();
+        
+        // Tab filter logic
+        const tabs = document.querySelectorAll('.filter-tab:not(#sortOptionsBtn)');
+            
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Get the filter text properly
+                const tabText = tab.textContent.trim();
+                const iconText = tab.querySelector('i').className;
+                
+                // Map tab content to filter names
+                if (tabText === 'All' || iconText.includes('fa-filter')) {
+                    currentFilter = 'All';
+                } else if (tabText === 'To Do' || iconText.includes('fa-clipboard-list')) {
+                    currentFilter = 'To Do';
+                } else if (tabText === 'Pending' || iconText.includes('fa-hourglass-half')) {
+                    currentFilter = 'Pending';
+                } else if (tabText === 'Completed' || iconText.includes('fa-check-circle')) {
+                    currentFilter = 'Completed';
+                } else if (tabText === 'Due Soon' || iconText.includes('fa-bell')) {
+                    currentFilter = 'Due Soon';
+                } else if (tabText === 'Denied' || iconText.includes('fa-times-circle')) {
+                    currentFilter = 'Denied';
+                } else if (tabText === 'Awarded' || iconText.includes('fa-award')) {
+                    currentFilter = 'Awarded';
+                } else {
+                    currentFilter = 'All';
+                }
+                
+                console.log('Filter changed to:', currentFilter);
+                renderTasks();
+            });
+        });
+
+        // ✅ FIXED: Updated fetchActivities to populate teacher dropdown
+        async function fetchActivities() {
+            showActivityLoading();
+            console.log('Fetching activities...');
+            try {
+                const res = await fetch('/api/student-activities');
+                const data = await res.json();
+                
+                if (data.success) {
+                    console.log('Activities fetched successfully:', data.activities);
+                    console.log('Assigned teachers:', data.assigned_teachers);
+                    
+                    // ✅ FIXED: Populate teacher dropdown with assigned teachers
+                    if (data.assigned_teachers) {
+                        populateTeacherDropdownForActivities(data.assigned_teachers);
+                    }
+                    
+                    window.activitiesLoadingState.tasks = true;
+                    checkAllDataLoaded();
+                    showActivityContent();
+                    return data.activities;
+                } else {
+                    console.error('API returned success=false:', data.message);
+                    window.activitiesLoadingState.tasks = true;
+                    checkAllDataLoaded();
+                    showActivityError();
+                    return await fetchActivitiesDebug();
+                }
+            } catch (e) {
+                console.error('Error fetching activities:', e);
+                window.activitiesLoadingState.tasks = true;
+                checkAllDataLoaded();
+                showActivityError();
+                return await fetchActivitiesDebug();
+            }
+        }
+
+        // Debug endpoint
+        async function fetchActivitiesDebug() {
+            console.log('Trying debug endpoint...');
+            try {
+                const res = await fetch('/api/student-activities-debug');
+                const data = await res.json();
+                
+                if (data.activities && data.activities.length > 0) {
+                    return data.activities;
+                } else {
+                    showDebugMessage(data);
+                    return [];
+                }
+            } catch (e) {
+                console.error('Debug endpoint also failed:', e);
+                return [];
+            }
+        }
+
+        // Show debug message
+        function showDebugMessage(debugData) {
+            const container = document.querySelector('.task-list');
+            container.innerHTML = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 10px 0;">
+                    <h4 style="color: #dc3545;">Debug Information</h4>
+                    <p><strong>Student ID:</strong> ${debugData.student_id || 'Not found'}</p>
+                    <p><strong>Total queries tried:</strong> ${Object.keys(debugData).filter(k => k.startsWith('query_')).length}</p>
+                    <details style="margin-top: 10px;">
+                        <summary>Click to see detailed debug info</summary>
+                        <pre style="background: #fff; padding: 10px; margin-top: 10px; overflow: auto;">${JSON.stringify(debugData, null, 2)}</pre>
+                    </details>
+                </div>
+            `;
+        }
+
+        // Add function to get the status color (matching your Flutter code)
+        function getStatusColor(status) {
+            switch ((status || '').toLowerCase()) {
+                case 'completed':
+                    return '#10B981'; // Emerald
+                case 'pending':
+                    return '#3B82F6'; // Blue
+                case 'denied':
+                    return '#EF4444'; // Red
+                case 'assigned':
+                    return '#3B82F6'; // Blue
+                case 'awarded':
+                    return '#F5A623'; // Orange
+                default:
+                    return '#94A3B8'; // Gray
+            }
+        }
+
+        // Add function to get the status gradient
+        function getStatusGradient(status) {
+            switch ((status || '').toLowerCase()) {
+                case 'completed':
+                    return 'linear-gradient(135deg, #10B981 0%, #059669 100%)';
+                case 'awarded':
+                    return 'linear-gradient(135deg, #FFD700 0%, #FFB300 100%)';
+                case 'pending':
+                case 'assigned':
+                case 'duesoon':
+                    return 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)';
+                case 'denied':
+                    return 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)';
+                default:
+                    return 'linear-gradient(135deg, #2563EB 0%, #3B82F6 100%)';
+            }
+        }
+
+        // Updated getStatus function to distinguish Completed and Awarded
+        function getStatus(task) {
+            if (task.status === 'Assigned') {
+                if (task.due_date) {
+                    // Parse due date string (format: YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss)
+                    const dueDateStr = task.due_date.split('T')[0]; // Get just the date part
+                    const [year, month, day] = dueDateStr.split('-');
+                    const dueDate = new Date(year, month - 1, day); // Month is 0-indexed
+                    
+                    // Get today's date in local timezone
+                    const today = new Date();
+                    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                    
+                    // Calculate days remaining (including today)
+                    const daysRemaining = Math.ceil((dueDate - todayDate) / (1000 * 60 * 60 * 24));
+                    
+                    // Due Soon: 3 days before deadline PLUS the deadline day (0 days remaining = deadline day)
+                    if (daysRemaining <= 3 && daysRemaining >= 0) return 'Due Soon';
+                }
+                return 'To Do';
+            }
+            if (task.status === 'Pending') return 'Pending';
+            if (task.status === 'Denied') return 'Denied';  // Always return Denied, regardless of due date
+            if (task.status === 'Completed') return 'Completed';
+            return task.status || 'To Do';
+        }
+        
+        // Helper function to check if task is past due (independent check)
+        function isPastDue(task) {
+            if (task.due_date) {
+                // Parse due date string (format: YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss)
+                const dueDateStr = task.due_date.split('T')[0]; // Get just the date part
+                const [year, month, day] = dueDateStr.split('-');
+                const dueDate = new Date(year, month - 1, day); // Month is 0-indexed
+                
+                // Get today's date in local timezone
+                const today = new Date();
+                const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                
+                // Task is past due only if due date is BEFORE today (not equal to today)
+                return dueDate < todayDate;
+            }
+            return false;
+        }
+
+        // Priority mapping
+        function getPriorityClass(priority) {
+            if (!priority) return 'priority-default';
+            switch (priority.toLowerCase()) {
+                case 'high': return 'priority-high';
+                case 'medium': return 'priority-medium';
+                case 'low': return 'priority-low';
+                default: return 'priority-default';
+            }
+        }
+
+        // Function to show image proof in modal
+        function showImageProof(imageUrl) {
+            const proofImage = document.getElementById('proofImage');
+            proofImage.src = imageUrl;
+            const modal = new bootstrap.Modal(document.getElementById('imageProofModal'));
+            modal.show();
+        }
+
+        // Function to render image proofs section
+        function renderImageProofs(imageUrls, status) {
+            if (!imageUrls || imageUrls.length === 0) {
+                return '';
+            }
+
+            const proofTitle = status === 'Pending' ? 'Activity Images' : 
+                              status === 'Awarded' ? 'Completed Proof' : 
+                              status === 'Denied' ? 'Denied Proof' : 'Proof Images';
+
+            return `
+            <div class="activity-modal-section">
+                <div class="activity-modal-label">${proofTitle}</div>
+                <div class="proof-images-container">
+                    ${imageUrls.map((url, index) => `
+                        <div class="proof-image-item" onclick="showImageProof('${url}')">
+                            <img src="${url}" alt="Proof ${index + 1}" class="proof-thumbnail">
+                            <div class="proof-overlay">
+                                <i class="fas fa-search-plus"></i>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            `;
+        }
+
+        // Helper function to convert URLs to clickable links
+        function convertURLsToLinks(text) {
+            if (!text) return text;
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return text.replace(urlRegex, function(url) {
+                // Remove trailing punctuation that's likely not part of the URL
+                let cleanUrl = url.replace(/[.,;:!?\)\]]*$/, '');
+                return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="activity-link">${cleanUrl}</a>`;
+            });
+        }
+
+        // FIXED showTaskDetailsModal function - Shows upload proof for BOTH To Do and Due Soon tasks
+        function showTaskDetailsModal(task) {
+            // Set the current task ID and task object when opening the modal
+            window.currentTaskId = task.task_id || task.id || null;
+            window.currentTask = task;  // Store the entire task object
+
+            console.log('Opening modal for task:', task);
+            console.log('Task status raw:', task.status);
+            console.log('Set window.currentTaskId:', window.currentTaskId);
+            console.log('Task links raw data:', task.links); // Debug log
+
+            const status = getStatus(task);
+            console.log('Computed status for modal:', status);
+            
+            if (task.status === 'Awarded' && task.type === 'award') {
+                console.log('Awarded task - showing awarded details instead');
+                if (task.point_id) {
+                    showAwardedDetails(task.point_id);
+                }
+                return;
+            }
+
+            const statusColor = getStatusColor(status);
+            const modalBadge = status === 'Completed' ? 'COMPLETED' : status.toUpperCase();
+
+            // Parse image_urls if it's a string, otherwise use as is
+            let imageUrls = [];
+            if (task.image_urls) {
+                if (typeof task.image_urls === 'string') {
+                    try {
+                        imageUrls = JSON.parse(task.image_urls);
+                    } catch (e) {
+                        imageUrls = [task.image_urls];
+                    }
+                } else if (Array.isArray(task.image_urls)) {
+                    imageUrls = task.image_urls;
+                }
+            }
+
+            // Update gradient background based on status
+            const gradientElement = document.getElementById('activityModalGradient');
+            let headerGradient;
+            let activityHeaderGradient; // For the points/priority/due date section
+
+            if (status === 'Denied' || status === 'Past Due') {
+                headerGradient = 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)'; // Red for Denied/Past Due
+                activityHeaderGradient = 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)'; // Red for Denied/Past Due
+            } else if (status === 'Completed') {
+                headerGradient = 'linear-gradient(135deg, #10B981 0%, #059669 100%)'; // Green for Completed
+                activityHeaderGradient = 'linear-gradient(135deg, #10B981 0%, #059669 100%)'; // Green for Completed
+            } else if (status === 'Pending') {
+                headerGradient = 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)'; // Blue for Pending
+                activityHeaderGradient = 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)'; // Blue for Pending
+            } else if (status === 'To Do' || status === 'Due Soon' || status === 'Assigned') {
+                headerGradient = 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)'; // Blue for To Do/Due Soon
+                activityHeaderGradient = 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)'; // Blue for To Do/Due Soon
+            } else {
+                headerGradient = 'linear-gradient(135deg, #2563EB 0%, #3B82F6 100%)'; // Default blue
+                activityHeaderGradient = 'linear-gradient(135deg, #2563EB 0%, #3B82F6 100%)'; // Default blue
+            }
+
+            gradientElement.style.background = headerGradient;
+
+            // Update badge - show both DENIED and PAST DUE if applicable
+            let badgeHTML = `
+                <span style="color: #FCD34D; font-weight: 700;">●</span>
+                <span>${modalBadge}</span>
+            `;
+            // If task is denied AND past due, show both badges
+            if (status === 'Denied' && isPastDue(task)) {
+                badgeHTML = `
+                    <span style="color: #FCD34D; font-weight: 700;">●</span>
+                    <span>${modalBadge}</span>
+                    <span style="margin-left: 8px; color: #FCD34D; background: rgba(255,255,255,0.15); padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid rgba(255,255,255,0.3);">PAST DUE</span>
+                `;
+            }
+            document.getElementById('activityModalBadge').innerHTML = badgeHTML;
+
+            // Update modal title with the actual task name
+            const taskTitleElement = document.querySelector('.activity-modal-title');
+            if (taskTitleElement && task.task) {
+                taskTitleElement.textContent = capitalizeTitle(task.task);
+            }
+
+            // Build body content in card layout
+            const formattedDueDate = task.due_date 
+                ? new Date(task.due_date).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' })
+                : 'No due date';
+
+            const priorityDisplay = task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : 'None';
+            const priorityColor = getPriorityBadgeColor(task.priority);
+            const priorityBgColor = getPriorityBadgeBgColor(task.priority);
+
+            // FIXED: Show upload proof for To Do, Assigned, OR Due Soon tasks that are not past due
+            const showImageProofs = status === 'Pending' || status === 'Denied' || status === 'Past Due' || status === 'Completed';
+            const showUploadProof = (status === 'Assigned' || status === 'To Do' || status === 'Due Soon') && !isPastDue(task);
+            console.log('Show upload proof decision:', {status, isPastDue: isPastDue(task), showUploadProof});
+            
+            // Separate images from other files
+            const actualImageUrls = imageUrls.filter(url => {
+                const lowerUrl = url.toLowerCase();
+                return /\.(jpg|jpeg|png|gif|webp|bmp)(\?|$)/i.test(lowerUrl);
+            });
+
+            const otherFileUrls = imageUrls.filter(url => {
+                const lowerUrl = url.toLowerCase();
+                return !/\.(jpg|jpeg|png|gif|webp|bmp)(\?|$)/i.test(lowerUrl);
+            });
+            
+            // Activity Images section (only actual images from teacher - from image_urls)
+            const imageProofsSection = showImageProofs && actualImageUrls.length > 0 ? `
+                <div class="activity-modal-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #E5E7EB;">
+                    <div class="activity-modal-label">
+                        <i class="fas fa-images" style="margin-right: 6px; color: #6366F1;"></i>
+                        Activity Images
+                    </div>
+                    <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 12px;">
+                        ${actualImageUrls.map((url, idx) => `
+                            <div style="position: relative; cursor: pointer;" onclick="showImageProof('${url}')">
+                                <img src="${url}" alt="Activity" style="width: 100%; height: 80px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : '';
+
+            // ============ FIXED: Teacher provided links and files parsing ============
+            let teacherAttachments = [];
+            let teacherLinks = [];
+            
+            // Parse attachments array
+            if (task.attachments) {
+                if (Array.isArray(task.attachments)) {
+                    teacherAttachments = task.attachments;
+                } else if (typeof task.attachments === 'string') {
+                    try {
+                        teacherAttachments = JSON.parse(task.attachments);
+                        if (!Array.isArray(teacherAttachments)) teacherAttachments = [];
+                    } catch (e) {
+                        teacherAttachments = [];
+                    }
+                }
+            }
+            
+            // FIXED: Parse links - handle jsonb[] array from PostgreSQL
+            if (task.links) {
+                // Check if it's already an array
+                if (Array.isArray(task.links)) {
+                    teacherLinks = task.links;
+                } 
+                // Check if it's a string (maybe JSON stringified)
+                else if (typeof task.links === 'string') {
+                    try {
+                        // Try to parse as JSON
+                        const parsed = JSON.parse(task.links);
+                        teacherLinks = Array.isArray(parsed) ? parsed : [parsed];
+                    } catch (e) {
+                        // If it's not valid JSON, treat it as a single URL string
+                        teacherLinks = [{
+                            title: 'Resource Link',
+                            url: task.links
+                        }];
+                    }
+                } 
+                // Check if it's an object (single link)
+                else if (typeof task.links === 'object' && task.links !== null) {
+                    teacherLinks = [task.links];
+                }
+            }
+
+            // Ensure each link has both title and url properties
+            teacherLinks = teacherLinks.map(link => {
+                // If it's a string, convert to object
+                if (typeof link === 'string') {
+                    try {
+                        // Try to parse as JSON in case it's a stringified object
+                        const parsed = JSON.parse(link);
+                        if (parsed.url && parsed.title) {
+                            return { 
+                                title: parsed.title, 
+                                url: parsed.url 
+                            };
+                        }
+                    } catch (e) {
+                        // Not JSON, treat as URL string
+                    }
+                    return { 
+                        title: 'Link', 
+                        url: link 
+                    };
+                }
+                // If it's an object, ensure it has the right structure
+                return {
+                    title: (link.title && typeof link.title === 'string') ? link.title : (link.name || 'Link'),
+                    url: (link.url && typeof link.url === 'string') ? link.url : String(link.url || '#')
+                };
+            });
+
+            console.log('Parsed teacher links:', teacherLinks); // Debug log
+            
+            // Teacher Links Section (separate from files) - Resource Links
+            const teacherLinksSection = (teacherLinks.length > 0) ? `
+                <div class="activity-modal-section" style="margin:12px 0;">
+                    <div class="activity-modal-label" style="font-size:0.9rem; font-weight:600; color:#1E293B; margin-bottom:8px;">
+                        <i class="fas fa-link" style="margin-right:6px;"></i>Resource Links (${teacherLinks.length})
+                    </div>
+                    <div class="activity-modal-resources-list">
+                        ${teacherLinks.map((link) => {
+                            const linkTitle = link.title || link.url || 'Link';
+                            const linkUrl = link.url || '#';
+                            return `
+                                <div style="display:flex; align-items:center; padding:8px; background:#f8f9ff; border-radius:6px; margin-bottom:6px; border-left:3px solid #7485e8;">
+                                    <i class="fas fa-link" style="margin-right:8px; color:#7485e8;"></i>
+                                    <div style="flex:1; min-width:0;">
+                                        <div style="font-size:0.85rem; font-weight:500; color:#1E293B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${linkTitle}</div>
+                                        <div style="font-size:0.75rem; color:#7485e8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${linkUrl}</div>
+                                    </div>
+                                    <a href="${linkUrl}" target="_blank" class="btn btn-sm btn-link" style="padding:0; margin:0 4px; font-size:0.8rem;" title="Open link">
+                                        <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            ` : '';
+            
+            // Teacher Files Section (separate from links)
+            const teacherFilesSection = (teacherAttachments.length > 0) ? `
+                <div class="activity-modal-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #E5E7EB;">
+                    <div class="activity-modal-label">
+                        <i class="fas fa-file" style="margin-right: 6px; color: #10B981;"></i>
+                        Files (${teacherAttachments.length})
+                    </div>
+                    <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px;">
+                        ${teacherAttachments.map(file => {
+                            let displayName = '';
+                            let url = '';
+                            
+                            // Try to parse if it's a JSON string
+                            let fileObj = file;
+                            if (typeof file === 'string' && file.startsWith('{')) {
+                                try {
+                                    fileObj = JSON.parse(file);
+                                } catch (e) {
+                                    fileObj = file;
+                                }
+                            }
+                            
+                            if (typeof fileObj === 'object' && fileObj !== null) {
+                                displayName = fileObj.original_filename || fileObj.originalFilename || fileObj.name || 'File';
+                                url = fileObj.url || file;
+                            } else {
+                                // Extract just the filename from the path/URL
+                                const parts = file.split('/');
+                                const fullName = parts[parts.length - 1].split('?')[0];
+                                displayName = fullName.toLowerCase();
+                                url = file;
+                            }
+                            const fileIcon = getFileIconForUrl(url);
+                            return `
+                                <div style="display: flex; align-items: center; padding: 12px 14px; background: #F0FDF4; border: 1px solid #D1E7DD; border-radius: 8px; justify-content: space-between; cursor: pointer;" onclick="window.open('${url}', '_blank')">
+                                    <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                                        <i class="${fileIcon}" style="color: #10B981; font-size: 18px;"></i>
+                                        <div style="flex: 1; min-width: 0;">
+                                            <div style="font-weight: 600; color: #1F2937; font-size: 14px; word-break: break-word; word-wrap: break-word; overflow-wrap: break-word;">${displayName}</div>
+                                            <div style="color: #9CA3AF; font-size: 11px; margin-top: 2px;">File</div>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-download" style="color: #10B981; margin-left: 8px; flex-shrink: 0;"></i>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            ` : '';
+
+            // Submitted files section (student's actual submissions) - UPDATED to show original filename
+            const submittedFilesSection = showImageProofs && task.submitted_files && task.submitted_files.length > 0 ? `
+                <div class="activity-modal-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #E5E7EB;">
+                    <div class="activity-modal-label">
+                        <i class="fas fa-file-upload" style="margin-right: 6px; color: #EC4899;"></i>
+                        Submitted Files
+                    </div>
+                    <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px;">
+                        ${task.submitted_files.map(file => {
+                            const fileIcon = getFileIconByType(file.file_type || file.mime_type);
+                            const fileLabel = getFileTypeLabel(file.file_type || file.mime_type);
+                            // Use original_filename if available, otherwise fallback to filename
+                            const displayName = file.original_filename || file.filename || 'File';
+                            return `
+                                <div style="display: flex; align-items: flex-start; padding: 12px 14px; background: #fce7f3; border: 1px solid #fbcfe8; border-radius: 8px; justify-content: space-between; gap: 8px;">
+                                    <div style="display: flex; align-items: flex-start; gap: 12px; flex: 1;">
+                                        <i class="${fileIcon}" style="color: #EC4899; font-size: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                                        <div style="flex: 1; min-width: 0;">
+                                            <div style="font-weight: 600; color: #1F2937; font-size: 14px; word-break: break-word; word-wrap: break-word; overflow-wrap: break-word;">${displayName}</div>
+                                            <div style="color: #9CA3AF; font-size: 12px; margin-top: 4px;">${fileLabel} • ${formatBytes(file.file_size)}</div>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-chevron-right" style="color: #EC4899; margin-left: 8px; flex-shrink: 0; margin-top: 2px;"></i>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            ` : '';
+
+            // Upload proof section - FIXED: This will now show for To Do tasks
+            const uploadProofSectionHTML = showUploadProof ? getUploadProofSectionHTML() : '';
+
+            // Description section (moved to top) - no label for cleaner look
+            const descriptionSectionHTML = task.description ? `
+                <div class="activity-modal-section" style="margin-bottom: 20px;">
+                    <div class="activity-modal-value activity-description" style="margin-top: 0; color: #4B5563; line-height: 1.6;">${convertURLsToLinks(task.description)}</div>
+                </div>
+            ` : '';
+
+            // Main body content
+            let pastDueWarning = '';
+            if (status === 'Denied') {
+                // Task is denied - show reason
+                if (isPastDue(task)) {
+                    // Denied AND past due
+                    pastDueWarning = `
+                        <div style="background: #FEE2E2; border: 2px solid #EF4444; border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 12px;">
+                            <div style="color: #EF4444; font-size: 20px; flex-shrink: 0;">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; color: #DC2626; margin-bottom: 4px; font-size: 14px;">Task Denied - Past Due</div>
+                                <div style="color: #991B1B; font-size: 13px; line-height: 1.5;">
+                                    This task has been denied. The due date (${formattedDueDate}) has passed, and you can no longer submit work for this task.
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Just denied (by teacher)
+                    pastDueWarning = `
+                        <div style="background: #FEE2E2; border: 2px solid #EF4444; border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 12px;">
+                            <div style="color: #EF4444; font-size: 20px; flex-shrink: 0;">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; color: #DC2626; margin-bottom: 4px; font-size: 14px;">Task Denied</div>
+                                <div style="color: #991B1B; font-size: 13px; line-height: 1.5;">
+                                    This task has been denied by your teacher. You can no longer submit work for this task.
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            document.getElementById('toDoActivityModalBody').innerHTML = `
+                ${pastDueWarning}
+
+                <!-- MODERN ACTIVITY HEADER - Points, Priority, Due Date -->
+                <div style="background: ${activityHeaderGradient}; border-radius: 16px; padding: 20px; margin-bottom: 24px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; align-items: center;">
+                    <!-- Points Card -->
+                    <div style="background: rgba(255,255,255,0.95); border-radius: 10px; padding: 10px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
+                        <div style="font-size: 10px; color: #F59E0B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px;">
+                            <i class="fas fa-star" style="margin-right: 3px;"></i>Points
+                        </div>
+                        <div style="font-size: 18px; color: #F59E0B; font-weight: 800;">${task.points}</div>
+                        <div style="font-size: 9px; color: #F59E0B;">pts</div>
+                    </div>
+                    
+                    <!-- Priority Card -->
+                    <div style="background: rgba(255,255,255,0.95); border-radius: 10px; padding: 10px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
+                        <div style="font-size: 10px; color: ${priorityColor}; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px;">
+                            <i class="fas fa-flag" style="margin-right: 3px;"></i>Priority
+                        </div>
+                        <div style="font-size: 14px; color: ${priorityColor}; font-weight: 800;">${priorityDisplay}</div>
+                    </div>
+                    
+                    <!-- Due Date Card -->
+                    <div style="background: rgba(255,255,255,0.95); border-radius: 10px; padding: 10px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
+                        <div style="font-size: 10px; color: #3B82F6; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px;">
+                            <i class="fas fa-calendar" style="margin-right: 3px;"></i>Due
+                        </div>
+                        <div style="font-size: 11px; color: #1F2937; font-weight: 700;">${formattedDueDate}</div>
+                    </div>
+                </div>
+
+                <!-- ACTIVITY DETAILS Header -->
+                <div style="background: ${activityHeaderGradient}; border-radius: 10px; padding: 10px 12px; margin: 12px 0 10px 0; display: flex; align-items: center; gap: 10px;">
+                    <div style="background: rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 8px;">
+                        <i class="fas fa-info-circle" style="color: white; font-size: 14px;"></i>
+                    </div>
+                    <div style="color: white; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px;">Activity Details</div>
+                </div>
+
+                ${descriptionSectionHTML}
+
+                ${imageProofsSection}
+
+                ${teacherLinksSection}
+
+                ${teacherFilesSection}
+
+                ${submittedFilesSection}
+
+                <!-- ADD FILES OR LINKS AS PROOF Header - FIXED: Now shows for To Do tasks -->
+                ${showUploadProof ? `
+                <div style="background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%); border-radius: 10px; padding: 10px 12px; margin: 12px 0 10px 0; display: flex; align-items: center; gap: 10px;">
+                    <div style="background: rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 8px;">
+                        <i class="fas fa-cloud-upload-alt" style="color: white; font-size: 14px;"></i>
+                    </div>
+                    <div style="color: white; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px;">Add Files or Links as Proof</div>
+                </div>
+                <div id="fileUploadContainer"></div>
+                ` : ''}
+
+                ${status === 'Denied' ? `
+                <div style="background: #FEE2E2; border: 1px solid #FECACA; border-radius: 10px; padding: 10px; margin-top: 12px;">
+                    <div style="font-size: 11px; color: #DC2626; font-weight: 700; margin-bottom: 4px;">
+                        <i class="fas fa-exclamation-circle" style="margin-right: 5px;"></i>Reason for Denial
+                    </div>
+                    <div style="font-size: 13px; color: #7F1D1D;">${task.denial_reason || 'No reason provided'}</div>
+                </div>
+                ` : ''}
+            `;
+
+            // FIXED: Update footer buttons based on status - Include To Do in submit button condition
+            const footer = document.getElementById('activityModalFooter');
+            if ((status === 'To Do' || status === 'Due Soon' || status === 'Assigned') && !isPastDue(task)) {
+                footer.innerHTML = `
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background: #F3F4F6; color: #1F2937; border: none; font-weight: 600;">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="handleSubmitProof()" style="background: #3B82F6; border: none; color: #fff; font-weight: 600;">Submit Proof</button>
+                `;
+            } else if (status === 'Pending') {
+                footer.innerHTML = `
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" style="background: #3B82F6; border: none; color: #fff; width: 100%; font-weight: 600;">Close Details</button>
+                `;
+            } else if (status === 'Past Due') {
+                footer.innerHTML = `
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" style="background: #EF4444; border: none; color: #fff; width: 100%; font-weight: 600; cursor: not-allowed;">Task Closed</button>
+                `;
+            } else {
+                footer.innerHTML = `
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" style="background: #3B82F6; border: none; color: #fff; width: 100%; font-weight: 600;">Close Details</button>
+                `;
+            }
+
+            // Show the modal using Bootstrap 5
+            const modalElement = document.getElementById('toDoActivityModal');
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+            
+            console.log('Modal shown for status:', status);
+        }
+
+        // Helper function to get priority badge color
+        function getPriorityBadgeColor(priority) {
+            if (!priority) return '#6B7280';
+            const p = priority.toLowerCase();
+            if (p === 'high') return '#DC2626';
+            if (p === 'medium') return '#F59E0B';
+            if (p === 'low') return '#10B981';
+            return '#6B7280';
+        }
+
+        // Helper function to get priority badge background color
+        function getPriorityBadgeBgColor(priority) {
+            if (!priority) return '#F3F4F6';
+            const p = priority.toLowerCase();
+            if (p === 'high') return '#FEE2E2';
+            if (p === 'medium') return '#FFFBF0';
+            if (p === 'low') return '#ECFDF5';
+            return '#F3F4F6';
+        }
+
+        // Helper function to get file type label
+        function getFileTypeLabel(type) {
+            if (!type) return 'FILE';
+            const t = type.toLowerCase();
+            if (t.includes('pdf')) return 'PDF';
+            if (t.includes('word') || t.includes('document')) return 'DOC';
+            if (t.includes('sheet') || t.includes('excel')) return 'SHEET';
+            if (t.includes('presentation') || t.includes('power')) return 'PPT';
+            if (t.includes('image')) return 'IMG';
+            if (t.includes('video')) return 'VIDEO';
+            if (t.includes('audio')) return 'AUDIO';
+            return 'FILE';
+        }
+
+        // Helper function to format bytes
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round((bytes / Math.pow(k, i)) * 10) / 10 + ' ' + sizes[i];
+        }
+
+        // Helper function to get file icon based on URL
+        function getFileIconForUrl(url) {
+            const fileName = url.toLowerCase();
+            if (fileName.includes('.pdf')) return 'fas fa-file-pdf';
+            if (fileName.includes('.doc') || fileName.includes('.docx')) return 'fas fa-file-word';
+            if (fileName.includes('.xls') || fileName.includes('.xlsx')) return 'fas fa-file-excel';
+            if (fileName.includes('.ppt') || fileName.includes('.pptx')) return 'fas fa-file-powerpoint';
+            if (fileName.includes('.zip') || fileName.includes('.rar')) return 'fas fa-file-archive';
+            if (fileName.includes('.txt')) return 'fas fa-file-alt';
+            if (fileName.match(/\.(jpg|jpeg|png|gif|webp|bmp)(\?|$)/i)) return 'fas fa-file-image';
+            return 'fas fa-file';
+        }
+
+        // Helper function to get file icon based on MIME type or file type
+        function getFileIconByType(type) {
+            if (!type) return 'fas fa-file';
+            const t = type.toLowerCase();
+            if (t.includes('pdf')) return 'fas fa-file-pdf';
+            if (t.includes('word') || t.includes('document')) return 'fas fa-file-word';
+            if (t.includes('sheet') || t.includes('excel')) return 'fas fa-file-excel';
+            if (t.includes('presentation') || t.includes('power')) return 'fas fa-file-powerpoint';
+            if (t.includes('image')) return 'fas fa-file-image';
+            if (t.includes('video')) return 'fas fa-file-video';
+            if (t.includes('audio')) return 'fas fa-file-audio';
+            if (t.includes('zip') || t.includes('rar') || t.includes('archive')) return 'fas fa-file-archive';
+            return 'fas fa-file';
+        }
+
+        window.showImageProof = showImageProof;
+
+        // Helper to capitalize first letter of each word (for titles)
+        function capitalizeTitle(title) {
+            if (!title) return '';
+            return title.replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        // NEW: Fetch teacher name by ID (returns Promise)
+        async function getTeacherName(teacher_id) {
+            if (!teacher_id) return 'Teacher';
+            try {
+                const res = await fetch(`/api/users/${teacher_id}`);
+                const data = await res.json();
+                if (data.success && data.user) {
+                    const user = data.user;
+                    let prefix = 'Mr.';
+                    if ((user.gender || '').toLowerCase() === 'female') prefix = 'Mrs.';
+                    else if ((user.gender || '').toLowerCase() === 'other') prefix = 'Mx.';
+                    return `${prefix} ${user.last_name}`;
+                }
+            } catch (e) {}
+            return 'Teacher';
+        }
+
+        // Update formatTaskTitleForAwarded to use capitalizeTitle
+        function formatTaskTitleForAwarded(task) {
+            let title = task.task || '';
+            // Remove "Award:" prefix if present
+            if (title.toLowerCase().startsWith('award:')) {
+                title = title.substring(6).trim();
+            }
+            return capitalizeTitle(title);
+        }
+
+        // ✅ FIXED: Updated renderTasks to include teacher filtering - CORRECTED VERSION
+        async function renderTasks() {
+            const container = document.querySelector('.task-list');
+            container.innerHTML = '';
+            let tasks = [...allTasks]; // Create a copy
+
+            console.log('Total tasks:', allTasks.length);
+            console.log('Selected teacher ID:', selectedTeacherId);
+            console.log('Current filter:', currentFilter);
+
+            // ✅ FIXED: Filter by selected teacher - PROPERLY IMPLEMENTED
+            if (selectedTeacherId !== 'all') {
+                tasks = tasks.filter(task => {
+                    const matches = task.teacher_id == selectedTeacherId;
+                    console.log(`Task ${task.task_id} teacher: ${task.teacher_id}, matches: ${matches}`);
+                    return matches;
+                });
+            }
+
+            console.log('Tasks after teacher filter:', tasks.length);
+
+            // Filter by tab
+            if (currentFilter !== 'All') {
+                tasks = tasks.filter(task => {
+                    const status = getStatus(task);
+                    
+                    // Handle Awarded tasks (they have type 'award')
+                    if (currentFilter === 'Awarded') {
+                        return task.type === 'award' || task.status === 'Awarded';
+                    }
+                    // Handle Completed tasks
+                    if (currentFilter === 'Completed') {
+                        return status === 'Completed';
+                    }
+                    // Handle Pending tasks  
+                    if (currentFilter === 'Pending') {
+                        return status === 'Pending';
+                    }
+                    // Handle To Do tasks
+                    if (currentFilter === 'To Do') {
+                        return status === 'To Do' || status === 'Due Soon';
+                    }
+                    // Handle Due Soon tasks
+                    if (currentFilter === 'Due Soon') {
+                        return status === 'Due Soon';
+                    }
+                    // Handle Denied tasks
+                    if (currentFilter === 'Denied') {
+                        return status === 'Denied';
+                    }
+                    return true;
+                });
+            } else {
+                // For "All" tab, EXCLUDE awarded tasks
+                tasks = tasks.filter(task => {
+                    return !(task.type === 'award' || task.status === 'Awarded');
+                });
+            }
+
+            console.log('Tasks after filter:', tasks.length);
+
+            // Filter by search
+            const searchInput = document.querySelector('.search-box input');
+            const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
+            if (searchVal) {
+                tasks = tasks.filter(task =>
+                    task.task.toLowerCase().includes(searchVal) ||
+                    (task.description || '').toLowerCase().includes(searchVal)
+                );
+            }
+
+            console.log('Tasks after search:', tasks.length);
+
+            // Set data attribute for CSS targeting
+            const tasksContainer = document.querySelector('.tasks-container');
+            if (tasksContainer) {
+                tasksContainer.setAttribute('data-current-filter', currentFilter);
+            }
+
+            // Render each task
+            if (tasks.length === 0) {
+                if (allTasks.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align:center;color:#888;padding:40px;">
+                            <i class="fas fa-tasks" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                            <h3>No Activities Found</h3>
+                            <p>No tasks have been assigned to you yet.</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div style="text-align:center;color:#888;padding:40px;">
+                            <i class="fas fa-filter" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                            <h3>No Matching Activities</h3>
+                            <p>No activities match your current filter or search criteria.</p>
+                            ${selectedTeacherId !== 'all' ? `<p>Teacher filter: ${selectedTeacherId}</p>` : ''}
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            // SPECIAL RENDERING FOR AWARDED TAB - FLUTTER STYLE
+            if (currentFilter === 'Awarded') {
+                tasks.forEach((task, idx) => {
+                    const taskElement = document.createElement('div');
+                    taskElement.className = 'task-item awarded';
+                    taskElement.style.cursor = 'pointer';
+                    
+                    const formattedTitle = formatTaskTitleForAwarded(task);
+                    
+                    taskElement.innerHTML = `
+                        <div class="task-content">
+                            <!-- Header Row -->
+                            <div class="task-header-row">
+                                <!-- Award Icon -->
+                                <div class="task-award-icon">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                
+                                <!-- Task Details -->
+                                <div class="task-details">
+                                    <!-- Category Badge -->
+                                    ${task.point_category ? `
+                                    <div class="task-category-badge">
+                                        <i class="fas fa-tag"></i>
+                                        <span class="task-category-text">${task.point_category.toUpperCase()}</span>
+                                    </div>
+                                    ` : ''}
+                                    
+                                    <!-- Task Note/Description -->
+                                    <p class="task-note">${task.description || formattedTitle}</p>
+                                </div>
+                                
+                                <!-- Award Badge -->
+                                <div class="task-award-badge">
+                                    <i class="fas fa-certificate"></i>
+                                    <span class="task-award-text">AWARD</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Info Section -->
+                            <div class="task-info-section">
+                                <div class="task-info-row">
+                                    <!-- Points Column -->
+                                    <div class="task-info-column">
+                                        <div class="task-points-header">
+                                            <div class="task-points-icon">
+                                                <i class="fas fa-star"></i>
+                                            </div>
+                                            <span class="task-points-label">Points Earned</span>
+                                        </div>
+                                        <div class="task-points-value">
+                                            <span class="task-points-number">+${task.points}</span>
+                                            <span class="task-points-unit">pts</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Date Column -->
+                                    <div class="task-info-column">
+                                        <div class="task-date-header">
+                                            <div class="task-date-icon">
+                                                <i class="fas fa-calendar"></i>
+                                            </div>
+                                            <span class="task-date-label">Date Received</span>
+                                        </div>
+                                        <div class="task-date-value">
+                                            ${task.due_date ? new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '---'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Teacher Footer -->
+                            <div class="task-teacher-footer">
+                                <div class="task-teacher-row">
+                                    <div class="task-teacher-avatar">
+                                        <img src="${task.teacher_avatar || '/static/image/default-avatar.png'}" alt="Teacher" onerror="this.src='/static/image/default-avatar.png'">
+                                    </div>
+                                    <div class="task-teacher-info">
+                                        <div class="task-teacher-name">
+                                            Awarded by ${task.teacher_name || 'Teacher'}
+                                        </div>
+                                        ${task.teacher_subject ? `
+                                        <div class="task-teacher-subject">
+                                            ${task.teacher_subject}
+                                        </div>
+                                        ` : ''}
+                                    </div>
+                                    <div class="task-verified-badge">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    taskElement.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (task.status === 'Awarded' && task.type === 'award' && task.point_id) {
+                            showAwardedDetails(task.point_id);
+                        } else {
+                            showTaskDetailsModal(task);
+                        }
+                    });
+
+                    container.appendChild(taskElement);
+                });
+            } else {
+                // ORIGINAL RENDERING FOR OTHER TABS
+                tasks.forEach((task, idx) => {
+                    const status = getStatus(task);
+                    const statusClass = status.replace(' ', '').toLowerCase();
+                    // ✅ ADDED: Check if task is completed
+                    const isCompleted = status === 'Completed';
+                    
+                    const taskElement = document.createElement('div');
+                    // ✅ MODIFIED: Add 'completed' class if task is completed
+                    taskElement.className = `task-item ${statusClass} ${isCompleted ? 'completed' : ''}`;
+                    taskElement.style.cursor = 'pointer';
+                    
+                    const formattedTitle = capitalizeTitle(task.task);
+                    const displayStatus = status.toUpperCase();
+                    const displayPoints = `${task.points} pts`;
+                    
+                    taskElement.innerHTML = `
+                        <div class="task-header">
+                            <h3 class="task-title">${formattedTitle}</h3>
+                            <span class="task-status ${statusClass}">${displayStatus}</span>
+                        </div>
+                        <p class="task-description">${task.description || 'No description available'}</p>
+                        <div class="task-footer">
+                            <span class="task-badge task-date-badge">
+                                <i class="fas fa-clock"></i>
+                                ${task.due_date ? new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'No due date'}
+                            </span>
+                            <span class="task-badge priority-badge ${getPriorityClass(task.priority)}">
+                                <i class="fa-solid fa-flag"></i>
+                                ${task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : 'None'}
+                            </span>
+                            <span class="task-badge task-points-badge">
+                                <i class="fas fa-star"></i>
+                                ${displayPoints}
+                            </span>
+                        </div>
+                    `;
+
+                    taskElement.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (task.status === 'Awarded' && task.type === 'award' && task.point_id) {
+                            showAwardedDetails(task.point_id);
+                        } else {
+                            showTaskDetailsModal(task);
+                        }
+                    });
+
+                    container.appendChild(taskElement);
+                });
+            }
+        }
+
+        // Search functionality
+        const searchInput = document.querySelector('.search-box input');
+        if (searchInput) {
+            searchInput.addEventListener('input', renderTasks);
+        }
+
+        // Sort Options Modal Logic
+        const sortBtn = document.getElementById('sortOptionsBtn');
+        
+        if (sortBtn) {
+            sortBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const sortModal = new bootstrap.Modal(document.getElementById('sortOptionsModal'));
+                sortModal.show();
+            });
+        }
+
+        // Sort option clicks
+        const sortOptions = document.querySelectorAll('.sort-option');
+        sortOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                sortOptions.forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                const sortModal = bootstrap.Modal.getInstance(document.getElementById('sortOptionsModal'));
+                sortModal.hide();
+                currentSort = this.dataset.sort;
+                sortTasks(currentSort);
+            });
+        });
+
+        // Sort tasks function
+        function sortTasks(criteria) {
+            if (criteria === 'deadline') {
+                allTasks.sort((a, b) => new Date(a.due_date || '9999-12-31') - new Date(b.due_date || '9999-12-31'));
+            } else if (criteria === 'priority') {
+                const priorityOrder = { high: 1, medium: 2, low: 3 };
+                allTasks.sort((a, b) => {
+                    const pa = priorityOrder[(a.priority || '').toLowerCase()] || 4;
+                    const pb = priorityOrder[(b.priority || '').toLowerCase()] || 4;
+                    return pa - pb;
+                });
+            } else if (criteria === 'points') {
+                allTasks.sort((a, b) => b.points - a.points);
+            }
+            renderTasks();
+        }
+
+        // After you set allTasks = tasks || []; in fetchActivities().then(...)
+        // Add this function to update the stats cards:
+        function updateStatsCards(tasks) {
+            // Filter only "task" type (not awards)
+            const activityTasks = tasks.filter(t => !t.type || t.type !== 'award');
+            // Total points possible from current activities (To Do, Assigned, Due Soon, Pending)
+            const todoStatuses = ['Assigned', 'To Do', 'Due Soon', 'Pending'];
+            const totalPoints = activityTasks
+                .filter(t => todoStatuses.includes(getStatus(t)))
+                .reduce((sum, t) => sum + (parseInt(t.points) || 0), 0);
+
+            // Completed count
+            const completedCount = activityTasks.filter(t => getStatus(t) === 'Completed').length;
+            // Total activities (exclude awards)
+            const totalActivities = activityTasks.length;
+            // Progress percent
+            const progressPercent = totalActivities > 0 ? Math.round((completedCount / totalActivities) * 100) : 0;
+
+            // Update DOM
+            document.getElementById('totalPointsValue').textContent = totalPoints;
+            // Completed: show as "X/Y"
+            document.querySelector('.streak-card .stat-value').textContent = `${completedCount}/${totalActivities}`;
+            // Progress: show as percent
+            document.querySelector('.progress-card .stat-value').textContent = `${progressPercent}%`;
+        }
+
+        // Add this function after updateStatsCards and before fetchActivities().then(...)
+        function updateTabBadges(tasks) {
+            // Count To Do and Due Soon
+            let toDoCount = 0, dueSoonCount = 0;
+            tasks.forEach(task => {
+                const status = getStatus(task);
+                if (status === 'To Do') toDoCount++;
+                if (status === 'Due Soon') dueSoonCount++;
+            });
+
+            // Update To Do badge
+            const toDoBadge = document.getElementById('toDoBadge');
+            if (toDoBadge) {
+                // Show sum of To Do and Due Soon
+                const totalToDo = toDoCount + dueSoonCount;
+                if (totalToDo > 0) {
+                    toDoBadge.textContent = totalToDo;
+                    toDoBadge.style.display = 'inline-block';
+                } else {
+                    toDoBadge.style.display = 'none';
+                }
+            }
+
+            // Update Due Soon badge
+            const dueSoonBadge = document.getElementById('dueSoonBadge');
+            if (dueSoonBadge) {
+                if (dueSoonCount > 0) {
+                    dueSoonBadge.textContent = dueSoonCount;
+                    dueSoonBadge.style.display = 'inline-block';
+                } else {
+                    dueSoonBadge.style.display = 'none';
+                }
+            }
+        }
+
+        // Call updateStatsCards after fetching and rendering tasks:
+        fetchActivities().then(tasks => {
+            allTasks = tasks || [];
+            // Sort by deadline (closest first) by default
+            allTasks.sort((a, b) => new Date(a.due_date || '9999-12-31') - new Date(b.due_date || '9999-12-31'));
+            updateStatsCards(allTasks); // <-- Add this line
+            updateTabBadges(allTasks); // <-- Add this line
+            renderTasks();
+        }).catch(error => {
+            console.error('Failed to load activities:', error);
+            const container = document.querySelector('.task-list');
+            container.innerHTML = `
+                <div style="text-align:center;color:#dc3545;padding:40px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px;"></i>
+                    <h3>Error Loading Activities</h3>
+                    <p>There was an error loading your activities. Please refresh the page.</p>
+                    <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        Refresh Page
+                    </button>
+                </div>
+            `;
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (sortModal && sortModal.style.display === 'flex') {
+                    sortModal.style.display = 'none';
+                    document.body.classList.remove('modal-open');
+                }
+            }
+        });
+
+        // Updated Show Awarded details modal with Flutter design
+        async function showAwardedDetails(point_id) {
+            console.log('showAwardedDetails called with point_id:', point_id);
+            
+            if (!point_id) {
+                console.error('No point_id provided to showAwardedDetails');
+                showToast('Error: Award details not available', true);
+                return;
+            }
+            
+            try {
+                console.log('Fetching award details for point_id:', point_id);
+                const res = await fetch(`/api/points/${point_id}`);
+                const data = await res.json();
+                
+                console.log('Award API response:', data);
+                
+                if (data.success && data.point) {
+                    const award = data.point;
+                    console.log('Award data loaded:', award);
+                    
+                    // Update points badge
+                    document.getElementById('awardPointsValue').textContent = `+${award.points}`;
+                    
+                    // Update category badge
+                    const categoryBadge = document.getElementById('awardCategoryBadge');
+                    if (award.point_category && award.point_category.trim() !== '') {
+                        categoryBadge.textContent = award.point_category.toUpperCase();
+                        categoryBadge.style.display = 'inline-block';
+                    } else {
+                        categoryBadge.style.display = 'none';
+                    }
+                    
+                    // FIXED: Better avatar path handling
+                    const teacherAvatar = document.getElementById('teacherAvatar');
+                    const teacherName = document.getElementById('teacherName');
+                    const teacherSubject = document.getElementById('teacherSubject');
+                    
+                    // Set teacher name
+                    teacherName.textContent = award.teacher_name || 'Teacher';
+                    
+                    // Set teacher subject
+                    if (award.teacher_subject) {
+                        teacherSubject.textContent = award.teacher_subject;
+                        teacherSubject.style.display = 'block';
+                    } else {
+                        teacherSubject.style.display = 'none';
+                    }
+                    
+                    // FIXED: Handle avatar path properly
+                    let avatarPath = award.teacher_avatar || '/static/image/default-avatar.png';
+                    
+                    // Ensure the path is correct
+                    if (avatarPath && !avatarPath.startsWith('/static/') && !avatarPath.startsWith('http')) {
+                        // If it's just a filename, prepend the static path
+                        avatarPath = '/static/image/' + avatarPath;
+                    }
+                    
+                    console.log('Setting teacher avatar to:', avatarPath);
+                    teacherAvatar.src = avatarPath;
+                    
+                    // Add error handling for image loading
+                    teacherAvatar.onerror = function() {
+                        console.log('Teacher avatar failed to load, using default');
+                        this.src = '/static/image/default-avatar.png';
+                        this.onerror = null; // Prevent infinite loop
+                    };
+                    
+                    // Update date
+                    const awardDate = document.getElementById('awardDate');
+                    if (award.received_at) {
+                        awardDate.textContent = new Date(award.received_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                    } else {
+                        awardDate.textContent = 'Not set';
+                    }
+                    
+                    // Update note
+                    const noteCard = document.getElementById('noteCard');
+                    const teacherNote = document.getElementById('teacherNote');
+                    if (award.note && award.note.trim() !== '') {
+                        teacherNote.textContent = award.note;
+                        noteCard.style.display = 'block';
+                    } else {
+                        noteCard.style.display = 'none';
+                    }
+                    
+                    // Show the modal
+                    const modal = new bootstrap.Modal(document.getElementById('awardedDetailsModal'));
+                    modal.show();
+                    console.log('Award modal shown successfully');
+                    
+                } else {
+                    console.error('API returned error:', data.message);
+                    showToast('Unable to load award details: ' + (data.message || 'Unknown error'), true);
+                }
+            } catch (error) {
+                console.error('Error loading award details:', error);
+                showToast('Error loading award details: ' + error.message, true);
+            }
+        }
+
+        // Add this after your existing loading state tracker
+        function showActivityLoading() {
+            const loadingMessage = document.getElementById('activitiesLoadingMessage');
+            const errorMessage = document.getElementById('activitiesErrorMessage');
+            const tasksContainer = document.getElementById('taskListContainer');
+            
+            if (loadingMessage) loadingMessage.style.display = 'flex';
+            if (errorMessage) errorMessage.style.display = 'none';
+            if (tasksContainer) tasksContainer.style.display = 'none';
+        }
+
+        function showActivityError() {
+            const loadingMessage = document.getElementById('activitiesLoadingMessage');
+            const errorMessage = document.getElementById('activitiesErrorMessage');
+            const tasksContainer = document.getElementById('taskListContainer');
+            
+            if (loadingMessage) loadingMessage.style.display = 'none';
+            if (tasksContainer) tasksContainer.style.display = 'none';
+            
+            if (errorMessage) {
+                errorMessage.style.display = 'flex';
+                errorMessage.style.alignItems = 'center';
+                errorMessage.style.justifyContent = 'center';
+                errorMessage.style.minHeight = '400px';
+                
+                // Load the error template using fetch
+                fetch('/partials/showError')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to load error template');
+                        }
+                        return response.text();
+                    })
+                    .then(html => {
+                        errorMessage.innerHTML = html;
+                        // Add event listener to retry button - calls location.reload() for this page
+                        const retryButton = document.getElementById('retryButton');
+                        if (retryButton) {
+                            retryButton.addEventListener('click', function() {
+                                location.reload(); // Reload the page to retry
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading error template:', error);
+                        // Fallback to basic error message
+                        errorMessage.innerHTML = `
+                            <div style="text-align: center; padding: 40px;">
+                                <h3 style="color: #DB2D2D;">Connection Error</h3>
+                                <p>Unable to load activities. Please check your connection.</p>
+                                <button onclick="location.reload()" style="padding: 10px 20px; background: #5e72e4; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                                    Retry
+                                </button>
+                            </div>
+                        `;
+                    });
+            }
+        }
+
+        function showActivityContent() {
+            const loadingMessage = document.getElementById('activitiesLoadingMessage');
+            const errorMessage = document.getElementById('activitiesErrorMessage');
+            const tasksContainer = document.getElementById('taskListContainer');
+            
+            if (loadingMessage) loadingMessage.style.display = 'none';
+            if (errorMessage) errorMessage.style.display = 'none';
+            if (tasksContainer) tasksContainer.style.display = 'block';
+        }
+
+        // Add this to your existing JavaScript
+        function optimizeModalContent() {
+            const modalBody = document.querySelector('.activity-modal-body');
+            if (!modalBody) return;
+            
+            // Limit description height and add scroll if needed
+            const description = modalBody.querySelector('.activity-modal-value');
+            if (description && description.scrollHeight > 100) {
+                description.style.maxHeight = '100px';
+                description.style.overflowY = 'auto';
+                description.style.padding = '8px';
+                description.style.background = '#f8f9fa';
+                description.style.borderRadius = '6px';
+                description.style.border = '1px solid #e9ecef';
+            }
+            
+            // Limit proof images container height
+            const proofContainer = modalBody.querySelector('.proof-images-container');
+            if (proofContainer && proofContainer.children.length > 4) {
+                proofContainer.style.maxHeight = '150px';
+                proofContainer.style.overflowY = 'auto';
+            }
+            
+            // Ensure task box doesn't get too tall
+            const taskBox = modalBody.querySelector('.activity-modal-taskbox');
+            if (taskBox && taskBox.scrollHeight > 120) {
+                taskBox.style.maxHeight = '120px';
+                taskBox.style.overflowY = 'auto';
+            }
+        }
+
+        // Call this function whenever a modal is shown
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalElement = document.getElementById('toDoActivityModal');
+            if (modalElement) {
+                modalElement.addEventListener('shown.bs.modal', function() {
+                    setTimeout(optimizeModalContent, 100);
+                });
+            }
+            
+            // Also optimize award modal
+            const awardModal = document.getElementById('awardedDetailsModal');
+            if (awardModal) {
+                awardModal.addEventListener('shown.bs.modal', function() {
+                    const awardBody = document.querySelector('.award-modal-body');
+                    if (awardBody && awardBody.scrollHeight > 400) {
+                        awardBody.style.maxHeight = '50vh';
+                        awardBody.style.overflowY = 'auto';
+                    }
+                });
+            }
+        });
+
+        // ✅ FIXED: Initialize with "All Teachers" selected - PROPERLY IMPLEMENTED
+        // This will be called after the teacher dropdown is populated
+        function initializeDefaultTeacherSelection() {
+            selectTeacherForActivities('all', 'All Teachers', 'View activities from all teachers', '/static/image/default-avatar.png');
+        }
+
+        // Call initialization after data is loaded
+        setTimeout(initializeDefaultTeacherSelection, 100);
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock %}
+{% include "partials/confirmation_dialouge.html" %}

@@ -1,0 +1,1348 @@
+{% extends "base.html" %}
+
+{% block title %}Learn2Earn - Profile{% endblock %}
+
+{% block page_title %}Settings{% endblock %}
+
+{% block main_content %}
+<!-- Link to external CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='student_profile.css') }}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10 col-xl-8">
+        <div class="card shadow-sm border-0 overflow-hidden">
+            <div class="card-body p-0">
+                <!-- Profile Header with Better Spacing -->
+                <div class="profile-header">
+                    <div class="bg-circle"></div>
+                    <div class="bg-circle"></div>
+                    
+                    <div class="container-fluid py-4 px-3">
+                        <div class="row align-items-center justify-content-between">
+                            <div class="col-md-6 col-lg-7">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <div class="profile-avatar-container">
+                                            <div class="profile-avatar" id="profileAvatar" title="Click to upload profile picture">
+                                                <!-- initials or image will be injected by JS -->
+                                            </div>
+                                            <input type="file" id="avatarInput" name="profile_picture" accept="image/*" style="display: none;">
+                                            <div class="profile-avatar-upload-icon" id="uploadIcon">
+                                                <i class="fas fa-camera"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col text-white ps-3">
+                                        <h4 id="userName" class="mb-1 fw-bold">Student Name</h4>
+                                        <div class="d-flex align-items-center flex-wrap gap-2">
+                                            <div class="badge-teacher">
+                                                <i class="fas fa-user-graduate me-1"></i>
+                                                <span>Student</span>
+                                            </div>
+                                            <div id="gradeSection" class="badge-grade-section">
+                                                <span>Grade & Section</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Glassmorphism Stats - Right Side with Proper Spacing -->
+                            <div class="col-md-6 col-lg-5 mt-3 mt-md-0">
+                                <div class="glassmorphism-stats">
+                                    <h6 class="text-white text-center mb-3 fw-bold">Your Progress</h6>
+                                    <div class="stats-row">
+                                        <!-- Points -->
+                                        <div class="stat-item">
+                                            <div class="stat-icon points">
+                                                <i class="fas fa-star"></i>
+                                            </div>
+                                            <div class="stat-label">Points</div>
+                                            <div class="stat-value" id="pointsValue">0</div>
+                                        </div>
+                                        
+                                        <!-- Streak -->
+                                        <div class="stat-item">
+                                            <div class="stat-icon streak">
+                                                <i class="fas fa-fire"></i>
+                                            </div>
+                                            <div class="stat-label">Streak</div>
+                                            <div class="stat-value" id="streakValue">0</div>
+                                        </div>
+                                        
+                                        <!-- Rank -->
+                                        <div class="stat-item">
+                                            <div class="stat-icon rank">
+                                                <i class="fas fa-trophy"></i>
+                                            </div>
+                                            <div class="stat-label">Rank</div>
+                                            <div class="stat-value" id="rankValue">#0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Area -->
+                <div class="container-fluid p-0">
+                    <div class="row g-0">
+                        <!-- Settings Tabs (Full width) -->
+                        <div class="col-12">
+                            <div class="settings-tabs">
+                                <ul class="nav nav-tabs nav-justified" id="settingsTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active py-3" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="true">
+                                            <i class="fas fa-user me-2"></i>Personal
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link py-3" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab" aria-controls="activity" aria-selected="false">
+                                            <i class="fas fa-chart-line me-2"></i>Activity
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link py-3" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab" aria-controls="security" aria-selected="false">
+                                            <i class="fas fa-lock me-2"></i>Security
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link py-3" id="parent-tab" data-bs-toggle="tab" data-bs-target="#parent" type="button" role="tab" aria-controls="parent" aria-selected="false">
+                                            <i class="fas fa-users me-2"></i>Parent
+                                        </button>
+                                    </li>
+                                </ul>
+                                
+                                <div class="tab-content" id="settingsTabContent">
+                                    <!-- Profile Tab -->
+                                    <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                                        <h5 class="mb-4 fw-bold">Personal Information</h5>
+                                        <form id="profileForm">
+                                            <div class="row g-4">
+                                                <div class="col-md-6">
+                                                    <label for="firstName" class="form-label fw-semibold">First Name</label>
+                                                    <input type="text" class="form-control" id="firstName" name="first_name" value="Lyndon" pattern="[A-Za-z\s]+" title="Letters only" required>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="lastName" class="form-label fw-semibold">Last Name</label>
+                                                    <input type="text" class="form-control" id="lastName" name="last_name" value="Pablo" pattern="[A-Za-z\s]+" title="Letters only" required>
+                                                </div>
+                                            </div>
+                                            <div class="row g-4 mt-0">
+                                                <div class="col-md-6">
+                                                    <label for="email" class="form-label fw-semibold">Email</label>
+                                                    <input type="email" class="form-control" id="email" value="owaylyndon@gmail.com" required>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="phone" class="form-label fw-semibold">Phone Number</label>
+                                                    <input type="tel" class="form-control" id="phone" name="mobile_no" value="09108243535" pattern="^09\d{9}$" maxlength="11" title="Phone number must start with 09 and be 11 digits" required>
+                                                </div>
+                                            </div>
+                                            <!-- Grade Level and Section removed from form -->
+                                            <div class="mt-4 pt-2">
+                                                <button type="submit" class="btn btn-primary px-4">
+                                                    <i class="fas fa-save me-2"></i>Save Changes
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    
+                                    <!-- Activity Tab -->
+                                    <div class="tab-pane fade" id="activity" role="tabpanel" aria-labelledby="activity-tab">
+                                        <h5 class="mb-4 fw-bold">Recent Activity</h5>
+
+                                        <!-- 1:1 Loading placeholder (copied from student_home.html) -->
+                                        <div id="profileActivityLoading" class="loading-achievements" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; text-align: center; padding: 2rem;">
+                                            <i class="fas fa-magic" style="font-size: 2.5rem; color: #bdbdbd;"></i>
+                                            <div style="font-weight: 600; color: #757575; font-size: 1.2rem; margin-top: 0.7rem;">No activities yet</div>
+                                            <div style="color: #bdbdbd; font-size: 1rem; margin-top: 0.2rem;">Complete tasks to see your progress here!</div>
+                                        </div>
+
+                                        <!-- Will be populated by JS using the same API + design from student_home -->
+                                        <div id="profile-activity-list" class="activity-list"></div>
+
+                                        <div class="text-center mt-3">
+                                            <button class="btn btn-outline-primary btn-sm" id="viewFullActivityBtn" onclick="window.location.href='/student_all_activity'">
+                                                <i class="fas fa-history me-2"></i>View Full Activity History
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Security Tab -->
+                                    <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
+                                        <h5 class="mb-4 fw-bold">Security Settings</h5>
+                                        <form id="passwordForm">
+                                            <div class="mb-4">
+                                                <label for="currentPassword" class="form-label fw-semibold">Current Password</label>
+                                                <div class="password-input-container">
+                                                    <input type="password" class="form-control" id="currentPassword" required>
+                                                    <span class="toggle-password" data-target="currentPassword">
+                                                        <i class="fas fa-eye"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="mb-4">
+                                                <label for="newPassword" class="form-label fw-semibold">New Password</label>
+                                                <div class="password-input-container">
+                                                    <input type="password" class="form-control" id="newPassword" required>
+                                                    <span class="toggle-password" data-target="newPassword">
+                                                        <i class="fas fa-eye"></i>
+                                                    </span>
+                                                </div>
+                                                <div class="form-text">Password must be at least 8 characters with uppercase, lowercase, number, and special character.</div>
+                                            </div>
+                                            <div class="mb-4">
+                                                <label for="confirmPassword" class="form-label fw-semibold">Confirm New Password</label>
+                                                <div class="password-input-container">
+                                                    <input type="password" class="form-control" id="confirmPassword" required>
+                                                    <span class="toggle-password" data-target="confirmPassword">
+                                                        <i class="fas fa-eye"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary px-4">
+                                                <i class="fas fa-key me-2"></i>Change Password
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <!-- Parent Info Tab -->
+                                    <div class="tab-pane fade" id="parent" role="tabpanel" aria-labelledby="parent-tab">
+                                        <h5 class="mb-4 fw-bold">Parent Information</h5>
+                                        
+                                        <!-- Loading State -->
+                                        <div id="parentLoading" class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="mt-2 text-muted">Loading parent information...</p>
+                                        </div>
+
+                                        <!-- Parent List -->
+                                        <div id="parentList" style="display: none;">
+                                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                                <h6 class="mb-0 fw-semibold">Parents/Guardians</h6>
+                                                <button type="button" class="btn btn-primary btn-sm" id="addParentBtn">
+                                                    <i class="fas fa-plus me-2"></i>Add Parent
+                                                </button>
+                                            </div>
+
+                                            <div id="parentsContainer">
+                                                <!-- Parent cards will be dynamically inserted here -->
+                                            </div>
+                                        </div>
+
+                                        <!-- No Parents State -->
+                                        <div id="noParents" class="text-center py-5" style="display: none;">
+                                            <i class="fas fa-users fs-1 text-muted mb-3"></i>
+                                            <h6 class="text-muted">No parents added yet</h6>
+                                            <p class="text-muted mb-3">Add parent/guardian information to get started</p>
+                                            <button type="button" class="btn btn-primary" id="addFirstParentBtn">
+                                                <i class="fas fa-plus me-2"></i>Add First Parent
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Avatar Selection Modal -->
+<div class="modal fade" id="avatarModal" tabindex="-1" aria-labelledby="avatarModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="avatarModalLabel">Change Profile Picture</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Upload Section -->
+        <div class="upload-section mb-4">
+          <h6 class="fw-semibold mb-3">Upload New Image</h6>
+          <div class="d-flex align-items-center gap-3">
+            <button type="button" class="btn btn-outline-primary btn-sm" id="uploadNewAvatarBtn">
+              <i class="fas fa-upload me-2"></i>Select Image
+            </button>
+            <small class="text-muted">JPG, PNG or GIF (Max 5MB)</small>
+          </div>
+          <input type="file" id="modalAvatarInput" name="profile_picture" accept="image/*" style="display: none;">
+        </div>
+
+        <!-- Recent Avatars Section -->
+        <div class="recent-avatars-section">
+            <h6 class="fw-semibold mb-3">
+                Recent Avatars
+                <span class="d-block small text-muted fw-normal mt-1">Access your 6 most recent avatars</span>
+            </h6>
+            <div class="recent-avatars-grid" id="recentAvatarsGrid">
+                <!-- Recent avatars will be populated here -->
+                <div class="text-muted text-center py-3">
+                <i class="fas fa-image fs-4 mb-2 d-block"></i>
+                No recent avatars
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Parent Modal -->
+<div class="modal fade" id="parentModal" tabindex="-1" aria-labelledby="parentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="parentModalLabel">Add Parent/Guardian</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="parentForm">
+                    <input type="hidden" id="parentId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="relationship" class="form-label fw-semibold">Relationship <span class="text-danger">*</span></label>
+                            <select class="form-select" id="relationship" name="relationship" required>
+                                <option value="">Select Relationship</option>
+                                <option value="Father">Father</option>
+                                <option value="Mother">Mother</option>
+                                <option value="Guardian">Guardian</option>
+                                <option value="Grandfather">Grandfather</option>
+                                <option value="Grandmother">Grandmother</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="gender" class="form-label fw-semibold">Gender <span class="text-danger">*</span></label>
+                            <select class="form-select" id="gender" name="gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="parentFirstName" class="form-label fw-semibold">First Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="parentFirstName" name="first_name" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="parentMiddleName" class="form-label fw-semibold">Middle Name</label>
+                            <input type="text" class="form-control" id="parentMiddleName" name="middle_name">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="parentLastName" class="form-label fw-semibold">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="parentLastName" name="last_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="parentEmail" class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="parentEmail" name="email" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="parentMobileNo" class="form-label fw-semibold">Mobile Number <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="parentMobileNo" name="mobile_no" pattern="^09\d{9}$" maxlength="11" title="Phone number must start with 09 and be 11 digits" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="parentOccupation" class="form-label fw-semibold">Occupation</label>
+                            <input type="text" class="form-control" id="parentOccupation" name="occupation">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveParentBtn">
+                    <i class="fas fa-save me-2"></i>Save Parent
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let selectedAvatarFile = null;
+    let selectedRecentAvatarUrl = null;
+
+    // Fetch student profile summary data
+    function fetchStudentProfileSummary() {
+        return fetch('/api/student-profile-summary')
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Failed to fetch profile summary');
+                }
+            });
+    }
+
+    // Update progress stats with API data
+    function updateProgressStats(profileData) {
+        // Update points
+        if (profileData.points !== undefined) {
+            document.getElementById('pointsValue').textContent = profileData.points;
+        }
+
+        // Update streak
+        if (profileData.streak !== undefined) {
+            document.getElementById('streakValue').textContent = profileData.streak;
+
+            const streakValue = profileData.streak;
+            const streakIconDiv = document.querySelector('.stat-icon.streak');
+            streakIconDiv.innerHTML = ''; // Clear previous content
+
+            if (streakValue < 7) {
+                // Static icon, grey background
+                streakIconDiv.style.background = '#9e9e9e';
+                streakIconDiv.innerHTML = '<i class="fas fa-fire"></i>';
+            } else {
+                // Animated Lottie fire
+                let lottiePath = '';
+                if (streakValue < 15) {
+                    lottiePath = '/static/image/streak-animation/yellow_fire.json';
+                } else if (streakValue < 22) {
+                    lottiePath = '/static/image/streak-animation/orange.json';
+                } else if (streakValue < 29) {
+                    lottiePath = '/static/image/streak-animation/brightred_fire.json';
+                } else if (streakValue < 36) {
+                    lottiePath = '/static/image/streak-animation/green_fire.json';
+                } else if (streakValue < 50) {
+                    lottiePath = '/static/image/streak-animation/blue_fire.json';
+                } else {
+                    lottiePath = '/static/image/streak-animation/purple_fire.json';
+                }
+                streakIconDiv.style.background = 'none';
+                // Create a container for Lottie
+                const lottieContainer = document.createElement('div');
+                lottieContainer.style.width = '32px';
+                lottieContainer.style.height = '32px';
+                streakIconDiv.appendChild(lottieContainer);
+                // Load Lottie animation
+                lottie.loadAnimation({
+                    container: lottieContainer,
+                    renderer: 'svg',
+                    loop: true,
+                    autoplay: true,
+                    path: lottiePath
+                });
+            }
+        }
+
+        // Update rank
+        if (profileData.rank !== undefined && profileData.rank !== null) {
+            document.getElementById('rankValue').textContent = `#${profileData.rank}`;
+        } else {
+            document.getElementById('rankValue').textContent = 'N/A';
+        }
+    }
+
+    // Function to fetch and display profile picture
+    function fetchAndDisplayProfilePicture(user) {
+        const avatar = document.getElementById('profileAvatar');
+        
+        // Fetch profile picture from profile_pictures table
+        fetch(`/api/users/{{ session["user_id"] }}/profile-picture`)
+            .then(res => res.json())
+            .then(picData => {
+                if (picData.success && picData.file_path) {
+                    // Use img element for GIF animation support
+                    avatar.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = picData.file_path;
+                    img.alt = 'Profile Picture';
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '50%';
+                    img.onload = function() {
+                        avatar.appendChild(img);
+                        avatar.style.backgroundImage = 'none';
+                        avatar.style.border = '2px solid white';
+                        avatar.style.borderStyle = 'solid';
+                        avatar.classList.add('has-image');
+                    };
+                    img.onerror = function() {
+                        // Image failed to load, show default icon
+                        showDefaultAvatar(avatar, user);
+                    };
+                } else {
+                    // No profile picture found, show default
+                    showDefaultAvatar(avatar, user);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching profile picture:', error);
+                // Show default as fallback
+                showDefaultAvatar(avatar, user);
+            });
+    }
+
+    // Function to show default avatar with user icon
+    function showDefaultAvatar(avatar, user) {
+        avatar.innerHTML = `
+            <img src="/static/image/default-avatar.png" 
+                alt="Default Avatar" 
+                style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+        `;
+        avatar.style.backgroundImage = '';
+        avatar.style.border = '2px dashed rgba(255,255,255,0.7)';
+        avatar.classList.remove('has-image');
+    }
+
+    // Update grade and section display (read-only)
+    function updateGradeSectionDisplay(grade, section) {
+        const gradeSectionElement = document.getElementById('gradeSection');
+        if (grade && section) {
+            gradeSectionElement.innerHTML = `<span>Grade ${grade} - ${section}</span>`;
+        } else if (grade) {
+            gradeSectionElement.innerHTML = `<span>Grade ${grade}</span>`;
+        } else if (section) {
+            gradeSectionElement.innerHTML = `<span>${section}</span>`;
+        } else {
+            gradeSectionElement.innerHTML = `<span>Grade & Section</span>`;
+        }
+    }
+
+    // NEW: Function to preview image in the circle
+    function previewImageInCircle(imageUrl) {
+        const avatar = document.getElementById('profileAvatar');
+        avatar.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        img.alt = 'Profile Picture Preview';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '50%';
+        avatar.appendChild(img);
+        avatar.style.backgroundImage = 'none';
+        avatar.style.border = '2px solid white';
+        avatar.style.borderStyle = 'solid';
+        avatar.classList.add('has-image');
+    }
+
+    // Initialize profile data
+    function initializeProfileData() {
+        // Fetch both user info and profile summary in parallel
+        Promise.all([
+            fetch('/api/users/{{ session["user_id"] }}').then(res => res.json()),
+            fetchStudentProfileSummary()
+        ])
+        .then(([userData, profileSummary]) => {
+            // Handle user data
+            if (userData.success && userData.user) {
+                const user = userData.user;
+                // Text fields
+                document.getElementById('firstName').value = user.first_name || '';
+                document.getElementById('lastName').value = user.last_name || '';
+                document.getElementById('email').value = user.email || '';
+                document.getElementById('phone').value = user.mobile_no || '';
+                document.getElementById('userName').textContent = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Student Name';
+                
+                // Grade and Section fields - only for display, not for editing
+                updateGradeSectionDisplay(user.year_level, user.section);
+                
+                // Fetch and display profile picture
+                fetchAndDisplayProfilePicture(user);
+            }
+            
+            // Handle profile summary data
+            updateProgressStats(profileSummary);
+        })
+        .catch(error => {
+            console.error('Error fetching profile data:', error);
+            showToast('Failed to load profile data. Please refresh the page.', 'danger');
+        });
+    }
+
+    // Call initialization function
+    initializeProfileData();
+
+    // Avatar hover effects
+    const avatarDiv = document.getElementById('profileAvatar');
+    const uploadIcon = document.getElementById('uploadIcon');
+    
+    avatarDiv.addEventListener('mouseenter', function() {
+        if (!this.classList.contains('has-image')) {
+            uploadIcon.style.opacity = '0.8';
+        }
+        this.style.opacity = '0.8';
+    });
+    
+    avatarDiv.addEventListener('mouseleave', function() {
+        uploadIcon.style.opacity = '0';
+        this.style.opacity = '1';
+    });
+
+    // Avatar modal functionality
+    const avatarInput = document.getElementById('avatarInput');
+    
+    // Replace the existing avatar click handler with modal
+    avatarDiv.addEventListener('click', function() {
+        // Show the avatar modal instead of directly opening file picker
+        const avatarModal = new bootstrap.Modal(document.getElementById('avatarModal'));
+        avatarModal.show();
+        
+        // Load recent avatars when modal opens
+        loadRecentAvatars();
+    });
+
+    // NEW: Function to handle avatar upload and preview
+    function handleAvatarSelection(imageUrl, file = null) {
+        // Preview the image in the circle immediately
+        previewImageInCircle(imageUrl);
+        
+        // Close the modal
+        const avatarModal = bootstrap.Modal.getInstance(document.getElementById('avatarModal'));
+        avatarModal.hide();
+        
+        // Store the selected file for later saving
+        selectedAvatarFile = file;
+        selectedRecentAvatarUrl = file ? null : imageUrl;
+        
+        // Show toast message to inform user they need to save changes
+        showToast('Profile picture preview updated. Click "Save Changes" to apply.', 'info');
+    }
+
+    // Modal file input handler - UPDATED: Preview and close modal on file selection
+    const modalAvatarInput = document.getElementById('modalAvatarInput');
+    document.getElementById('uploadNewAvatarBtn').addEventListener('click', function() {
+        modalAvatarInput.click();
+    });
+
+    modalAvatarInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        
+        // Validate file type - include GIF
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            showToast('Please select a valid image file (JPEG, PNG, GIF)', 'danger');
+            return;
+        }
+        
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('File size must be less than 5MB', 'danger');
+            return;
+        }
+        
+        // Create object URL for preview
+        const imageUrl = URL.createObjectURL(file);
+        
+        // NEW: Preview image and close modal immediately
+        handleAvatarSelection(imageUrl, file);
+    });
+
+    // Function to load recent avatars
+    function loadRecentAvatars() {
+        const recentAvatarsGrid = document.getElementById('recentAvatarsGrid');
+        
+        // Fetch recent avatars from API
+        fetch('/api/users/{{ session["user_id"] }}/recent-avatars')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.avatars && data.avatars.length > 0) {
+                    recentAvatarsGrid.innerHTML = '';
+                    
+                    data.avatars.forEach(avatar => {
+                        const avatarElement = document.createElement('div');
+                        avatarElement.className = 'recent-avatar-item';
+                        avatarElement.innerHTML = `
+                            <img src="${avatar.file_path}" alt="Recent Avatar" class="recent-avatar-img">
+                        `;
+                        
+                        // UPDATED: Use the new endpoint to set avatar from history without creating duplicates
+                        avatarElement.addEventListener('click', function() {
+                            fetch(`/api/users/{{ session["user_id"] }}/set-avatar-from-history`, {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({ file_path: avatar.file_path })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Preview image and close modal immediately
+                                    handleAvatarSelection(avatar.file_path);
+                                    
+                                    // Update navbar avatar immediately
+                                    updateNavbarAvatar();
+                                    
+                                    showToast('Profile picture updated from history!', 'success');
+                                } else {
+                                    throw new Error(data.message || 'Failed to set avatar from history');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error setting avatar from history:', error);
+                                showToast('Failed to set avatar from history.', 'danger');
+                            });
+                        });
+                        
+                        recentAvatarsGrid.appendChild(avatarElement);
+                    });
+                } else {
+                    recentAvatarsGrid.innerHTML = `
+                        <div class="text-muted text-center py-3">
+                            <i class="fas fa-image fs-4 mb-2 d-block"></i>
+                            No recent avatars
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading recent avatars:', error);
+                recentAvatarsGrid.innerHTML = `
+                    <div class="text-muted text-center py-3">
+                        <i class="fas fa-exclamation-triangle fs-4 mb-2 d-block"></i>
+                        Failed to load recent avatars
+                    </div>
+                `;
+            });
+    }
+
+    // Reset modal when closed
+    document.getElementById('avatarModal').addEventListener('hidden.bs.modal', function() {
+        modalAvatarInput.value = '';
+    });
+
+    // Profile form submission - UPDATED: Handle avatar saving
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const userId = "{{ session['user_id'] }}";
+        
+        // Prepare profile data WITHOUT grade and section
+        const profilePayload = {
+            first_name: document.getElementById('firstName').value.trim(),
+            last_name: document.getElementById('lastName').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            mobile_no: document.getElementById('phone').value.trim()
+            // year_level and section removed from payload
+        };
+
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Saving...';
+        submitBtn.disabled = true;
+
+        // Create a promise chain to handle both profile update and optional picture upload
+        let updatePromise = Promise.resolve();
+
+        // First update profile info
+        updatePromise = fetch(`/api/users/${userId}/profile`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(profilePayload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.message || 'Failed to update profile.');
+            }
+            // Update displayed name
+            document.getElementById('userName').textContent = `${profilePayload.first_name} ${profilePayload.last_name}`;
+            return data;
+        });
+
+        // Then upload picture if a new file was selected (not from history)
+        if (selectedAvatarFile) {
+            updatePromise = updatePromise.then(() => {
+                // Upload new file
+                const formData = new FormData();
+                formData.append('profile_picture', selectedAvatarFile);
+                
+                // Try multiple possible endpoints for profile picture upload
+                const uploadEndpoints = [
+                    `/api/users/${userId}/profile-picture`,
+                    `/api/users/${userId}/upload-profile-picture`,
+                    `/api/upload-profile-picture`
+                ];
+
+                let uploadPromise = Promise.reject(new Error('No endpoints worked'));
+                
+                for (const endpoint of uploadEndpoints) {
+                    uploadPromise = uploadPromise.catch(() => 
+                        fetch(endpoint, {
+                            method: 'POST',
+                            body: formData
+                        }).then(res => res.json())
+                    );
+                }
+
+                return uploadPromise.then(picData => {
+                    if (picData.success) {
+                        // Refresh the profile picture display
+                        return fetch('/api/users/{{ session["user_id"] }}')
+                            .then(res => res.json())
+                            .then(userData => {
+                                if (userData.success && userData.user) {
+                                    fetchAndDisplayProfilePicture(userData.user);
+                                }
+                                selectedAvatarFile = null;
+                                selectedRecentAvatarUrl = null;
+                                avatarInput.value = '';
+                                updateNavbarAvatar();
+                                return 'Profile and picture updated successfully!';
+                            });
+                    } else {
+                        throw new Error(picData.message || 'Picture upload failed');
+                    }
+                });
+            });
+        }
+
+        // Handle the final response
+        updatePromise
+            .then(response => {
+                // If response is an object, use its message property
+                const msg = typeof response === 'object' && response.message ? response.message : (response || 'Profile updated successfully!');
+                showToast(msg, 'success');
+                selectedAvatarFile = null;
+                selectedRecentAvatarUrl = null;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (selectedAvatarFile && error.message.includes('Picture upload failed')) {
+                    showToast('Profile updated, but picture upload failed. The image may be too large or in an unsupported format.', 'warning');
+                } else {
+                    showToast(error.message || 'Server error. Please try again.', 'danger');
+                }
+            })
+            .finally(() => {
+                // Restore button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+    });
+
+    // Function to update navbar avatar
+    function updateNavbarAvatar() {
+        const navbarAvatar = document.querySelector('.navbar .avatar, .navbar .profile-pic');
+        if (navbarAvatar) {
+            // Force refresh by fetching the updated image
+            fetch(`/api/users/{{ session["user_id"] }}/profile-picture`)
+                .then(res => res.json())
+                .then(updatedPicData => {
+                    if (updatedPicData.success && updatedPicData.file_path) {
+                        if (navbarAvatar.tagName === 'IMG') {
+                            navbarAvatar.src = updatedPicData.file_path + '?t=' + new Date().getTime();
+                        } else {
+                            // If navbar avatar is a div, convert it to use img for GIF support
+                            navbarAvatar.innerHTML = '';
+                            const img = document.createElement('img');
+                            img.src = updatedPicData.file_path + '?t=' + new Date().getTime();
+                            img.alt = 'Profile Picture';
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
+                            img.style.borderRadius = '50%';
+                            navbarAvatar.appendChild(img);
+                            navbarAvatar.style.backgroundImage = 'none';
+                        }
+                    }
+                });
+        }
+    }
+
+    // Password change logic
+    const passwordForm = document.getElementById('passwordForm');
+    passwordForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const currentPassword = document.getElementById('currentPassword').value.trim();
+        const newPassword = document.getElementById('newPassword').value.trim();
+        const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            showToast('Please fill in all password fields.', 'warning');
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            showToast('New passwords do not match.', 'danger');
+            return;
+        }
+        if (!/^.*(?=.{8,})(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).*$/.test(newPassword)) {
+            showToast('Password must be at least 8 characters and include upper/lower case letters, numbers, and special characters.', 'danger');
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Changing...';
+        submitBtn.disabled = true;
+
+        fetch(`/api/users/{{ session['user_id'] }}/change-password`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                current_password: currentPassword,
+                new_password: newPassword
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Password changed successfully!', 'success');
+                passwordForm.reset();
+            } else {
+                showToast(data.message || 'Failed to change password.', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error changing password:', error);
+            showToast('Server error. Please try again.', 'danger');
+        })
+        .finally(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+
+    // Helper function to show toast notifications (same design as settings.html)
+    function showToast(message, type = 'success', duration = 5000) {
+        // Remove any existing toasts
+        const existingToasts = document.querySelectorAll('.toast-notification');
+        existingToasts.forEach(toast => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        });
+
+        const toast = document.createElement('div');
+        toast.className = `toast-notification ${type === 'error' || type === 'danger' ? 'error' : 'success'}`;
+        
+        let icon = 'fa-check-circle';
+        if (type === 'error' || type === 'danger') icon = 'fa-exclamation-circle';
+
+        toast.innerHTML = `
+            <div class="toast-content">
+                <i class="fas ${icon} me-2"></i>
+                ${message}
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Animate in
+        setTimeout(() => { 
+            toast.classList.add('show'); 
+        }, 10);
+        
+        // Auto remove after duration
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => { 
+                if (toast.parentNode) toast.parentNode.removeChild(toast); 
+            }, 300);
+        }, duration);
+        
+        // Also allow click to dismiss
+        toast.addEventListener('click', function() {
+            this.classList.remove('show');
+            setTimeout(() => { 
+                if (this.parentNode) this.parentNode.removeChild(this); 
+            }, 300);
+        });
+    }
+
+    // Prevent letters and enforce 09xxxxxxxxx format in mobile number
+    const phoneInput = document.querySelector('input[name="mobile_no"]');
+    phoneInput.addEventListener('input', function(e) {
+        // Remove non-digits
+        let val = this.value.replace(/[^0-9]/g, '');
+        // Enforce max 11 digits
+        if (val.length > 11) val = val.slice(0, 11);
+        // Enforce starting with 09
+        if (val && !val.startsWith('09')) val = '09';
+        this.value = val;
+    });
+
+    // Show/hide password toggle for all .toggle-password
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
+    // Refresh profile summary data periodically (every 30 seconds)
+    setInterval(() => {
+        fetchStudentProfileSummary()
+            .then(updateProgressStats)
+            .catch(error => console.error('Error refreshing profile summary:', error));
+    }, 30000);
+
+    // Render recent activities in the profile using the same look & API as student_home
+    const profileList = document.getElementById('profile-activity-list');
+    const loadingDiv = document.getElementById('profileActivityLoading');
+
+    function getIconAndColor(type) {
+        switch (type) {
+            case 'streak': return { icon: 'fa-fire', color: '#ffa500' };
+            case 'reward': return { icon: 'fa-gift', color: '#4CAF50' };
+            case 'task': return { icon: 'fa-circle-check', color: '#5e72e4' };
+            case 'milestone': return { icon: 'fa-trophy', color: '#5e72e4' };
+            case 'star': return { icon: 'fa-star', color: '#FFD700' };
+            default: return { icon: 'fa-bell', color: '#9e9e9e' };
+        }
+    }
+
+    function formatPoints(points) {
+        if (points === null || points === undefined || points === 0) return '';
+        if (points > 0) return `<span class="activity-footer-points gained">+${points}</span>`;
+        if (points < 0) return `<span class="activity-footer-points lost">${points}</span>`;
+        return '';
+    }
+
+    function formatDateTime(dateStr) {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        if (isNaN(date)) return dateStr;
+        const options = {
+            month: 'short', day: 'numeric', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', hour12: true,
+            timeZone: 'Asia/Manila'
+        };
+        const localeString = date.toLocaleString('en-US', options);
+        return localeString.replace(',', ' •');
+    }
+
+    function renderActivityCards(activities) {
+        if (loadingDiv) loadingDiv.remove();
+        if (!activities || activities.length === 0) {
+            profileList.innerHTML = '<div class="text-muted" style="padding:1rem;">No recent activity yet.</div>';
+            return;
+        }
+        profileList.innerHTML = '';
+        activities.forEach(act => {
+            const { icon, color } = getIconAndColor(act.type);
+            const pointsHtml = formatPoints(act.points);
+            const dateTimeStr = formatDateTime(act.time || act.processed_at || act.completed_at);
+
+            profileList.innerHTML += `
+                <div class="activity-card enhanced-activity-card">
+                    <div class="enhanced-activity-icon-container" style="background: ${color};">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    <div class="activity-card-content">
+                        <div class="activity-card-header">
+                            <span class="activity-card-title">${act.title || act.task || act.reward_name || ''}</span>
+                        </div>
+                        <div class="activity-card-status">${act.status || (act.isClaimed ? 'Claimed' : act.isUnlocked ? 'Unlocked' : '')}</div>
+                        <div class="activity-card-footer">
+                            <span class="activity-footer-badge">
+                                <i class="fa-regular fa-clock"></i>
+                                ${dateTimeStr}
+                            </span>
+                            ${pointsHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // Load activities (call when Activity tab is shown)
+    function loadProfileRecentActivities() {
+        fetch('/api/student-recent-activities')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success || !data.activities) {
+                    if (loadingDiv) loadingDiv.textContent = 'No recent activity yet.';
+                    profileList.innerHTML = '<div class="text-muted" style="padding:1rem;">No recent activity yet.</div>';
+                    return;
+                }
+                renderActivityCards(data.activities);
+            })
+            .catch(() => {
+                if (loadingDiv) loadingDiv.textContent = 'Failed to load activity.';
+            });
+    }
+
+    // Only fetch when the Activity tab becomes visible to avoid unnecessary calls
+    const activityTabBtn = document.getElementById('activity-tab');
+    if (activityTabBtn) {
+        activityTabBtn.addEventListener('shown.bs.tab', loadProfileRecentActivities);
+    }
+
+    // If the activity tab is already active on page load, load immediately
+    if (document.querySelector('#activity').classList.contains('show') || document.querySelector('#activity').classList.contains('active')) {
+        loadProfileRecentActivities();
+    }
+
+    // Optional: view full history button navigates to student activities page
+    const viewFullBtn = document.getElementById('viewFullActivityBtn');
+    if (viewFullBtn) {
+        viewFullBtn.addEventListener('click', function() {
+            window.location.href = '/student_all_activity';
+        });
+    }
+
+    // ==================== PARENT MANAGEMENT JAVASCRIPT ====================
+    const studentId = "{{ session['user_id'] }}";
+    
+    // DOM Elements
+    const parentLoading = document.getElementById('parentLoading');
+    const parentList = document.getElementById('parentList');
+    const noParents = document.getElementById('noParents');
+    const parentsContainer = document.getElementById('parentsContainer');
+    const addParentBtn = document.getElementById('addParentBtn');
+    const addFirstParentBtn = document.getElementById('addFirstParentBtn');
+    const parentModal = new bootstrap.Modal(document.getElementById('parentModal'));
+    const parentForm = document.getElementById('parentForm');
+    const saveParentBtn = document.getElementById('saveParentBtn');
+    const parentModalLabel = document.getElementById('parentModalLabel');
+
+    // Load parents when tab is shown
+    document.getElementById('parent-tab').addEventListener('shown.bs.tab', loadParents);
+
+    // Add parent buttons
+    addParentBtn?.addEventListener('click', () => openParentModal());
+    addFirstParentBtn?.addEventListener('click', () => openParentModal());
+
+    // Save parent
+    saveParentBtn.addEventListener('click', saveParent);
+
+    // Load parents function
+    async function loadParents() {
+        try {
+            showParentLoading();
+            
+            const response = await fetch(`/api/parents/${studentId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                displayParents(data.parents);
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            console.error('Error loading parents:', error);
+            showToast('Failed to load parent information', 'danger');
+            showNoParents();
+        }
+    }
+
+    function displayParents(parents) {
+        if (!parents || parents.length === 0) {
+            showNoParents();
+            return;
+        }
+        
+        parentsContainer.innerHTML = '';
+        
+        parents.forEach(parent => {
+            const parentCard = createParentCard(parent);
+            parentsContainer.appendChild(parentCard);
+        });
+        
+        showParentList();
+    }
+
+    function createParentCard(parent) {
+        const card = document.createElement('div');
+        card.className = 'card mb-3 parent-card';
+        card.innerHTML = `
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h6 class="card-title mb-1">
+                            ${parent.first_name} ${parent.middle_name ? parent.middle_name + ' ' : ''}${parent.last_name}
+                            <span class="badge bg-primary ms-2">${parent.relationship}</span>
+                            <span class="badge bg-secondary ms-1">${parent.gender}</span>
+                        </h6>
+                        <p class="card-text text-muted mb-1">
+                            <i class="fas fa-envelope me-2"></i>${parent.email}
+                        </p>
+                        <p class="card-text text-muted mb-1">
+                            <i class="fas fa-phone me-2"></i>${parent.mobile_no}
+                        </p>
+                        ${parent.occupation ? `
+                        <p class="card-text text-muted mb-1">
+                            <i class="fas fa-briefcase me-2"></i>${parent.occupation}
+                        </p>
+                        ` : ''}
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-outline-primary btn-sm me-2 edit-parent" data-parent-id="${parent.parent_id}">
+                            <i class="fas fa-edit me-1"></i>Edit
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm delete-parent" data-parent-id="${parent.parent_id}">
+                            <i class="fas fa-trash me-1"></i>Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add event listeners with proper data passing
+        card.querySelector('.edit-parent').addEventListener('click', (e) => {
+            e.preventDefault();
+            editParent(parent); // Pass the full parent object
+        });
+        card.querySelector('.delete-parent').addEventListener('click', () => deleteParent(parent.parent_id));
+        
+        return card;
+    }
+
+    function openParentModal(parent = null) {
+        parentForm.reset();
+        document.getElementById('parentId').value = '';
+        
+        if (parent) {
+            // Edit mode
+            parentModalLabel.textContent = 'Edit Parent/Guardian';
+            document.getElementById('parentId').value = parent.parent_id;
+            document.getElementById('relationship').value = parent.relationship;
+            document.getElementById('gender').value = parent.gender;
+            document.getElementById('parentFirstName').value = parent.first_name;
+            document.getElementById('parentMiddleName').value = parent.middle_name || '';
+            document.getElementById('parentLastName').value = parent.last_name;
+            document.getElementById('parentEmail').value = parent.email;
+            document.getElementById('parentMobileNo').value = parent.mobile_no;
+            document.getElementById('parentOccupation').value = parent.occupation || '';
+        } else {
+            // Add mode
+            parentModalLabel.textContent = 'Add Parent/Guardian';
+        }
+        
+        parentModal.show();
+    }
+
+    function editParent(parent) {
+        openParentModal(parent);
+    }
+
+    async function saveParent() {
+        const formData = new FormData(parentForm);
+        const parentId = document.getElementById('parentId').value;
+        
+        // Validate form
+        if (!parentForm.checkValidity()) {
+            parentForm.reportValidity();
+            return;
+        }
+        
+        const parentData = {
+            student_id: studentId,
+            relationship: formData.get('relationship'),
+            first_name: formData.get('first_name'),
+            middle_name: formData.get('middle_name'),
+            last_name: formData.get('last_name'),
+            gender: formData.get('gender'),
+            email: formData.get('email'),
+            mobile_no: formData.get('mobile_no'),
+            occupation: formData.get('occupation')
+        };
+        
+        try {
+            saveParentBtn.disabled = true;
+            saveParentBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            
+            let response;
+            if (parentId) {
+                // Update existing parent
+                response = await fetch(`/api/parents/${parentId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(parentData)
+                });
+            } else {
+                // Add new parent
+                response = await fetch('/api/parents', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(parentData)
+                });
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast(data.message, 'success');
+                parentModal.hide();
+                loadParents();
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            console.error('Error saving parent:', error);
+            showToast(error.message || 'Failed to save parent information', 'danger');
+        } finally {
+            saveParentBtn.disabled = false;
+            saveParentBtn.innerHTML = '<i class="fas fa-save me-2"></i>Save Parent';
+        }
+    }
+
+    async function deleteParent(parentId) {
+        if (!confirm('Are you sure you want to delete this parent?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/parents/${parentId}`, {
+                method: 'DELETE'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast(data.message, 'success');
+                loadParents();
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            console.error('Error deleting parent:', error);
+            showToast(error.message || 'Failed to delete parent', 'danger');
+        }
+    }
+
+    // UI State Functions
+    function showParentLoading() {
+        parentLoading.style.display = 'block';
+        parentList.style.display = 'none';
+        noParents.style.display = 'none';
+    }
+
+    function showParentList() {
+        parentLoading.style.display = 'none';
+        parentList.style.display = 'block';
+        noParents.style.display = 'none';
+    }
+
+    function showNoParents() {
+        parentLoading.style.display = 'none';
+        parentList.style.display = 'none';
+        noParents.style.display = 'block';
+    }
+
+    // Phone number validation for parent form
+    document.getElementById('mobileNo')?.addEventListener('input', function(e) {
+        let val = this.value.replace(/[^0-9]/g, '');
+        if (val.length > 11) val = val.slice(0, 11);
+        if (val && !val.startsWith('09')) val = '09';
+        this.value = val;
+    });
+});
+</script>
+{% endblock %}

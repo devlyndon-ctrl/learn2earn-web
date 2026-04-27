@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}Learn2Earn - Rewards{% endblock %}
+{% block page_title %}Rewards{% endblock %}
+
+{% block main_content %}
+
+
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+<div class="container-fluid px-0 rewards-font">
+    <!-- Loading State - Above rewards redeemed overview -->
+    <div class="loading-container" id="rewardsLoadingMessage">
+        <div class="loading-content">
+            <div class="loading-avatar-container">
+                <div class="loading-avatar-circle">
+                    <lottie-player 
+                        src="{{ url_for('static', filename='image/animation/loading_animation_blue.json') }}"
+                        background="transparent" 
+                        speed="1" 
+                        style="width: 100%; height: 100%;"
+                        loop 
+                        autoplay>
+                    </lottie-player>
+                </div>
+            </div>
+            <div class="loading-text">
+                <div class="loading-title">Loading Rewards</div>
+                <div class="loading-subtitle">Almost there! Your rewards are being prepared</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error State Container -->
+    <div class="error-container" id="rewardsErrorMessage" style="display: none;">
+        <!-- Error content will be populated by JavaScript -->
+    </div>
+
+    <!-- Rewards Content (hidden until loaded) -->
+    <div id="rewardsContent" style="display: none;">
+        <div class="row justify-content-center mb-4 equal-height-cards">
+            <div class="col-md-8">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">Available Rewards</h5>
+                            <p class="text-muted mb-0">Manage rewards that students can redeem with points</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRewardModal">
+                                <i class="fas fa-plus me-1"></i> Add New Reward
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0 d-flex flex-column">
+                        <div class="table-responsive rewards-table" id="rewardsTableContainer">
+                            <table class="table align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Reward Name</th>
+                                        <th class="text-center">Point Cost</th>
+                                        <th class="text-center">Quantity</th>
+                                        <th class="text-center">Category</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rewardsTableBody">
+                                    <!-- Rewards rows will be dynamically inserted here by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Empty State for Rewards -->
+                        <div id="rewardsEmpty" style="display: none;">
+                            <div class="empty-state text-center py-5">
+                                <div class="empty-icon mb-3">
+                                    <i class="fas fa-gift fa-3x text-muted"></i>
+                                </div>
+                                <h5 class="text-muted">No Rewards Yet</h5>
+                                <p class="text-muted mb-4">Create your first reward for students to redeem with their points</p>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRewardModal">
+                                    <i class="fas fa-plus me-2"></i>Add New Reward
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Pagination UI -->
+                        <div class="mt-auto" id="rewardsPaginationContainer" style="display: none;">
+                            <div class="text-center my-3">
+                                <nav>
+                                    <ul id="rewardsPagination" class="pagination justify-content-center mb-0"></ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Recent Reward Redemptions</h5>
+                    </div>
+                    <div class="card-body p-0 d-flex flex-column">
+                        <div class="list-group list-group-flush flex-grow-1" id="redemptionHistoryList">
+                            <!-- Redemption history will be loaded here by JS -->
+                        </div>
+                        <!-- Empty State for Redemptions -->
+                        <div id="redemptionsEmpty" style="display: none;">
+                            <div class="empty-state text-center py-5">
+                                <div class="empty-icon mb-3">
+                                    <i class="fas fa-history fa-3x text-muted"></i>
+                                </div>
+                                <h5 class="text-muted">No Redemptions Yet</h5>
+                                <p class="text-muted small">Reward redemptions will appear here</p>
+                            </div>
+                        </div>
+                        <div class="mt-auto">
+                            <div class="text-center py-2 border-top">
+                                <a href="/reward-history-redemptions" id="viewAllRedemptionsLink" class="small">View All Redemptions</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unused Rewards Overview Section -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Rewards Redeemed Overview</h5>
+                    </div>
+                    <div class="card-body" id="classroomOverviewContainer">
+                        <!-- Overview cards will be loaded here by JS -->
+                    </div>
+                    <!-- Empty State for Overview -->
+                    <div id="overviewEmpty" style="display: none;">
+                        <div class="empty-state text-center py-5">
+                            <div class="empty-icon mb-3">
+                                <i class="fas fa-chart-pie fa-3x text-muted"></i>
+                            </div>
+                            <h5 class="text-muted">No Overview Data</h5>
+                            <p class="text-muted small">Overview will appear once students start redeeming rewards</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success/Error Alert -->
+<div id="reward-success-alert" class="alert alert-success alert-dismissible fade show d-none position-fixed top-0 end-0" style="z-index: 1055; margin-top: 20px; margin-right: 20px;">
+    <span id="reward-success-message"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<!-- Add Reward Modal -->
+<div class="modal fade" id="addRewardModal" tabindex="-1" aria-labelledby="addRewardModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addRewardModalLabel">
+                    <i class="fas fa-gift me-2"></i>Add New Reward
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addRewardForm" action="/api/rewards" method="POST">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="rewardName" class="form-label">Reward Name</label>
+                            <input type="text" class="form-control" id="rewardName" name="reward_name" placeholder="Enter reward name" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="pointCost" class="form-label">Point Cost</label>
+                            <input type="number" class="form-control" id="pointCost" name="point_cost" placeholder="Enter point cost" min="1" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="availableQuantity" class="form-label">Available Quantity</label>
+                            <input type="number" class="form-control" id="availableQuantity" name="available_quantity" placeholder="Enter quantity" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="category">Category</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="" selected>Select category</option>
+                                <option value="Academic">Academic</option>
+                                <option value="Privileges">Privileges</option>
+                                <option value="Material Items">Material Items</option>
+                                <option value="Experiences">Experiences</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="assignedClass" class="form-label">Assigned Class</label>
+                            <select class="form-select" id="assignedClass" name="assigned_class" required>
+                                <option value="">Select Class</option>
+                                <option value="__select_all__" style="font-weight: bold; background-color: #e7f3ff;">
+                                    ✓ Select All Classes
+                                </option>
+                                <option disabled style="background-color: #f0f0f0;">──────────────</option>
+                                <!-- Classes will be populated by JavaScript -->
+                            </select>
+                            <div id="selectedClassesInfo" class="small text-muted mt-1" style="display: none;">
+                                Selected: <span id="selectedClassesCount">0</span> classes
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="rewardDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="rewardDescription" name="description" rows="3" placeholder="Enter reward description (optional)"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i> Add Reward
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Reward Modal -->
+<div class="modal fade" id="editRewardModal" tabindex="-1" aria-labelledby="editRewardModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editRewardModalLabel">
+                    <i class="fas fa-edit me-2"></i>Edit Reward
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editRewardForm">
+                    <input type="hidden" id="editRewardId" name="reward_id">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="editRewardName" class="form-label">Reward Name</label>
+                            <input type="text" class="form-control" id="editRewardName" name="reward_name" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="editPointCost" class="form-label">Point Cost</label>
+                            <input type="number" class="form-control" id="editPointCost" name="point_cost" min="1" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editAvailableQuantity" class="form-label">Available Quantity</label>
+                            <input type="number" class="form-control" id="editAvailableQuantity" name="available_quantity" min="0" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="editCategory">Category</label>
+                            <select class="form-select" id="editCategory" name="category" required>
+                                <option value="Academic">Academic</option>
+                                <option value="Privileges">Privileges</option>
+                                <option value="Material Items">Material Items</option>
+                                <option value="Experiences">Experiences</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="editRewardDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editRewardDescription" name="description" rows="3" placeholder="Optional description"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal container for reward usage -->
+<div id="rewardUsageModalContainer"></div>
+
+{% endblock %}
+{% include "partials/confirmation_dialouge.html" %}
+
+{% block extra_js %}
+<script type="module" src="{{ url_for('static', filename='js/teacher/rewards/rewardsOperations.js') }}"></script>
+{% endblock %}

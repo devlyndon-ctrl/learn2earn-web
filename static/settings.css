@@ -1,0 +1,676 @@
+/* ==================== AVATAR MODAL STYLES ==================== */
+
+/* Modal Content - Enhanced styling */
+#avatarModal .modal-content {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+/* Modal Header - Gradient background */
+#avatarModal .modal-header {
+    background: linear-gradient(135deg, #5e72e4 0%, #825ee4 100%);
+    border: none;
+    padding: 1.5rem;
+}
+
+#avatarModal .modal-header .modal-title {
+    color: white;
+    font-weight: 700;
+    font-size: 1.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+#avatarModal .modal-header .modal-title i {
+    font-size: 1.5rem;
+}
+
+#avatarModal .modal-header .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+#avatarModal .modal-header .btn-close:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Modal Body - Enhanced padding */
+#avatarModal .modal-body {
+    padding: 2rem;
+}
+
+/* Upload Section - Centered */
+.upload-section {
+    padding: 2rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px;
+    border: 2px dashed #5e72e4;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.upload-section:hover {
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    border-color: #825ee4;
+    box-shadow: 0 4px 12px rgba(94, 114, 228, 0.15);
+}
+
+.upload-section h6 {
+    color: #2d3748;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.upload-section h6 i {
+    color: #5e72e4;
+    font-size: 1.25rem;
+}
+
+/* Upload button container */
+.upload-section .d-flex {
+    display: flex;
+    flex-direction: column;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100%;
+}
+
+/* Upload button styling */
+#avatarModal .upload-section .btn-outline-primary {
+    border: 2px solid #5e72e4;
+    color: #5e72e4;
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    background: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 200px;
+    margin: 0.5rem 0;
+}
+
+#avatarModal .upload-section .btn-outline-primary:hover {
+    background: linear-gradient(135deg, #5e72e4 0%, #825ee4 100%);
+    color: white;
+    border-color: #825ee4;
+    box-shadow: 0 6px 16px rgba(94, 114, 228, 0.3);
+    transform: translateY(-2px);
+}
+
+#avatarModal .upload-section .btn-outline-primary i {
+    transition: all 0.3s ease;
+}
+
+#avatarModal .upload-section .btn-outline-primary:hover i {
+    transform: translateY(-2px);
+}
+
+/* File info text */
+#avatarModal .upload-section .text-muted {
+    color: #718096 !important;
+    font-weight: 500;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+/* Recent Avatars Section */
+.recent-avatars-section {
+    text-align: left;
+}
+
+.recent-avatars-section h6 {
+    color: #2d3748;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.recent-avatars-section h6 i {
+    color: #825ee4;
+}
+
+.recent-avatars-section .small {
+    color: #718096;
+    font-weight: 500;
+}
+
+/* Recent Avatars Grid - Circular Style */
+.recent-avatars-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    justify-items: center;
+    padding: 1rem 0;
+}
+
+.recent-avatar-item {
+    cursor: pointer;
+    border-radius: 50%;
+    overflow: visible;
+    transition: all 0.3s ease;
+    border: 3px solid #e9ecef;
+    width: 90px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: white;
+}
+
+.recent-avatar-item:hover {
+    transform: scale(1.12);
+    border-color: #5e72e4;
+    box-shadow: 0 8px 24px rgba(94, 114, 228, 0.35);
+}
+
+.recent-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Delete icon - positioned at top-right OUTSIDE the avatar */
+.recent-avatar-delete {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 28px;
+    height: 28px;
+    background: #dc3545;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    color: white;
+    font-size: 0.75rem;
+    border: 2.5px solid white;
+    cursor: pointer;
+    z-index: 20;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    pointer-events: auto;
+}
+
+.recent-avatar-item:hover .recent-avatar-delete {
+    opacity: 1;
+}
+
+.recent-avatar-delete:hover {
+    background: #c82333;
+    transform: scale(1.15);
+}
+
+/* Ensure delete button is clickable */
+.recent-avatar-delete i {
+    pointer-events: none;
+}
+
+/* Responsive adjustments for modal */
+@media (max-width: 576px) {
+    #avatarModal .modal-header {
+        padding: 1.25rem;
+    }
+    
+    #avatarModal .modal-header .modal-title {
+        font-size: 1.15rem;
+    }
+    
+    #avatarModal .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .upload-section {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .upload-section .btn {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .recent-avatars-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .recent-avatar-item {
+        width: 75px;
+        height: 75px;
+    }
+}
+
+/* Avatar Styles */
+.avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    position: relative;
+    overflow: hidden;
+    width: 120px;
+    height: 120px;
+    font-size: 2.5rem;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    border: 2px dashed #007bff;
+    transition: all 0.3s ease;
+}
+
+.avatar:hover {
+    transform: scale(1.05);
+}
+
+.avatar.has-image {
+    border: 2px solid #007bff !important;
+}
+
+/* Quarters Section Styles */
+.quarter-section {
+    background-color: #f8f9fa;
+    border-color: #dee2e6 !important;
+}
+
+.quarter-section h6 {
+    color: #495057;
+    font-weight: 600;
+}
+
+/* Active/Current quarter badges */
+.badge.bg-success {
+    background-color: #28a745 !important;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529;
+}
+
+.badge.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+/* Confirmation dialogue styles */
+#confirmationDialogue {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirmation-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+}
+
+.confirmation-buttons {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* School Year Quarters Styles */
+.quarter-input-group .input-group-text {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.quarter-input-group .form-label {
+    margin-bottom: 0.5rem;
+    color: #495057;
+    font-weight: 600;
+}
+
+.quarter-input-group .input-group {
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive design for quarters input */
+@media (max-width: 768px) {
+    .quarter-input-group .input-group {
+        flex-direction: column;
+    }
+    
+    .quarter-input-group .input-group-text {
+        width: 100%;
+        justify-content: center;
+        margin: 0.25rem 0;
+        border-radius: 0.375rem;
+    }
+    
+    .quarter-input-group .form-control {
+        border-radius: 0.375rem !important;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Quarters Table Improvements */
+.quarters-table {
+    font-size: 0.875rem;
+    margin-bottom: 0;
+}
+
+.quarters-table th {
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    border-bottom: 2px solid #dee2e6;
+    padding: 0.75rem 0.5rem;
+}
+
+.quarters-table td {
+    padding: 0.75rem 0.5rem;
+    vertical-align: middle;
+}
+
+.quarters-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Status Badges */
+.status-badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.35rem 0.65rem;
+    border-radius: 0.375rem;
+}
+
+.badge-active {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
+}
+
+.badge-upcoming {
+    background-color: #fff3cd;
+    color: #664d03;
+    border: 1px solid #ffecb5;
+}
+
+.badge-finished {
+    background-color: #e2e3e5;
+    color: #41464b;
+    border: 1px solid #d3d6d8;
+}
+
+.badge-current {
+    background-color: #cfe2ff;
+    color: #084298;
+    border: 1px solid #b6d4fe;
+}
+
+/* Compact Action Buttons */
+.btn-quarter-action {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 0.375rem;
+}
+
+/* Quarter progress indicator */
+.quarter-progress {
+    height: 4px;
+    background-color: #e9ecef;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 0.25rem;
+}
+
+.quarter-progress-bar {
+    height: 100%;
+    background-color: #007bff;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .quarters-table {
+        font-size: 0.8rem;
+    }
+    
+    .quarters-table th,
+    .quarters-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .status-badge {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .btn-quarter-action {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.7rem;
+    }
+}
+
+/* Password Requirements Styles */
+.password-requirements {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.requirements-title {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.requirement-tooltip {
+    cursor: help;
+}
+
+.requirements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.requirement-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    color: #6c757d;
+}
+
+.requirement-item i {
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    color: #6c757d !important;
+}
+
+/* Valid state - Green */
+.requirement-item.valid {
+    color: #198754;
+}
+
+.requirement-item.valid i {
+    color: #198754 !important;
+}
+
+/* Password strength indicator */
+.password-strength {
+    margin-top: 10px;
+    height: 4px;
+    border-radius: 2px;
+    background-color: #e9ecef;
+    overflow: hidden;
+}
+
+.password-strength-bar {
+    height: 100%;
+    width: 0%;
+    transition: all 0.3s ease;
+}
+
+.password-strength-bar.weak {
+    background-color: #dc3545;
+    width: 33%;
+}
+
+.password-strength-bar.medium {
+    background-color: #ffc107;
+    width: 66%;
+}
+
+.password-strength-bar.strong {
+    background-color: #198754;
+    width: 100%;
+}
+
+/* ==================== ROLLBACK DANGER ZONE STYLES ==================== */
+
+/* Rollback Card - High Visibility */
+#rollbackForm {
+    border-radius: 8px;
+}
+
+#rollbackForm .input-group-lg .form-select {
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+}
+
+#rollbackForm .form-select:focus,
+#rollbackForm .input-group-lg .form-select:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Rollback Buttons */
+#previewRollbackBtn {
+    border: 2px solid #dc3545;
+    color: #dc3545;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+#previewRollbackBtn:hover:not(:disabled) {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(220, 53, 69, 0.3);
+}
+
+#previewRollbackBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#executeRollbackBtn {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    border: none;
+    font-weight: 600;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
+}
+
+#executeRollbackBtn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(220, 53, 69, 0.35);
+}
+
+#executeRollbackBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Rollback Preview Section */
+#rollbackPreview {
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#rollbackPreview .card {
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.15);
+    border-radius: 8px;
+}
+
+#rollbackPreview .text-danger {
+    font-weight: 600;
+}
+
+#rollbackPreview .alert-danger {
+    border-left: 4px solid #dc3545;
+}
+
+/* Responsive adjustments for rollback */
+@media (max-width: 768px) {
+    #rollbackForm .row {
+        flex-direction: column;
+    }
+    
+    #rollbackForm .col-md-4 {
+        margin-top: 1rem;
+    }
+    
+    #rollbackForm .btn {
+        width: 100%;
+    }
+    
+    #rollbackPreview .row {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    #rollbackPreview .col-md-6 {
+        width: 100%;
+    }
+}
+

@@ -1,0 +1,1356 @@
+{% extends "base.html" %}
+
+{% block title %}Learn2Earn - Awards History{% endblock %}
+{% block page_title %}Awards History{% endblock %}
+
+{% block main_content %}
+<div class="container-fluid px-0">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">Complete Awards History</h5>
+                        <p class="text-muted mb-0">View and manage all point awards given to students</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exportModal">
+                            <i class="fas fa-download me-1"></i> Export
+                        </button>
+                        <button class="btn btn-outline-danger" id="quickPdfBtn">
+                            <i class="fas fa-file-pdf me-1"></i> Quick PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card card-1">
+                <div class="icon">
+                    <i class="fas fa-award"></i>
+                </div>
+                <h3 class="stat-value" id="totalAwards">0</h3>
+                <p class="stat-label">Total Awards</p>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card card-2">
+                <div class="icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h3 class="stat-value" id="totalPoints">0</h3>
+                <p class="stat-label">Points Awarded</p>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card card-3">
+                <div class="icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="stat-value" id="uniqueStudents">0</h3>
+                <p class="stat-label">Students Awarded</p>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card card-4">
+                <div class="icon">
+                    <i class="fas fa-calendar-week"></i>
+                </div>
+                <h3 class="stat-value" id="thisWeekAwards">0</h3>
+                <p class="stat-label">This Week</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>Filters & Search
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Search</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" id="searchInput" placeholder="Search students or notes...">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Classroom</label>
+                            <select class="form-select" id="classroomFilter">
+                                <option value="">All Classrooms</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" id="categoryFilter">
+                                <option value="">All Categories</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Date Range</label>
+                            <select class="form-select" id="dateFilter">
+                                <option value="">All Time</option>
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                                <option value="quarter">This Quarter</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Points Range</label>
+                            <select class="form-select" id="pointsFilter">
+                                <option value="">All Points</option>
+                                <option value="1-10">1-10 Points</option>
+                                <option value="11-25">11-25 Points</option>
+                                <option value="26-50">26-50 Points</option>
+                                <option value="51+">51+ Points</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button class="btn btn-outline-secondary" id="clearFilters">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Custom Date Range -->
+                    <div class="row mt-3" id="customDateRange" style="display: none;">
+                        <div class="col-md-3">
+                            <label class="form-label">From Date</label>
+                            <input type="date" class="form-control" id="fromDate">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">To Date</label>
+                            <input type="date" class="form-control" id="toDate">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Awards History Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">Awards History</h5>
+                        <small class="text-muted" id="resultsCount">Showing all awards</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="form-label mb-0 me-2">Show:</label>
+                        <select class="form-select form-select-sm" id="entriesPerPage" style="width: auto;">
+                            <option value="25">25</option>
+                            <option value="50" selected>50</option>
+                            <option value="100">100</option>
+                            <option value="all">All</option>
+                        </select>
+                        <label class="form-label mb-0 ms-3 me-2">Sort by:</label>
+                        <select class="form-select form-select-sm" id="sortBy" style="width: auto;">
+                            <option value="date_desc">Newest First</option>
+                            <option value="date_asc">Oldest First</option>
+                            <option value="points_desc">Highest Points</option>
+                            <option value="points_asc">Lowest Points</option>
+                            <option value="student_asc">Student A-Z</option>
+                            <option value="student_desc">Student Z-A</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table align-items-center mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="text-start">Student</th>
+                                    <th class="text-center">Points</th>
+                                    <th class="text-center">Category</th>
+                                    <th class="text-center">Note</th>
+                                    <th class="text-center">Date & Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Loading State -->
+                    <div id="loadingState" class="text-center p-4" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Loading awards history...</p>
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="emptyState" class="text-center p-5" style="display: none;">
+                        <i class="fas fa-search text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <h5 class="mt-3 text-muted">No awards found</h5>
+                        <p class="text-muted">Try adjusting your filters or search criteria.</p>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted" id="paginationInfo">Showing 1 to 25 of 100 entries</small>
+                        </div>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Export Awards History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Export Format</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="exportFormat" id="exportExcel" value="excel" checked>
+                        <label class="form-check-label" for="exportExcel">
+                            <i class="fas fa-file-excel me-2"></i>Excel Spreadsheet (.xlsx)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="exportFormat" id="exportPDF" value="pdf">
+                        <label class="form-check-label" for="exportPDF">
+                            <i class="fas fa-file-pdf me-2"></i>PDF Report
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Include</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="includeFiltered" checked>
+                        <label class="form-check-label" for="includeFiltered">
+                            Only filtered results
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="includeSummary" checked>
+                        <label class="form-check-label" for="includeSummary">
+                            Include summary statistics
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="exportBtn">
+                    <i class="fas fa-download me-1"></i>Export
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick PDF Export Modal -->
+<div class="modal fade" id="quickPdfModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generating PDF</h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Generating PDF...</span>
+                </div>
+                <p class="text-muted mb-0">Preparing your PDF report...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Award Detail Modal -->
+<div class="modal fade" id="awardDetailModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Award Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="awardDetailContent">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" id="deleteAwardBtn">
+                    <i class="fas fa-trash me-1"></i>Delete Award
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+class AwardsHistory {
+    constructor() {
+        this.currentPage = 1;
+        this.entriesPerPage = 50;
+        this.allAwards = [];
+        this.filteredAwards = [];
+        this.students = [];
+        this.classrooms = [];
+        this.categories = [];
+        this.currentSort = 'date_desc';
+        
+        this.init();
+    }
+    
+    init() {
+        this.loadStudents();
+        this.loadAwardsHistory();
+        this.setupEventListeners();
+    }
+    
+    setupEventListeners() {
+        document.getElementById('searchInput').addEventListener('input', () => this.applyFilters());
+        document.getElementById('categoryFilter').addEventListener('change', () => this.applyFilters());
+        document.getElementById('dateFilter').addEventListener('change', (e) => {
+            if (e.target.value === 'custom') {
+                document.getElementById('customDateRange').style.display = 'block';
+            } else {
+                document.getElementById('customDateRange').style.display = 'none';
+            }
+            this.applyFilters();
+        });
+        document.getElementById('pointsFilter').addEventListener('change', () => this.applyFilters());
+        document.getElementById('fromDate').addEventListener('change', () => this.applyFilters());
+        document.getElementById('toDate').addEventListener('change', () => this.applyFilters());
+        document.getElementById('clearFilters').addEventListener('click', () => this.clearFilters());
+        document.getElementById('entriesPerPage').addEventListener('change', (e) => {
+            this.entriesPerPage = e.target.value === 'all' ? this.filteredAwards.length : parseInt(e.target.value);
+            this.currentPage = 1;
+            this.renderTable();
+        });
+        document.getElementById('sortBy').addEventListener('change', (e) => {
+            this.currentSort = e.target.value;
+            this.sortAwards();
+            this.renderTable();
+        });
+        document.getElementById('exportBtn').addEventListener('click', () => this.exportData());
+        document.getElementById('classroomFilter').addEventListener('change', () => this.applyFilters());
+        document.getElementById('quickPdfBtn').addEventListener('click', () => this.quickExportPDF());
+    }
+    
+    async loadStudents() {
+        try {
+            const response = await fetch('/api/my-students');
+            const data = await response.json();
+            if (data.success) {
+                this.students = data.students;
+                this.classrooms = data.classrooms || [];
+                this.populateClassroomFilter();
+            }
+        } catch (error) {
+            console.error('Error loading students:', error);
+        }
+    }
+    
+    async loadAwardsHistory() {
+        this.showLoading(true);
+        try {
+            const response = await fetch('/api/all-awards');
+            const data = await response.json();
+            if (data.success) {
+                this.allAwards = data.awards.map((award, idx) => ({
+                    id: award.id || idx + 1,
+                    student: award.student,
+                    student_id: this.getStudentIdByName(award.student),
+                    points: award.points,
+                    category: award.category,
+                    note: award.note,
+                    date: award.date,
+                    time: award.time || '',
+                    awarded_by: award.awarded_by || 'You',
+                    pic: award.pic,
+                    grade: award.grade,
+                    section: award.section
+                }));
+                this.filteredAwards = [...this.allAwards];
+                this.extractCategories();
+                this.populateCategoryFilter();
+                this.updateStatistics();
+                this.sortAwards();
+                this.renderTable();
+            } else {
+                this.showEmptyState();
+            }
+        } catch (error) {
+            console.error('Error loading awards history:', error);
+            this.showEmptyState();
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    extractCategories() {
+        const categorySet = new Set();
+        this.allAwards.forEach(award => {
+            if (award.category) {
+                categorySet.add(award.category);
+            }
+        });
+        this.categories = Array.from(categorySet).sort();
+    }
+
+    populateCategoryFilter() {
+        const categorySelect = document.getElementById('categoryFilter');
+        categorySelect.innerHTML = '<option value="">All Categories</option>';
+        this.categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = this.formatCategoryName(category);
+            categorySelect.appendChild(option);
+        });
+    }
+
+    formatCategoryName(category) {
+        const categoryMap = {
+            'academic': 'Academic',
+            'behavior': 'Behavior', 
+            'participation': 'Participation',
+            'attendance': 'Attendance',
+            'homework': 'Homework',
+            'improvement': 'Improvement',
+            'leadership': 'Leadership',
+            'teamwork': 'Teamwork',
+            'custom': 'Custom',
+            'task': 'Task'
+        };
+        return categoryMap[category] || category.charAt(0).toUpperCase() + category.slice(1);
+    }
+
+    populateClassroomFilter() {
+        const classroomSelect = document.getElementById('classroomFilter');
+        classroomSelect.innerHTML = '<option value="">All Classrooms</option>';
+        this.classrooms.forEach(c => {
+            const option = document.createElement('option');
+            option.value = `${c.grade}|${c.section}`;
+            option.textContent = c.label || `Grade ${c.grade} - Section ${c.section}`;
+            classroomSelect.appendChild(option);
+        });
+    }
+    
+    applyFilters() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const classroomFilter = document.getElementById('classroomFilter').value;
+        const categoryFilter = document.getElementById('categoryFilter').value;
+        const dateFilter = document.getElementById('dateFilter').value;
+        const pointsFilter = document.getElementById('pointsFilter').value;
+        const fromDate = document.getElementById('fromDate').value;
+        const toDate = document.getElementById('toDate').value;
+
+        this.filteredAwards = this.allAwards.filter(award => {
+            if (searchTerm && !award.student.toLowerCase().includes(searchTerm) && 
+                !award.note.toLowerCase().includes(searchTerm)) {
+                return false;
+            }
+
+            if (classroomFilter) {
+                const [grade, section] = classroomFilter.split('|');
+                const student = this.students.find(s => s.id === award.student_id);
+                if (!student || student.grade != grade || student.section != section) return false;
+            }
+            
+            if (categoryFilter && award.category !== categoryFilter) {
+                return false;
+            }
+            
+            if (pointsFilter) {
+                const points = award.points;
+                switch (pointsFilter) {
+                    case '1-10':
+                        if (points < 1 || points > 10) return false;
+                        break;
+                    case '11-25':
+                        if (points < 11 || points > 25) return false;
+                        break;
+                    case '26-50':
+                        if (points < 26 || points > 50) return false;
+                        break;
+                    case '51+':
+                        if (points < 51) return false;
+                        break;
+                }
+            }
+            
+            const awardDate = new Date(award.date);
+            const today = new Date();
+            
+            switch (dateFilter) {
+                case 'today':
+                    if (awardDate.toDateString() !== today.toDateString()) return false;
+                    break;
+                case 'week':
+                    const oneWeekAgo = new Date();
+                    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                    if (awardDate < oneWeekAgo) return false;
+                    break;
+                case 'month':
+                    const oneMonthAgo = new Date();
+                    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+                    if (awardDate < oneMonthAgo) return false;
+                    break;
+                case 'quarter':
+                    const threeMonthsAgo = new Date();
+                    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+                    if (awardDate < threeMonthsAgo) return false;
+                    break;
+                case 'custom':
+                    if (fromDate && awardDate < new Date(fromDate)) return false;
+                    if (toDate && awardDate > new Date(toDate)) return false;
+                    break;
+            }
+            
+            return true;
+        });
+        
+        this.currentPage = 1;
+        this.sortAwards();
+        this.renderTable();
+        this.updateResultsCount();
+    }
+    
+    sortAwards() {
+        this.filteredAwards.sort((a, b) => {
+            switch (this.currentSort) {
+                case 'date_desc':
+                    return new Date(b.date) - new Date(a.date);
+                case 'date_asc':
+                    return new Date(a.date) - new Date(b.date);
+                case 'points_desc':
+                    return b.points - a.points;
+                case 'points_asc':
+                    return a.points - b.points;
+                case 'student_asc':
+                    return a.student.localeCompare(b.student);
+                case 'student_desc':
+                    return b.student.localeCompare(a.student);
+                default:
+                    return 0;
+            }
+        });
+    }
+
+    clearFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('categoryFilter').value = '';
+        document.getElementById('dateFilter').value = '';
+        document.getElementById('pointsFilter').value = '';
+        document.getElementById('fromDate').value = '';
+        document.getElementById('toDate').value = '';
+        document.getElementById('classroomFilter').value = '';
+        document.getElementById('customDateRange').style.display = 'none';
+        this.applyFilters();
+    }
+
+    updateResultsCount() {
+        const count = this.filteredAwards.length;
+        document.getElementById('resultsCount').textContent =
+            count === 1 ? 'Showing 1 award' : `Showing ${count} awards`;
+    }
+
+    getStudentIdByName(name) {
+        const student = this.students.find(s => s.name === name);
+        return student ? student.id : '';
+    }
+
+    updateStatistics() {
+        const totalAwards = this.allAwards.length;
+        const totalPoints = this.allAwards.reduce((sum, award) => sum + award.points, 0);
+        const uniqueStudents = new Set(this.allAwards.map(award => award.student_id)).size;
+        
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        const thisWeekAwards = this.allAwards.filter(award => new Date(award.date) >= oneWeekAgo).length;
+        
+        document.getElementById('totalAwards').textContent = totalAwards.toLocaleString();
+        document.getElementById('totalPoints').textContent = totalPoints.toLocaleString();
+        document.getElementById('uniqueStudents').textContent = uniqueStudents.toLocaleString();
+        document.getElementById('thisWeekAwards').textContent = thisWeekAwards.toLocaleString();
+    }
+    
+    renderTable() {
+        const tbody = document.getElementById('historyTableBody');
+        const startIndex = (this.currentPage - 1) * this.entriesPerPage;
+        const endIndex = this.entriesPerPage === this.filteredAwards.length ? 
+            this.filteredAwards.length : 
+            Math.min(startIndex + this.entriesPerPage, this.filteredAwards.length);
+
+        const pageAwards = this.filteredAwards.slice(startIndex, endIndex);
+
+        if (pageAwards.length === 0) {
+            this.showEmptyState();
+            return;
+        }
+
+        this.hideEmptyState();
+
+        tbody.innerHTML = pageAwards.map(award => {
+            const student = this.students.find(s => s.id === award.student_id);
+            const imgSrc = award.pic || '/static/image/default-avatar.png';
+            return `
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <span class="avatar me-3" style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;">
+                                <img src="${imgSrc}" alt="avatar" style="width:100%;height:100%;object-fit:cover;">
+                            </span>
+                            <div>
+                                <h6 class="mb-0">${award.student}</h6>
+                                <div class="text-muted small">Grade ${award.grade || '-'} &ndash; Section ${award.section || '-'}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-success fs-6">
+                            <i class="fas fa-plus"></i> ${award.points}
+                        </span>
+                    </td>
+                    <td class="text-center">${this.getCategoryBadge(award.category)}</td>
+                    <td class="text-center">
+                        <span class="text-muted" title="${award.note}">
+                            ${award.note ? (award.note.length > 30 ? award.note.substring(0, 30) + '...' : award.note) : '-'}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <div>
+                            ${(() => {
+                                const dt = formatDateTime(award.date);
+                                return `<span class="badge bg-light text-dark">${dt.date}</span>
+                                        <div class="text-muted small">${dt.time}</div>`;
+                            })()}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        this.renderPagination();
+        this.updatePaginationInfo();
+    }
+    
+    getCategoryBadge(category) {
+        const badges = {
+            'Academic Achievement': '<span class="badge bg-primary"><i class="fas fa-graduation-cap me-1"></i> Academic</span>',
+            'Positive Behavior': '<span class="badge bg-success"><i class="fas fa-smile-beam me-1"></i> Behavior</span>',
+            'Class Participation': '<span class="badge bg-info"><i class="fas fa-users me-1"></i> Participation</span>',
+            'Perfect Attendance': '<span class="badge bg-warning text-dark"><i class="fas fa-calendar-check me-1"></i> Attendance</span>',
+            'Homework Completion': '<span class="badge bg-secondary"><i class="fas fa-book me-1"></i> Homework</span>',
+            'Improvement': '<span class="badge bg-dark"><i class="fas fa-arrow-up me-1"></i> Improvement</span>',
+            'Leadership': '<span class="badge bg-danger"><i class="fas fa-chess-king me-1"></i> Leadership</span>',
+            'Teamwork': '<span class="badge" style="background-color:#20c997;"><i class="fas fa-handshake me-1"></i> Teamwork</span>',
+            'Custom': '<span class="badge bg-light text-dark"><i class="fas fa-star me-1"></i> Custom</span>',
+            'Task': '<span class="badge bg-info text-dark"><i class="fas fa-tasks me-1"></i> Task</span>'
+        };
+        return badges[category] || `<span class="badge bg-secondary">${category}</span>`;
+    }
+    
+    renderPagination() {
+        const totalPages = Math.ceil(this.filteredAwards.length / this.entriesPerPage);
+        const pagination = document.getElementById('paginationControls');
+        
+        if (totalPages <= 1) {
+            pagination.innerHTML = '';
+            return;
+        }
+        
+        let paginationHTML = '';
+        
+        // Previous button
+        paginationHTML += `
+            <li class="page-item ${this.currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${this.currentPage - 1}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+        `;
+        
+        // Page numbers
+        const startPage = Math.max(1, this.currentPage - 2);
+        const endPage = Math.min(totalPages, this.currentPage + 2);
+        
+        if (startPage > 1) {
+            paginationHTML += `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`;
+            if (startPage > 2) {
+                paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            paginationHTML += `
+                <li class="page-item ${i === this.currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                </li>
+            `;
+        }
+        
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+            paginationHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`;
+        }
+        
+        // Next button
+        paginationHTML += `
+            <li class="page-item ${this.currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${this.currentPage + 1}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        `;
+
+        pagination.innerHTML = paginationHTML;
+        
+        // Add event listeners to pagination links
+        pagination.querySelectorAll('a.page-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = parseInt(link.getAttribute('data-page'));
+                if (!isNaN(page)) {
+                    this.goToPage(page);
+                }
+            });
+        });
+    }
+
+    goToPage(page) {
+        const totalPages = Math.ceil(this.filteredAwards.length / this.entriesPerPage);
+        if (page < 1 || page > totalPages) return;
+        this.currentPage = page;
+        this.renderTable();
+    }
+
+    updatePaginationInfo() {
+        const totalEntries = this.filteredAwards.length;
+        const start = totalEntries === 0 ? 0 : ((this.currentPage - 1) * this.entriesPerPage) + 1;
+        const end = this.entriesPerPage === this.filteredAwards.length
+            ? this.filteredAwards.length
+            : Math.min(start + this.entriesPerPage - 1, this.filteredAwards.length);
+        document.getElementById('paginationInfo').textContent =
+            `Showing ${start} to ${end} of ${totalEntries} entries`;
+    }
+
+    showLoading(show) {
+        document.getElementById('loadingState').style.display = show ? 'block' : 'none';
+        document.getElementById('historyTableBody').style.display = show ? 'none' : '';
+    }
+
+    showEmptyState() {
+        document.getElementById('emptyState').style.display = 'block';
+        document.getElementById('historyTableBody').innerHTML = '';
+        document.getElementById('paginationControls').innerHTML = '';
+        document.getElementById('paginationInfo').textContent = 'Showing 0 entries';
+    }
+
+    hideEmptyState() {
+        document.getElementById('emptyState').style.display = 'none';
+    }
+
+    viewAwardDetail(id) {
+        alert('View details for award ID: ' + id);
+    }
+
+    deleteAward(id) {
+        if (confirm('Are you sure you want to delete this award?')) {
+            this.allAwards = this.allAwards.filter(a => a.id !== id);
+            this.applyFilters();
+        }
+    }
+
+    async exportData() {
+        const format = document.querySelector('input[name="exportFormat"]:checked').value;
+        const includeFiltered = document.getElementById('includeFiltered').checked;
+        const includeSummary = document.getElementById('includeSummary').checked;
+        
+        const dataToExport = includeFiltered ? this.filteredAwards : this.allAwards;
+        
+        if (format === 'excel') {
+            this.exportToExcel(dataToExport, includeSummary);
+        } else if (format === 'pdf') {
+            // Close the modal first
+            const modal = bootstrap.Modal.getInstance(document.getElementById('exportModal'));
+            modal.hide();
+            
+            // Show loading indicator
+            const quickPdfModal = new bootstrap.Modal(document.getElementById('quickPdfModal'));
+            quickPdfModal.show();
+            
+            // Generate PDF after a short delay to allow modal to close
+            setTimeout(() => {
+                this.exportToPDF(dataToExport, includeSummary);
+                quickPdfModal.hide();
+            }, 500);
+        }
+    }
+    
+    // New method for quick PDF export
+    quickExportPDF() {
+        const includeSummary = true; // Always include summary for quick PDF
+        const dataToExport = this.filteredAwards.length > 0 ? this.filteredAwards : this.allAwards;
+        
+        // Show loading indicator
+        const quickPdfModal = new bootstrap.Modal(document.getElementById('quickPdfModal'));
+        quickPdfModal.show();
+        
+        // Generate PDF after a short delay to allow modal to show
+        setTimeout(() => {
+            this.exportToPDF(dataToExport, includeSummary);
+            quickPdfModal.hide();
+        }, 500);
+    }
+    
+    exportToExcel(data, includeSummary) {
+        if (!data.length) {
+            alert('No awards to export.');
+            return;
+        }
+
+        const sortedData = [...data].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        const now = new Date();
+        const currentDate = now.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        const currentTime = now.toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit',
+            hour12: true 
+        });
+
+        const wsData = [
+            ["Learn2Earn"],
+            ["Masico National High School"],
+            ["Awards History Report - " + currentDate + " at " + currentTime],
+            []
+        ];
+
+        if (includeSummary) {
+            const totalPoints = sortedData.reduce((sum, a) => sum + a.points, 0);
+            const uniqueStudents = new Set(sortedData.map(a => a.student_id)).size;
+            const avgPoints = sortedData.length > 0 ? (totalPoints / sortedData.length).toFixed(1) : 0;
+            
+            wsData.push(
+                ["SUMMARY STATISTICS"],
+                ["Total Awards:", sortedData.length],
+                ["Total Points:", totalPoints],
+                ["Unique Students:", uniqueStudents],
+                ["Average Points:", avgPoints],
+                []
+            );
+        }
+
+        wsData.push(["Student Name", "Grade", "Section", "Points", "Category", "Note", "Date", "Time", "Awarded By"]);
+        
+        sortedData.forEach(a => {
+            const dt = formatDateTime(a.date);
+            wsData.push([
+                a.student,
+                a.grade || '-',
+                a.section || '-',
+                a.points,
+                this.formatCategoryName(a.category),
+                a.note || '',
+                dt.date,
+                dt.time,
+                a.awarded_by || 'You'
+            ]);
+        });
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+        ws['!cols'] = [
+            { wch: 25 },
+            { wch: 8 },
+            { wch: 12 },
+            { wch: 10 },
+            { wch: 15 },
+            { wch: 30 },
+            { wch: 15 },
+            { wch: 12 },
+            { wch: 15 }
+        ];
+
+        const headerRow = includeSummary ? 10 : 4;
+        ws['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },
+            { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } },
+            { s: { r: 2, c: 0 }, e: { r: 2, c: 8 } }
+        ];
+
+        if (includeSummary) {
+            ws['!merges'].push({ s: { r: 4, c: 0 }, e: { r: 4, c: 8 } });
+        }
+
+        XLSX.utils.book_append_sheet(wb, ws, "Awards History");
+        
+        const timestamp = new Date().toISOString().split('T')[0];
+        XLSX.writeFile(wb, "Learn2Earn_Awards_History_" + timestamp + ".xlsx");
+    }
+
+    exportToPDF(data, includeSummary) {
+        if (!data.length) {
+            alert('No awards to export.');
+            return;
+        }
+
+        const sortedData = [...data].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const currentDate = new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        const currentTime = new Date().toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit',
+            hour12: true 
+        });
+
+        // Create the PDF HTML with optimized design
+        const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Learn2Earn - Awards History Report</title>
+                <meta charset="utf-8">
+                <style>
+                    /* Use system fonts for reliability */
+                    * {
+                        -webkit-print-color-adjust: exact !important;
+                        color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                    
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #f8f9fa;
+                        color: #32325d;
+                        margin: 0;
+                        padding: 20px;
+                        font-size: 14px;
+                        line-height: 1.5;
+                    }
+                    
+                    .container-fluid {
+                        width: 100%;
+                        padding: 0;
+                    }
+                    
+                    /* Header Section */
+                    .report-header {
+                        background: white;
+                        border-radius: 12px;
+                        padding: 2rem;
+                        margin-bottom: 2rem;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+                        border: none;
+                    }
+                    
+                    .report-header h1 {
+                        font-weight: 600;
+                        color: #495057;
+                        margin-bottom: 0.5rem;
+                        font-size: 1.5rem;
+                    }
+                    
+                    .report-header .text-muted {
+                        color: #6c757d !important;
+                        margin-bottom: 0;
+                    }
+                    
+                    /* Statistics Cards */
+                    .stats-grid {
+                        display: grid;
+                        grid-template-columns: repeat(4, 1fr);
+                        gap: 1.5rem;
+                        margin-bottom: 2rem;
+                    }
+                    
+                    .stats-card {
+                        border-radius: 12px;
+                        padding: 1.5rem;
+                        color: white;
+                        position: relative;
+                        overflow: hidden;
+                        min-height: 120px;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                    }
+                    
+                    .stats-card .stat-value {
+                        font-size: 2rem;
+                        font-weight: 700;
+                        margin-bottom: 0.5rem;
+                    }
+                    
+                    .stats-card .stat-label {
+                        font-size: 0.9rem;
+                        opacity: 0.9;
+                        margin-bottom: 0;
+                        text-transform: uppercase;
+                        font-weight: 600;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .card-1 { background: linear-gradient(135deg, #5E72E4, #825EE4); }
+                    .card-2 { background: linear-gradient(135deg, #F5A623, #F4B043); }
+                    .card-3 { background: linear-gradient(135deg, #2DCE89, #2DCE98); }
+                    .card-4 { background: linear-gradient(135deg, #F5365C, #F56036); }
+                    
+                    /* Table Styling */
+                    .table-container {
+                        background: white;
+                        border-radius: 12px;
+                        overflow: hidden;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+                        margin-bottom: 2rem;
+                    }
+                    
+                    .table-header {
+                        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+                        padding: 1rem 1.25rem;
+                        font-weight: 600;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    
+                    .table-header h5 {
+                        font-weight: 600;
+                        color: #495057;
+                        margin: 0;
+                        display: flex;
+                        align-items: center;
+                    }
+                    
+                    .table-header h5:before {
+                        content: "";
+                        display: inline-block;
+                        width: 4px;
+                        height: 18px;
+                        background: linear-gradient(135deg, #5E72E4, #825EE4);
+                        border-radius: 4px;
+                        margin-right: 10px;
+                    }
+                    
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        color: #525f7f;
+                    }
+                    
+                    thead th {
+                        font-size: 0.75rem;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                        border-bottom: 1px solid #e9ecef;
+                        border-top: none;
+                        color: #6c757d;
+                        padding: 1rem 0.75rem;
+                        background-color: #f8f9fa;
+                        text-align: left;
+                    }
+                    
+                    tbody td {
+                        padding: 1rem 0.75rem;
+                        vertical-align: middle;
+                        border-bottom: 1px solid #f1f3f9;
+                    }
+                    
+                    tbody tr:nth-child(odd) {
+                        background-color: #f8f9fa;
+                    }
+                    
+                    tbody tr:nth-child(even) {
+                        background-color: white;
+                    }
+                    
+                    /* Badge Styling */
+                    .badge {
+                        font-weight: 500;
+                        padding: 0.4em 0.8em;
+                        border-radius: 6px;
+                        font-size: 0.8rem;
+                    }
+                    
+                    .badge-success {
+                        background-color: #2dce89 !important;
+                        color: white !important;
+                    }
+                    
+                    .badge-primary {
+                        background-color: #5e72e4 !important;
+                        color: white !important;
+                    }
+                    
+                    /* Student Info - Remove avatar images */
+                    .student-info h6 {
+                        font-weight: 600;
+                        margin-bottom: 0.25rem;
+                        color: #495057;
+                    }
+                    
+                    .student-info .text-muted {
+                        font-size: 0.8rem;
+                        color: #6c757d !important;
+                    }
+                    
+                    /* Category Badges */
+                    .category-academic { background: #5e72e4; color: white; }
+                    .category-behavior { background: #2dce89; color: white; }
+                    .category-participation { background: #11cdef; color: white; }
+                    .category-attendance { background: #fb6340; color: white; }
+                    .category-homework { background: #6c757d; color: white; }
+                    .category-improvement { background: #32325d; color: white; }
+                    .category-leadership { background: #f5365c; color: white; }
+                    .category-teamwork { background: #20c997; color: white; }
+                    .category-custom { background: #6c757d; color: white; }
+                    .category-task { background: #5e72e4; color: white; }
+                    
+                    .bg-light {
+                        background-color: #f8f9fa !important;
+                    }
+                    
+                    .text-dark {
+                        color: #32325d !important;
+                    }
+                    
+                    /* Print Optimizations */
+                    @media print {
+                        @page {
+                            margin: 0.5in;
+                            size: letter;
+                        }
+                        
+                        body {
+                            padding: 0 !important;
+                            background: white !important;
+                        }
+                        
+                        .no-print {
+                            display: none !important;
+                        }
+                    }
+                    
+                    /* Utility Classes */
+                    .d-flex { display: flex; }
+                    .align-items-center { align-items: center; }
+                    .justify-content-between { justify-content: space-between; }
+                    .mb-0 { margin-bottom: 0; }
+                    .mb-1 { margin-bottom: 0.5rem; }
+                    .mb-2 { margin-bottom: 1rem; }
+                    .mb-3 { margin-bottom: 1.5rem; }
+                    .mb-4 { margin-bottom: 2rem; }
+                    .me-2 { margin-right: 0.5rem; }
+                    .me-3 { margin-right: 1rem; }
+                    .mt-4 { margin-top: 2rem; }
+                    .text-center { text-align: center; }
+                    .text-start { text-align: left; }
+                    .text-muted { color: #6c757d; }
+                    .fs-6 { font-size: 1rem; }
+                    .small { font-size: 0.8rem; }
+                </style>
+            </head>
+            <body>
+                <div class="container-fluid">
+                    <!-- Header -->
+                    <div class="report-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h1>Complete Awards History</h1>
+                                <p class="text-muted">Awards History Report - ${currentDate} at ${currentTime}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Statistics -->
+                    ${includeSummary ? `
+                    <div class="stats-grid">
+                        <div class="stats-card card-1">
+                            <h3 class="stat-value">${data.length.toLocaleString()}</h3>
+                            <p class="stat-label">Total Awards</p>
+                        </div>
+                        <div class="stats-card card-2">
+                            <h3 class="stat-value">${data.reduce((sum, award) => sum + award.points, 0).toLocaleString()}</h3>
+                            <p class="stat-label">Points Awarded</p>
+                        </div>
+                        <div class="stats-card card-3">
+                            <h3 class="stat-value">${new Set(data.map(award => award.student_id)).size.toLocaleString()}</h3>
+                            <p class="stat-label">Students Awarded</p>
+                        </div>
+                        <div class="stats-card card-4">
+                            <h3 class="stat-value">${data.filter(award => {
+                                const oneWeekAgo = new Date();
+                                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                                return new Date(award.date) >= oneWeekAgo;
+                            }).length.toLocaleString()}</h3>
+                            <p class="stat-label">This Week</p>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- Awards Table -->
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h5>Awards History</h5>
+                            <small class="text-muted">${data.length} awards</small>
+                        </div>
+                        
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Student</th>
+                                    <th class="text-center">Points</th>
+                                    <th class="text-center">Category</th>
+                                    <th class="text-center">Note</th>
+                                    <th class="text-center">Date & Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${sortedData.map(award => {
+                                    const dt = formatDateTime(award.date);
+                                    const categoryClass = `category-${award.category}`;
+                                    
+                                    return `
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="student-info">
+                                                        <h6 class="mb-0">${award.student}</h6>
+                                                        <div class="text-muted small">Grade ${award.grade || '-'} – Section ${award.section || '-'}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-success fs-6">
+                                                    +${award.points}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge ${categoryClass}">
+                                                    ${this.formatCategoryName(award.category)}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="text-muted">
+                                                    ${award.note ? (award.note.length > 30 ? award.note.substring(0, 30) + '...' : award.note) : '-'}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <div>
+                                                    <span class="badge bg-light text-dark">${dt.date}</span>
+                                                    <div class="text-muted small">${dt.time}</div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div class="text-center text-muted small mt-4">
+                        <p>Generated by Learn2Earn Awards System • Masico National High School</p>
+                    </div>
+                </div>
+                
+                <div class="no-print" style="text-align: center; margin-top: 30px; padding: 20px;">
+                    <button onclick="window.print()" style="
+                        padding: 12px 24px; 
+                        background: #5e72e4; 
+                        color: white; 
+                        border: none; 
+                        border-radius: 8px; 
+                        cursor: pointer; 
+                        font-size: 16px;
+                        margin-right: 10px;
+                    ">
+                        🖨️ Print / Save as PDF
+                    </button>
+                    <button onclick="window.close()" style="
+                        padding: 12px 24px; 
+                        background: #6c757d; 
+                        color: white; 
+                        border: none; 
+                        border-radius: 8px; 
+                        cursor: pointer; 
+                        font-size: 16px;
+                    ">
+                        ❌ Close
+                    </button>
+                    <p style="margin-top: 15px; color: #6c757d; font-size: 14px;">
+                        Click "Print / Save as PDF" to save this report as a PDF file
+                    </p>
+                </div>
+            </body>
+            </html>
+        `;
+        
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(html);
+        printWindow.document.close();
+        
+        // Auto-trigger print after a short delay to ensure styles are loaded
+        setTimeout(() => {
+            printWindow.print();
+        }, 500);
+    }
+}
+
+let awardsHistory;
+document.addEventListener('DOMContentLoaded', () => {
+    awardsHistory = new AwardsHistory();
+});
+
+function formatDateTime(dateString) {
+    const date = new Date(dateString);
+    if (isNaN(date)) return { date: '', time: '' };
+
+    const options = { month: 'short', day: 'numeric', year: 'numeric' };
+    const formattedDate = date.toLocaleDateString('en-US', options);
+
+    let hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const formattedTime = `${hours}:${minutes}:${seconds} ${ampm}`;
+
+    return { date: formattedDate, time: formattedTime };
+}
+</script>
+{% endblock %}

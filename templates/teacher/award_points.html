@@ -1,0 +1,940 @@
+{% extends "base.html" %}
+
+{% block title %}Learn2Earn - Award Points{% endblock %}
+{% block page_title %}Award Points{% endblock %}
+
+{% block main_content %}
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+
+<style>
+/* Enhanced table styling */
+.table-responsive {
+    border-radius: 0 0 12px 12px;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem 0.75rem;
+    background-color: #f8f9fa;
+}
+
+.table td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f3f9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(94, 114, 228, 0.05);
+}
+
+/* Card styling */
+.card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+/* Card header with gradient accent bar */
+.card-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1rem 1.25rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.card-header h5 {
+    font-weight: 600;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    margin-bottom: 0;
+    position: relative;
+    padding-left: 18px;
+}
+
+.card-header h5::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 24px;
+    background: linear-gradient(135deg, #5E72E4, #825EE4);
+    border-radius: 4px;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-right: 12px;
+}
+
+/* UNIFIED STUDENT CARD SIZES - FIXED */
+#bulkStudentCheckboxes .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: -0.5rem;
+}
+
+#bulkStudentCheckboxes .col-md-6,
+#bulkStudentCheckboxes .col-lg-4 {
+    display: flex;
+    padding: 0.5rem;
+}
+
+.student-checkbox-card {
+    height: 120px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    background: #fff;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+/* Checkbox handling */
+.student-checkbox-card .form-check-input {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    cursor: pointer;
+    z-index: 3;
+}
+
+.student-checkbox-card .form-check-label {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+}
+
+/* Student Info Layout */
+.student-checkbox-card .student-info-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+    height: 100%;
+}
+
+.student-checkbox-card .avatar-container {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+}
+
+.student-checkbox-card .text-content {
+    flex: 1;
+    min-width: 0;
+    max-width: calc(100% - 72px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+}
+
+.student-checkbox-card .student-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    color: #1E293B;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.student-checkbox-card .student-name.long-name {
+    font-size: 0.85rem !important;
+}
+
+.student-checkbox-card .student-name.very-long-name {
+    font-size: 0.75rem !important;
+}
+
+.student-checkbox-card .student-details {
+    font-size: 0.85rem;
+    color: #64748B;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    line-height: 1.2;
+}
+
+.student-checkbox-card .student-details.long-details {
+    font-size: 0.75rem !important;
+}
+
+.student-checkbox-card .student-details.very-long-details {
+    font-size: 0.65rem !important;
+}
+
+/* Points Pill */
+.student-checkbox-card .modern-mobile-points {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    background: linear-gradient(135deg, #f5a623 0%, #f5a623 100%);
+    border-radius: 6px;
+    border: none;
+    font-size: 0.75em;
+    font-weight: 700;
+    margin-top: auto;
+    min-width: 40px;
+    height: 20px;
+    box-sizing: border-box;
+}
+
+/* Selected effect */
+.student-checkbox-card.selected {
+    border-color: #6366f1 !important;
+    background-color: rgba(99, 102, 241, 0.05) !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15) !important;
+    transform: translateY(-2px);
+}
+
+/* Hover effects */
+.student-checkbox-card:hover:not(.selected) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: #c7d2fe;
+}
+
+/* Dropdown consistency */
+#studentSelect option {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+}
+
+#studentSelect {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Student info inside tables */
+.student-info {
+    min-width: 0;
+    max-width: 180px;
+}
+
+.student-info h6 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+}
+
+.student-info small {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+/* Leaderboard */
+.leaderboard-row .student-info {
+    flex: 1;
+    min-width: 0;
+    max-width: calc(100% - 140px);
+}
+
+.leaderboard-row .student-name,
+.leaderboard-row .student-grade {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* Avatar + Streak Styling */
+.student-checkbox-card .avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid;
+}
+
+.student-checkbox-card .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.streak-badge {
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffffff;
+    font-weight: 700;
+    font-size: 0.70rem;
+    padding: 2px 6px 2px 4px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border: 1.5px solid;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.fire-icon {
+    font-size: 0.9rem;
+    margin-right: 1px;
+}
+
+.streak-lottie-bulk {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    margin-right: 1px;
+}
+
+/* Streak border colors based on streak count */
+.streak-0 { border-color: #9E9E9E !important; }
+.streak-7 { border-color: #FFD600 !important; }
+.streak-15 { border-color: #FF9800 !important; }
+.streak-22 { border-color: #FF1744 !important; }
+.streak-29 { border-color: #00FF40 !important; }
+.streak-36 { border-color: #5E72E4 !important; }
+.streak-50 { border-color: #8E24AA !important; }
+
+.points-icon-gradient {
+    margin-right: 4px;
+    font-size: 0.85em;
+}
+
+.student-points {
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85em;
+}
+
+/* Ensure consistent modal height */
+#bulkStudentCheckboxes {
+    min-height: 200px;
+}
+
+/* ================================ */
+/* UNIFIED DROPDOWN AND INPUT STYLES */
+/* ================================ */
+
+.award-points-dropdown {
+    position: relative;
+    min-width: 200px;
+    margin-bottom: 1rem;
+    z-index: 200;
+}
+
+.award-points-dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    background: #f8f9ff;
+    border: 2px solid #e0e7ff;
+    border-radius: 16px;
+    padding: 0.8em 1.2em;
+    font-weight: 600;
+    font-size: 0.95em;
+    color: #4661E9;
+    cursor: pointer;
+    outline: none;
+    width: 100%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(70, 97, 233, 0.1);
+}
+
+.award-points-dropdown-toggle:hover {
+    border-color: #4661E9;
+    background: #f0f4ff;
+}
+
+.award-points-dropdown-toggle.active {
+    border-color: #4661E9;
+    background: #e0e7ff;
+    box-shadow: 0 4px 12px rgba(70, 97, 233, 0.15);
+}
+
+.award-points-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.5em);
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(70, 95, 233, 0.25);
+    z-index: 9999;
+    padding: 0.5em 0;
+    display: none;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 2px solid #e0e7ff;
+}
+
+.award-points-dropdown-menu.open {
+    display: block;
+    animation: dropdownFadeIn 0.2s ease;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.award-points-dropdown-option {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    padding: 0.8em 1.2em;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    transition: background 0.2s ease;
+    font-size: 0.95em;
+    text-align: left;
+}
+
+.award-points-dropdown-option:hover {
+    background: #f8f9ff;
+}
+
+.award-points-dropdown-active-badge {
+    background: linear-gradient(135deg, #4661E9, #6B46E9);
+    color: white;
+    font-size: 0.75em;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 4px 8px;
+    margin-left: auto;
+}
+
+/* Unified Input Styles */
+.award-points-input {
+    border: 2px solid #e0e7ff;
+    border-radius: 12px;
+    padding: 0.8em 1em;
+    font-size: 0.95em;
+    transition: all 0.3s ease;
+    background: #f8f9ff;
+    width: 100%;
+}
+
+.award-points-input:focus {
+    border-color: #4661E9;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(70, 97, 233, 0.1);
+    outline: none;
+}
+
+/* Quick Points Buttons */
+.quick-points {
+    border: 2px solid #e0e7ff;
+    border-radius: 10px;
+    padding: 0.5em 1em;
+    background: #f8f9ff;
+    color: #4661E9;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.quick-points:hover {
+    background: #4661E9;
+    color: white;
+    border-color: #4661E9;
+    transform: translateY(-2px);
+}
+
+/* Form Group Styling */
+.award-points-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.award-points-form-label {
+    font-weight: 600;
+    color: #32325d;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* Card Styling to Match Activities */
+.award-points-card {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 2px 12px rgba(50,76,221,0.07);
+    border: 1px solid #f0f0f0;
+    transition: box-shadow 0.2s;
+}
+
+.award-points-card:hover {
+    box-shadow: 0 4px 18px rgba(50,76,221,0.13);
+    border-color: #324cdd33;
+}
+
+/* Modal Styling */
+.award-points-modal .modal-content {
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    border: none;
+}
+
+.award-points-modal .modal-header {
+    background: linear-gradient(135deg, #f8f9fc 0%, #e9ecef 100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1rem 1.5rem;
+}
+
+/* Sort dropdown info styling */
+.sort-dropdown-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1;
+}
+
+.sort-dropdown-name {
+    font-weight: 600;
+    color: #32325d;
+    font-size: 0.9em;
+}
+
+.sort-dropdown-subject {
+    font-size: 0.8em;
+    color: #6c757d;
+    margin-top: 2px;
+}
+
+/* Ensure the card doesn't clip dropdowns */
+.card {
+    overflow: visible !important;
+}
+
+.card-body {
+    overflow: visible !important;
+}
+
+/* Empty State Styling */
+.empty-state-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    color: #64748B;
+    text-align: center;
+}
+
+.empty-state-icon {
+    font-size: 2.5em;
+    color: #cbd5e1;
+    margin-bottom: 8px;
+}
+
+.empty-state-title {
+    margin: 0;
+    font-weight: 500;
+    font-size: 1.05em;
+    color: #475569;
+}
+
+.empty-state-message {
+    margin: 0;
+    font-size: 0.9em;
+    color: #94a3b8;
+}
+
+.empty-state-large {
+    padding: 48px 20px;
+    min-height: 200px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .award-points-dropdown {
+        min-width: 100%;
+        margin-right: 0;
+        margin-bottom: 1em;
+    }
+    
+    .award-points-dropdown-toggle {
+        padding: 0.7em 1em;
+    }
+}
+
+@media (max-width: 480px) {
+    .filter-tabs {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .filter-tab {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+</style>
+
+<div class="container-fluid px-0">
+    <!-- Loading State -->
+    <div class="loading-container" id="awardPointsLoadingMessage">
+        <div class="loading-content">
+            <div class="loading-avatar-container">
+                <div class="loading-avatar-circle">
+                    <lottie-player 
+                        src="{{ url_for('static', filename='image/animation/loading_animation_blue.json') }}"
+                        background="transparent" 
+                        speed="1" 
+                        style="width: 100%; height: 100%;"
+                        loop 
+                        autoplay>
+                    </lottie-player>
+                </div>
+            </div>
+            <div class="loading-text">
+                <div class="loading-title">Loading Award Points</div>
+                <div class="loading-subtitle">Almost there! Your data is being prepared</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error State Container -->
+    <div class="error-container" id="awardPointsErrorMessage" style="display: none;">
+        <!-- Error content will be populated by JavaScript -->
+    </div>
+
+    <!-- Award Points Content (hidden until loaded) -->
+    <div id="awardPointsContent" style="display: none;">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card award-points-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">Quick Award</h5>
+                            <p class="text-muted mb-0">Award points to students individually or in groups</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#bulkAwardModal">
+                                <i class="fas fa-users me-1"></i> Bulk Award
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Grade/Section Filter & Search -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label for="gradeSectionFilter" class="form-label">Grade & Section</label>
+                                <select class="form-select award-points-input" id="gradeSectionFilter">
+                                    <option value="" selected>All Classes</option>
+                                    <!-- Options loaded by JS -->
+                                </select>
+                            </div>
+                            <div class="col-md-8">
+                                <label for="studentSearch" class="form-label">Search Student</label>
+                                <input type="text" class="form-control award-points-input" id="studentSearch" placeholder="Type to search...">
+                            </div>
+                        </div>
+                        <form id="awardPointsForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="studentSelect" class="form-label">Select Student</label>
+                                    <select class="form-select award-points-input" id="studentSelect">
+                                        <option selected disabled>Choose a student...</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="pointCategory" class="form-label">Point Category</label>
+                                    <select class="form-select award-points-input" id="pointCategory" required>
+                                        <option selected disabled value="">Select category...</option>
+                                        <option value="Academic Achievement">Academic Achievement</option>
+                                        <option value="Positive Behavior">Positive Behavior</option>
+                                        <option value="Class Participation">Class Participation</option>
+                                        <option value="Perfect Attendance">Perfect Attendance</option>
+                                        <option value="Homework Completion">Homework Completion</option>
+                                        <option value="Improvement">Improvement</option>
+                                        <option value="Leadership">Leadership</option>
+                                        <option value="Teamwork">Teamwork</option>
+                                        <option value="Custom">Custom</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="pointsAmount" class="form-label">Points</label>
+                                    <div class="d-flex gap-2 mb-2">
+                                        <button type="button" class="btn quick-points" data-value="5">+5</button>
+                                        <button type="button" class="btn quick-points" data-value="10">+10</button>
+                                        <button type="button" class="btn quick-points" data-value="25">+25</button>
+                                        <input type="number" class="form-control award-points-input" id="pointsAmount" placeholder="Custom amount">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="awardNote" class="form-label">Note (Optional)</label>
+                                    <input type="text" class="form-control award-points-input" id="awardNote" placeholder="Enter a note about this award">
+                                </div>
+                                <div class="col-12 text-end">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-check me-1"></i> Award Points
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card award-points-card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Recent Point Awards</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">Student</th>
+                                        <th class="text-center">Points</th>
+                                        <th class="text-center">Category</th>
+                                        <th class="text-center">Awarded By</th>
+                                        <th class="text-center">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentAwardsTableBody">
+                                    <!-- Recent awards will be loaded here by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="{{ url_for('award_points_view_all') }}" class="btn btn-outline-primary btn-sm" id="viewHistoryBtn">View All History</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card award-points-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Student Current Points Leaders</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush" id="pointLeadersList">
+                            <!-- Point leaders will be loaded here by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Award Modal -->
+<div class="modal fade award-points-modal" id="bulkAwardModal" tabindex="-1" aria-labelledby="bulkAwardModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bulkAwardModalLabel">Bulk Award Points</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="bulkAwardForm">
+                    <div class="mb-3">
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-6">
+                                <label class="form-label">Grade & Section</label>
+                                <select class="form-select award-points-input" id="bulkGradeSectionFilter">
+                                    <option value="" selected>All Classes</option>
+                                    <!-- Options loaded by JS -->
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Search Student</label>
+                                <input type="text" class="form-control award-points-input" id="bulkStudentSearch" placeholder="Type to search...">
+                            </div>
+                        </div>
+                        <label class="form-label">Select Students</label>
+                        <div class="card award-points-card">
+                            <div class="card-body p-0">
+                                <div class="p-3 border-bottom">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="selectAllStudents">
+                                        <label class="form-check-label" for="selectAllStudents">
+                                            <strong>Select All Students</strong>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="p-3" style="max-height: 200px; overflow-y: auto;">
+                                    <div class="row" id="bulkStudentCheckboxes">
+                                        <!-- Student checkboxes will be loaded here by JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="bulkPointCategory" class="form-label">Point Category</label>
+                            <select class="form-select award-points-input" id="bulkPointCategory" required>
+                                <option selected disabled value="">Select category...</option>
+                                <option value="Academic Achievement">Academic Achievement</option>
+                                <option value="Positive Behavior">Positive Behavior</option>
+                                <option value="Class Participation">Class Participation</option>
+                                <option value="Perfect Attendance">Perfect Attendance</option>
+                                <option value="Homework Completion">Homework Completion</option>
+                                <option value="Improvement">Improvement</option>
+                                <option value="Leadership">Leadership</option>
+                                <option value="Teamwork">Teamwork</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="bulkPointsAmount" class="form-label">Points</label>
+                            <div class="d-flex gap-2 mb-2">
+                                <button type="button" class="btn quick-points" data-value="5">+5</button>
+                                <button type="button" class="btn quick-points" data-value="10">+10</button>
+                                <button type="button" class="btn quick-points" data-value="25">+25</button>
+                                <input type="number" class="form-control award-points-input" id="bulkPointsAmount" placeholder="Enter points amount">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label for="bulkAwardNote" class="form-label">Note (Optional)</label>
+                            <textarea class="form-control award-points-input" id="bulkAwardNote" rows="2" placeholder="Enter a note about this award"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="bulkAwardSubmitBtn">Award Points to Selected Students</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Template Modal -->
+<div class="modal fade" id="createTemplateModal" tabindex="-1" aria-labelledby="createTemplateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createTemplateModalLabel">Create Award Template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createTemplateForm">
+                    <div class="mb-3">
+                        <label for="templateName" class="form-label">Template Name</label>
+                        <input type="text" class="form-control" id="templateName" placeholder="Enter template name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="templateCategory" class="form-label">Category</label>
+                        <select class="form-select" id="templateCategory">
+                            <option selected disabled>Select category...</option>
+                            <option value="academic">Academic Achievement</option>
+                            <option value="behavior">Positive Behavior</option>
+                            <option value="participation">Class Participation</option>
+                            <option value="attendance">Perfect Attendance</option>
+                            <option value="homework">Homework Completion</option>
+                            <option value="improvement">Improvement</option>
+                            <option value="leadership">Leadership</option>
+                            <option value="teamwork">Teamwork</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="templatePoints" class="form-label">Default Points</label>
+                        <input type="number" class="form-control" id="templatePoints" placeholder="Enter default points">
+                    </div>
+                    <div class="mb-3">
+                        <label for="templateDescription" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="templateDescription" rows="2" placeholder="Enter template description"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Icon</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-outline-primary icon-select">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-primary icon-select">
+                                <i class="fas fa-check-circle"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-primary icon-select">
+                                <i class="fas fa-trophy"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-primary icon-select">
+                                <i class="fas fa-medal"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-primary icon-select">
+                                <i class="fas fa-thumbs-up"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-primary icon-select">
+                                <i class="fas fa-graduation-cap"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-primary icon-select">
+                                <i class="fas fa-users"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-primary icon-select">
+                                <i class="fas fa-book"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Save Template</button>
+            </div>
+        </div>
+    </div>
+ </div>
+
+<!-- Notification Toast -->
+<div id="topRightNotification" style="position:fixed;top:24px;right:24px;z-index:9999;display:none;min-width:220px;">
+  <div class="alert alert-success mb-0" id="topRightNotificationMsg"></div>
+</div>
+
+
+<script src="{{ url_for('static', filename='js/teacher/award_points/award_points_operation.js') }}"></script>
+{% endblock %}
+{% include "partials/confirmation_dialouge.html" %}

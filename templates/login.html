@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn2Earn - Login</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/login.css">
+    <link rel="icon" type="image/png" href="/static/image/masiconshsLOGO.png">
+    <style>
+        .error-message {
+            color: #ff7675;
+            font-size: 0.8rem;
+            margin-top: 4px;
+            display: none;
+        }
+        .form-control.error {
+            border-color: #ff7675;
+        }
+        .step-validation {
+            display: none;
+            color: #ff7675;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .password-container {
+            position: relative;
+        }
+        .password-toggle {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #888;
+        }
+        /* Toast Notification Styles */
+        .toast-notification {
+            position: fixed;
+            top: 32px;
+            right: 32px;
+            z-index: 9999;
+            min-width: 240px;
+            max-width: 350px;
+            background: #10B981;
+            color: #fff;
+            padding: 16px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, top 0.3s;
+        }
+        .toast-notification.show {
+            display: block;
+            opacity: 1;
+            pointer-events: auto;
+            top: 32px;
+        }
+        .toast-notification.error {
+            background: #EF4444;
+            color: #fff;
+        }
+        /* Forgot Password Modal Styles */
+        .modal-content {
+            background: #1e272e !important;
+            border: none !important;
+            border-radius: 15px !important;
+        }
+        .modal-header {
+            border-bottom: 1px solid #2d3436 !important;
+        }
+        .modal-footer {
+            border-top: 1px solid #2d3436 !important;
+        }
+        .btn-close-white {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+        /* OTP Input Styling */
+        #resetOtp {
+            letter-spacing: 8px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        /* Timer Styling */
+        #otpTimer {
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 10px;
+        }
+        #timer {
+            font-weight: bold;
+            color: #5e72e4;
+        }
+        /* Error Styling for Modal */
+        #resetEmailError,
+        #resetOtpError,
+        #resetPasswordError {
+            color: #ff7675;
+            font-size: 0.8rem;
+            margin-top: 4px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <!-- Left Section - School Information -->
+        <div class="left-section">
+            <img src="/static/image/masiconshsLOGO.png" alt="Masico Logo" class="school-logo">
+            <h1 class="sign-in-header">WELCOME TO<br></h1>
+            <p class="school-name">Masico National High School</p>
+            <div class="social-links">
+                <a href="https://www.facebook.com/DepedTayoMNHS301252/" target="_blank">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Right Section - Login/Register Forms -->
+        <div class="right-section">
+            
+            <!-- Brand Logo -->
+            <div class="brand-logo text-center" style="margin-bottom: 0.5rem;">
+                <svg width="100%" height="50" viewBox="0 0 400 50">
+                    <text x="50%" y="40" font-family="Nunito, sans-serif" font-size="40" font-weight="bold" fill="#ffffff" text-anchor="middle" letter-spacing="2">
+                        <tspan fill="#ffffff">Learn</tspan><tspan fill="#5e72e4">2</tspan><tspan fill="#ffffff">Earn</tspan>
+                    </text>
+                </svg>
+            </div>
+            
+            <!-- Tagline -->
+            <p class="brand-tagline">Tomorrow Begins with Our Students</p>
+            
+            <!-- Login Form -->
+            <form class="login-form" id="loginForm" method="post" style="display:block;">
+                <input type="text" class="form-control" id="email" name="email" placeholder="ID Number" required>
+                <div class="position-relative mb-2">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="••••••••••" required style="padding-right: 2.5rem;">
+                    <span id="togglePassword" style="position:absolute; top:50%; right:1rem; transform:translateY(-50%); cursor:pointer; color:#888;">
+                        <i class="fa fa-eye" id="togglePasswordIcon"></i>
+                    </span>
+                </div>
+                <a href="#" class="forgot-password">Forgot Password?</a>
+                <button type="submit" class="btn btn-login" id="loginBtn">
+                    <span id="loginBtnText"><i class="fas fa-sign-in-alt me-2"></i> Login</span>
+                    <span id="loginBtnSpinner" class="spinner-border spinner-border-sm ms-2" style="display:none;" role="status" aria-hidden="true"></span>
+                </button>
+            </form>
+
+            <!-- Register Form (hidden by default) -->
+            <form class="login-form" id="registerForm" style="display:none;">
+                <!-- Stepper Progress -->
+                <div class="mb-3 text-center">
+                    <div class="stepper-track">
+                        <span class="step-dot" id="stepDot1"></span>
+                        <span class="step-line"></span>
+                        <span class="step-dot" id="stepDot2"></span>
+                        <span class="step-line"></span>
+                        <span class="step-dot" id="stepDot3"></span>
+                        <span class="step-line"></span>
+                        <span class="step-dot" id="stepDot4"></span>
+                    </div>
+                </div>
+                
+                <!-- Step 1: Personal Information -->
+                <div class="register-step" id="registerStep1">
+                    <h5 class="text-white mb-3 text-center">Personal Information</h5>
+                    <div class="row">
+                        <div class="col">
+                            <input type="text" class="form-control" name="first_name" placeholder="First Name" required>
+                            <div class="error-message" id="first_name_error">First name is required</div>
+                        </div>
+                        <div class="col">
+                            <input type="text" class="form-control" name="middle_name" placeholder="Middle Name">
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col">
+                            <input type="text" class="form-control" name="last_name" placeholder="Last Name" required>
+                            <div class="error-message" id="last_name_error">Last name is required</div>
+                        </div>
+                        <div class="col">
+                            <select class="form-control" name="gender" required>
+                                <option value="">Gender</option>
+                                <option>Female</option>
+                                <option>Male</option>
+                                <option>Other</option>
+                            </select>
+                            <div class="error-message" id="gender_error">Please select your gender</div>
+                        </div>
+                    </div>
+                    <div class="step-validation" id="step1-validation"></div>
+                    <button type="button" class="btn btn-login mt-2" id="nextToStep2">Next</button>
+                </div>
+                
+                <!-- Step 2: Contact Information -->
+                <div class="register-step" id="registerStep2" style="display:none;">
+                    <h5 class="text-white mb-3 text-center">Contact Information</h5>
+                    <input type="email" class="form-control" name="email" placeholder="Email" required>
+                    <div class="error-message" id="email_error">Please enter a valid email address</div>
+                    
+                    <input type="text" class="form-control" name="phone" placeholder="Phone Number (11 digits)" required maxlength="11">
+                    <div class="error-message" id="phone_error">Please enter a valid 11-digit phone number</div>
+                    
+                    <div class="step-validation" id="step2-validation"></div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <button type="button" class="btn btn-secondary" id="backToStep1">Back</button>
+                        <button type="button" class="btn btn-login" id="nextToStep3">Next</button>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Academic Information -->
+                <div class="register-step" id="registerStep3" style="display:none;">
+                    <h5 class="text-white mb-3 text-center">Academic Information</h5>
+                    <select class="form-control" name="year_level" required>
+                        <option value="">Grade Level</option>
+                        <option>7</option>
+                        <option>8</option>
+                        <option>9</option>
+                        <option>10</option>
+                    </select>
+                    <div class="error-message" id="year_level_error">Please select your grade level</div>
+                    
+                    <input type="text" class="form-control" name="section" placeholder="Section" required>
+                    <div class="error-message" id="section_error">Please enter your section</div>
+                    
+                    <div class="step-validation" id="step3-validation"></div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <button type="button" class="btn btn-secondary" id="backToStep2">Back</button>
+                        <button type="button" class="btn btn-login" id="nextToStep4">Next</button>
+                    </div>
+                </div>
+                
+                <!-- Step 4: Security Information -->
+                <div class="register-step" id="registerStep4" style="display:none;">
+                    <h5 class="text-white mb-3 text-center">Security Information</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="password-container">
+                                <input type="password" class="form-control" name="password" id="regPassword" placeholder="Password" required>
+                                <span class="password-toggle" id="toggleRegPassword">
+                                    <i class="fa fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="password-container">
+                                <input type="password" class="form-control" name="confirm_password" id="regConfirmPassword" placeholder="Confirm Password" required>
+                                <span class="password-toggle" id="toggleRegConfirmPassword">
+                                    <i class="fa fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="error-message" id="password_error">Password does not meet requirements</div>
+                    <div class="error-message" id="confirm_password_error">Passwords do not match</div>
+                    
+                    <div class="mb-1 mt-2" id="passwordRequirements" style="background:#232b33;border-radius:4px;padding:4px 8px;font-size:0.75em;">
+                        <div style="color:#fff;font-weight:600;margin-bottom:1px;">Password requirements:</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;color:#ff7675;line-height:1;">
+                            <span id="pwReqLen"><i class="fa fa-times"></i> 8+ chars</span>
+                            <span id="pwReqUpper"><i class="fa fa-times"></i> 1 uppercase</span>
+                            <span id="pwReqNum"><i class="fa fa-times"></i> 1 number</span>
+                            <span id="pwReqSpecial"><i class="fa fa-times"></i> 1 special</span>
+                        </div>
+                    </div>
+                    
+                    <div class="step-validation" id="step4-validation"></div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <button type="button" class="btn btn-secondary" id="backToStep3">Back</button>
+                        <button type="submit" class="btn btn-login">Create Account</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Switch between login/register -->
+            <div class="mt-3 text-center" id="switchAuth">
+                <span style="color:#a4b0be;">Don't have an account?</span>
+                <a href="#" id="showRegister" style="color:#5e72e4;font-weight:600;text-decoration:none;">Create one</a>
+            </div>
+
+            <div class="copyright">
+                © 2025 Masico National High School
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: #1e272e; border: none; border-radius: 15px;">
+                <div class="modal-header" style="border-bottom: 1px solid #2d3436;">
+                    <h5 class="modal-title text-white" id="forgotPasswordModalLabel">Reset Password</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Step 1: Email Input -->
+                    <div id="forgotPasswordStep1">
+                        <p class="text-light mb-3">Enter your email address to receive a verification code.</p>
+                        <div class="mb-3">
+                            <input type="email" class="form-control" id="resetEmail" placeholder="Enter your email" style="background: rgba(255,255,255,0.95); border-radius: 22px; padding: 12px 20px;">
+                            <div class="error-message" id="resetEmailError" style="display: none;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: OTP Verification -->
+                    <div id="forgotPasswordStep2" style="display: none;">
+                        <p class="text-light mb-3">Enter the 6-digit code sent to your email.</p>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" id="resetOtp" placeholder="Enter OTP" maxlength="6" style="background: rgba(255,255,255,0.95); border-radius: 22px; padding: 12px 20px; text-align: center; font-size: 1.2rem; letter-spacing: 8px;">
+                            <div class="error-message" id="resetOtpError" style="display: none;"></div>
+                        </div>
+                        <p class="text-light small" id="otpTimer">Code expires in: <span id="timer">10:00</span></p>
+                    </div>
+
+                    <!-- Step 3: New Password -->
+                    <div id="forgotPasswordStep3" style="display: none;">
+                        <p class="text-light mb-3">Enter your new password.</p>
+                        <div class="mb-3">
+                            <div class="password-container">
+                                <input type="password" class="form-control" id="newPassword" placeholder="New Password" style="background: rgba(255,255,255,0.95); border-radius: 22px; padding: 12px 20px;">
+                                <span class="password-toggle" id="toggleNewPassword">
+                                    <i class="fa fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="password-container">
+                                <input type="password" class="form-control" id="confirmNewPassword" placeholder="Confirm New Password" style="background: rgba(255,255,255,0.95); border-radius: 22px; padding: 12px 20px;">
+                                <span class="password-toggle" id="toggleConfirmNewPassword">
+                                    <i class="fa fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="error-message" id="resetPasswordError" style="display: none;"></div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #2d3436;">
+                    <button type="button" class="btn btn-secondary" id="forgotPasswordBackBtn" style="display: none;">Back</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="forgotPasswordNextBtn">Send Code</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toast notification function (green and red only)
+        function showToast(message, type = 'success', duration = 5000) {
+            // Remove any existing toasts
+            const existingToasts = document.querySelectorAll('.toast-notification');
+            existingToasts.forEach(toast => {
+                if (toast.parentNode) toast.parentNode.removeChild(toast);
+            });
+
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type === 'error' ? 'error' : 'success'}`;
+            
+            let icon = 'fa-check-circle';
+            if (type === 'error') icon = 'fa-exclamation-circle';
+
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <i class="fas ${icon} me-2"></i>
+                    ${message}
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => { 
+                toast.classList.add('show'); 
+            }, 10);
+            
+            // Auto remove after duration
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => { 
+                    if (toast.parentNode) toast.parentNode.removeChild(toast); 
+                }, 300);
+            }, duration);
+            
+            // Also allow click to dismiss
+            toast.addEventListener('click', function() {
+                this.classList.remove('show');
+                setTimeout(() => { 
+                    if (this.parentNode) this.parentNode.removeChild(this); 
+                }, 300);
+            });
+        }
+
+        // ========== FORGOT PASSWORD FUNCTIONALITY ==========
+        let forgotPasswordStep = 1;
+        let otpTimer;
+        let timerSeconds = 600; // 10 minutes
+
+        // Button state management
+        function updateForgotPasswordButton() {
+            const nextBtn = document.getElementById('forgotPasswordNextBtn');
+            const backBtn = document.getElementById('forgotPasswordBackBtn');
+            
+            switch (forgotPasswordStep) {
+                case 1:
+                    nextBtn.innerHTML = 'Send Code';
+                    backBtn.style.display = 'none';
+                    break;
+                case 2:
+                    nextBtn.innerHTML = 'Verify Code';
+                    backBtn.style.display = 'inline-block';
+                    break;
+                case 3:
+                    nextBtn.innerHTML = 'Reset Password';
+                    backBtn.style.display = 'inline-block';
+                    break;
+            }
+        }
+
+        // Show forgot password modal
+        document.querySelector('.forgot-password').addEventListener('click', function(e) {
+            e.preventDefault();
+            resetForgotPasswordFlow();
+            const modal = new bootstrap.Modal(document.getElementById('forgotPasswordModal'));
+            modal.show();
+        });
+
+        // Reset forgot password flow
+        function resetForgotPasswordFlow() {
+            forgotPasswordStep = 1;
+            timerSeconds = 600;
+            clearInterval(otpTimer);
+            
+            // Show step 1, hide others
+            document.getElementById('forgotPasswordStep1').style.display = 'block';
+            document.getElementById('forgotPasswordStep2').style.display = 'none';
+            document.getElementById('forgotPasswordStep3').style.display = 'none';
+            
+            // Reset button states
+            updateForgotPasswordButton();
+            document.getElementById('forgotPasswordNextBtn').disabled = false;
+            
+            // Clear inputs and errors
+            document.getElementById('resetEmail').value = '';
+            document.getElementById('resetOtp').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+            hideAllForgotPasswordErrors();
+        }
+
+        // Hide all forgot password errors
+        function hideAllForgotPasswordErrors() {
+            document.getElementById('resetEmailError').style.display = 'none';
+            document.getElementById('resetOtpError').style.display = 'none';
+            document.getElementById('resetPasswordError').style.display = 'none';
+        }
+
+        // Show error in forgot password modal
+        function showForgotPasswordError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        // Start OTP timer
+        function startOtpTimer() {
+            clearInterval(otpTimer);
+            timerSeconds = 600;
+            
+            otpTimer = setInterval(function() {
+                timerSeconds--;
+                
+                if (timerSeconds <= 0) {
+                    clearInterval(otpTimer);
+                    document.getElementById('timer').textContent = 'Expired';
+                    document.getElementById('forgotPasswordNextBtn').disabled = true;
+                } else {
+                    const minutes = Math.floor(timerSeconds / 60);
+                    const seconds = timerSeconds % 60;
+                    document.getElementById('timer').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        // Forgot password next button
+        document.getElementById('forgotPasswordNextBtn').addEventListener('click', async function() {
+            hideAllForgotPasswordErrors();
+            
+            switch (forgotPasswordStep) {
+                case 1:
+                    await handleEmailSubmission();
+                    break;
+                case 2:
+                    await handleOtpVerification();
+                    break;
+                case 3:
+                    await handlePasswordReset();
+                    break;
+            }
+        });
+
+        // Forgot password back button
+        document.getElementById('forgotPasswordBackBtn').addEventListener('click', function() {
+            hideAllForgotPasswordErrors();
+            
+            if (forgotPasswordStep === 2) {
+                // Go back to step 1
+                forgotPasswordStep = 1;
+                document.getElementById('forgotPasswordStep1').style.display = 'block';
+                document.getElementById('forgotPasswordStep2').style.display = 'none';
+                updateForgotPasswordButton();
+                clearInterval(otpTimer);
+            } else if (forgotPasswordStep === 3) {
+                // Go back to step 2
+                forgotPasswordStep = 2;
+                document.getElementById('forgotPasswordStep2').style.display = 'block';
+                document.getElementById('forgotPasswordStep3').style.display = 'none';
+                updateForgotPasswordButton();
+            }
+        });
+
+        // Handle email submission
+        async function handleEmailSubmission() {
+            const email = document.getElementById('resetEmail').value.trim();
+            
+            if (!email) {
+                showForgotPasswordError('resetEmailError', 'Please enter your email address');
+                return;
+            }
+            
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showForgotPasswordError('resetEmailError', 'Please enter a valid email address');
+                return;
+            }
+            
+            // Show loading state
+            const nextBtn = document.getElementById('forgotPasswordNextBtn');
+            const originalText = nextBtn.innerHTML;
+            nextBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+            nextBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Move to step 2
+                    forgotPasswordStep = 2;
+                    document.getElementById('forgotPasswordStep1').style.display = 'none';
+                    document.getElementById('forgotPasswordStep2').style.display = 'block';
+                    updateForgotPasswordButton();
+                    
+                    // Start OTP timer
+                    startOtpTimer();
+                    
+                    showToast('OTP sent to your email', 'success');
+                } else {
+                    showForgotPasswordError('resetEmailError', data.message);
+                }
+            } catch (error) {
+                showForgotPasswordError('resetEmailError', 'An error occurred. Please try again.');
+            } finally {
+                // Reset button state
+                nextBtn.disabled = false;
+                updateForgotPasswordButton();
+            }
+        }
+
+        // Handle OTP verification
+        async function handleOtpVerification() {
+            const email = document.getElementById('resetEmail').value.trim();
+            const otp = document.getElementById('resetOtp').value.trim();
+            
+            if (!otp || otp.length !== 6) {
+                showForgotPasswordError('resetOtpError', 'Please enter the 6-digit code');
+                return;
+            }
+            
+            // Show loading state
+            const nextBtn = document.getElementById('forgotPasswordNextBtn');
+            const originalText = nextBtn.innerHTML;
+            nextBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verifying...';
+            nextBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, otp })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Move to step 3
+                    forgotPasswordStep = 3;
+                    document.getElementById('forgotPasswordStep2').style.display = 'none';
+                    document.getElementById('forgotPasswordStep3').style.display = 'block';
+                    updateForgotPasswordButton();
+                    clearInterval(otpTimer);
+                    
+                    showToast('OTP verified successfully', 'success');
+                } else {
+                    showForgotPasswordError('resetOtpError', data.message);
+                }
+            } catch (error) {
+                showForgotPasswordError('resetOtpError', 'An error occurred. Please try again.');
+            } finally {
+                // Reset button state
+                nextBtn.disabled = false;
+                updateForgotPasswordButton();
+            }
+        }
+
+        // Handle password reset
+        async function handlePasswordReset() {
+            const email = document.getElementById('resetEmail').value.trim();
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmNewPassword').value;
+            
+            // Validate passwords
+            if (!newPassword || !confirmPassword) {
+                showForgotPasswordError('resetPasswordError', 'Please enter and confirm your new password');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showForgotPasswordError('resetPasswordError', 'Passwords do not match');
+                return;
+            }
+            
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            if (!passwordRegex.test(newPassword)) {
+                showForgotPasswordError('resetPasswordError', 'Password does not meet requirements');
+                return;
+            }
+            
+            // Show loading state
+            const nextBtn = document.getElementById('forgotPasswordNextBtn');
+            const originalText = nextBtn.innerHTML;
+            nextBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Resetting...';
+            nextBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email, 
+                        new_password: newPassword, 
+                        confirm_password: confirmPassword 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Password reset successfully! You can now login with your new password.', 'success');
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('forgotPasswordModal'));
+                    modal.hide();
+                    
+                    // Reset flow
+                    resetForgotPasswordFlow();
+                } else {
+                    showForgotPasswordError('resetPasswordError', data.message);
+                }
+            } catch (error) {
+                showForgotPasswordError('resetPasswordError', 'An error occurred. Please try again.');
+            } finally {
+                // Reset button state
+                nextBtn.disabled = false;
+                updateForgotPasswordButton();
+            }
+        }
+
+        // Password toggle for forgot password modal
+        document.getElementById('toggleNewPassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('newPassword');
+            const icon = this.querySelector('i');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        document.getElementById('toggleConfirmNewPassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('confirmNewPassword');
+            const icon = this.querySelector('i');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // Auto-advance OTP input
+        document.getElementById('resetOtp').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
+            if (this.value.length === 6) {
+                // Auto-submit when 6 digits are entered
+                document.getElementById('forgotPasswordNextBtn').click();
+            }
+        });
+
+        // ========== EXISTING LOGIN/REGISTER FUNCTIONALITY ==========
+        // Login form functionality
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            let oldAlert = document.getElementById('login-error-alert');
+            if (oldAlert) oldAlert.remove();
+
+            // Show spinner and disable button
+            const loginBtn = document.getElementById('loginBtn');
+            document.getElementById('loginBtnText').style.display = 'none';
+            document.getElementById('loginBtnSpinner').style.display = 'inline-block';
+            loginBtn.disabled = true;
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const res = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+
+            // Hide spinner and enable button
+            document.getElementById('loginBtnText').style.display = '';
+            document.getElementById('loginBtnSpinner').style.display = 'none';
+            loginBtn.disabled = false;
+
+            if (!data.success) {
+                // Show error toast
+                showToast(data.message || 'Login failed. Please check your credentials.', 'error', 4000);
+            } else {
+                // Show success toast
+                showToast('Login successful! Redirecting...', 'success', 2000);
+                
+                // Redirect based on role after a short delay
+                setTimeout(() => {
+                    if (data.role === 'Student') {
+                        window.location.href = '/student_home';
+                    } else if (data.role === 'Teacher') {
+                        window.location.href = '/dashboard';
+                    } else if (data.role === 'Admin') {
+                        window.location.href = '/admin_dashboard';
+                    }
+                }, 1500);
+            }
+        });
+
+        // Toggle password visibility for login form
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const passwordInput = document.getElementById('password');
+            const icon = document.getElementById('togglePasswordIcon');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // Toggle password visibility for registration form
+        document.getElementById('toggleRegPassword').addEventListener('click', function () {
+            const passwordInput = document.getElementById('regPassword');
+            const icon = this.querySelector('i');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        document.getElementById('toggleRegConfirmPassword').addEventListener('click', function () {
+            const passwordInput = document.getElementById('regConfirmPassword');
+            const icon = this.querySelector('i');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // Form switching functionality
+        function fadeSwitch(fromId, toId) {
+            const fromForm = document.getElementById(fromId);
+            const toForm = document.getElementById(toId);
+
+            fromForm.classList.add('fade-out');
+            setTimeout(() => {
+                fromForm.style.display = 'none';
+                fromForm.classList.remove('fade-out');
+                toForm.style.display = 'block';
+                toForm.classList.add('fade-in');
+                setTimeout(() => {
+                    toForm.classList.remove('fade-in');
+                }, 350);
+            }, 350);
+        }
+
+        document.getElementById('showRegister').addEventListener('click', function(e) {
+            e.preventDefault();
+            fadeSwitch('loginForm', 'registerForm');
+            document.getElementById('switchAuth').innerHTML = `<span style="color:#a4b0be;">Already have an account?</span>
+                <a href="#" id="showLogin" style="color:#5e72e4;font-weight:600;text-decoration:none;">Login here</a>`;
+            updateStepper(1);
+            attachShowLogin();
+        });
+
+        function attachShowLogin() {
+            document.getElementById('showLogin').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('registerForm').reset();
+                fadeSwitch('registerForm', 'loginForm');
+                document.getElementById('switchAuth').innerHTML = `<span style="color:#a4b0be;">Don't have an account?</span>
+                    <a href="#" id="showRegister" style="color:#5e72e4;font-weight:600;text-decoration:none;">Create one</a>`;
+                attachShowRegister();
+            });
+        }
+
+        function attachShowRegister() {
+            document.getElementById('showRegister').addEventListener('click', function(e) {
+                e.preventDefault();
+                fadeSwitch('loginForm', 'registerForm');
+                document.getElementById('switchAuth').innerHTML = `<span style="color:#a4b0be;">Already have an account?</span>
+                    <a href="#" id="showLogin" style="color:#5e72e4;font-weight:600;text-decoration:none;">Login here</a>`;
+                updateStepper(1);
+                attachShowLogin();
+            });
+        }
+        attachShowRegister();
+
+        // Registration stepper logic
+        function updateStepper(step) {
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById('stepDot'+i).style.background = (i === step) ? '#5e72e4' : '#a4b0be';
+            }
+        }
+
+        function showStep(step) {
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById('registerStep'+i).style.display = (i === step) ? 'block' : 'none';
+            }
+            updateStepper(step);
+        }
+
+        // Form validation functions
+        function validateStep1() {
+            const firstName = document.querySelector('#registerStep1 input[name="first_name"]');
+            const lastName = document.querySelector('#registerStep1 input[name="last_name"]');
+            const gender = document.querySelector('#registerStep1 select[name="gender"]');
+            let isValid = true;
+            
+            // Reset error states
+            hideError('first_name_error');
+            hideError('last_name_error');
+            hideError('gender_error');
+            hideStepValidation('step1-validation');
+            
+            // Validate first name
+            if (!firstName.value.trim()) {
+                showError('first_name_error');
+                markInvalid(firstName);
+                isValid = false;
+            } else {
+                markValid(firstName);
+            }
+            
+            // Validate last name
+            if (!lastName.value.trim()) {
+                showError('last_name_error');
+                markInvalid(lastName);
+                isValid = false;
+            } else {
+                markValid(lastName);
+            }
+            
+            // Validate gender
+            if (!gender.value) {
+                showError('gender_error');
+                markInvalid(gender);
+                isValid = false;
+            } else {
+                markValid(gender);
+            }
+            
+            return isValid;
+        }
+
+        function validateStep2() {
+            const email = document.querySelector('#registerStep2 input[name="email"]');
+            const phone = document.querySelector('#registerStep2 input[name="phone"]');
+            let isValid = true;
+            
+            // Reset error states
+            hideError('email_error');
+            hideError('phone_error');
+            hideStepValidation('step2-validation');
+            
+            // Validate email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email.value.trim() || !emailRegex.test(email.value)) {
+                showError('email_error');
+                markInvalid(email);
+                isValid = false;
+            } else {
+                markValid(email);
+            }
+            
+            // Validate phone number (11 digits)
+            const phoneRegex = /^\d{11}$/;
+            if (!phone.value.trim() || !phoneRegex.test(phone.value)) {
+                showError('phone_error');
+                markInvalid(phone);
+                isValid = false;
+            } else {
+                markValid(phone);
+            }
+            
+            return isValid;
+        }
+
+        function validateStep3() {
+            const yearLevel = document.querySelector('#registerStep3 select[name="year_level"]');
+            // Select either input or select for section
+            let section = document.querySelector('#registerStep3 input[name="section"], #registerStep3 select[name="section"]');
+            let isValid = true;
+
+            // Reset error states
+            hideError('year_level_error');
+            hideError('section_error');
+            hideStepValidation('step3-validation');
+
+            // Validate year level
+            if (!yearLevel.value) {
+                showError('year_level_error');
+                markInvalid(yearLevel);
+                isValid = false;
+            } else {
+                markValid(yearLevel);
+            }
+
+            // Validate section (for select, check value; for input, check text)
+            if (!section.value || section.value === "") {
+                showError('section_error');
+                markInvalid(section);
+                isValid = false;
+            } else {
+                markValid(section);
+            }
+
+            return isValid;
+        }
+
+        function validateStep4() {
+            const password = document.getElementById('regPassword');
+            const confirmPassword = document.getElementById('regConfirmPassword');
+            let isValid = true;
+            
+            // Reset error states
+            hideError('password_error');
+            hideError('confirm_password_error');
+            hideStepValidation('step4-validation');
+            
+            // Validate password
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            if (!password.value || !passwordRegex.test(password.value)) {
+                showError('password_error');
+                markInvalid(password);
+                isValid = false;
+            } else {
+                markValid(password);
+            }
+            
+            // Validate password confirmation
+            if (!confirmPassword.value || password.value !== confirmPassword.value) {
+                showError('confirm_password_error');
+                markInvalid(confirmPassword);
+                isValid = false;
+            } else {
+                markValid(confirmPassword);
+            }
+            
+            return isValid;
+        }
+
+        function showError(errorId) {
+            document.getElementById(errorId).style.display = 'block';
+        }
+
+        function hideError(errorId) {
+            document.getElementById(errorId).style.display = 'none';
+        }
+
+        function showStepValidation(validationId) {
+            document.getElementById(validationId).style.display = 'block';
+        }
+
+        function hideStepValidation(validationId) {
+            document.getElementById(validationId).style.display = 'none';
+        }
+
+        function markInvalid(element) {
+            element.classList.add('error');
+        }
+
+        function markValid(element) {
+            element.classList.remove('error');
+        }
+
+        // Step navigation with validation
+        document.getElementById('nextToStep2').onclick = function() {
+            if (validateStep1()) {
+                showStep(2);
+            } else {
+                showStepValidation('step1-validation');
+            }
+        };
+
+        document.getElementById('backToStep1').onclick = function() {
+            showStep(1);
+        };
+
+        document.getElementById('nextToStep3').onclick = function() {
+            if (validateStep2()) {
+                showStep(3);
+            } else {
+                showStepValidation('step2-validation');
+            }
+        };
+
+        document.getElementById('backToStep2').onclick = function() {
+            showStep(2);
+        };
+
+        document.getElementById('nextToStep4').onclick = function() {
+            if (validateStep3()) {
+                showStep(4);
+            } else {
+                showStepValidation('step3-validation');
+            }
+        };
+
+        document.getElementById('backToStep3').onclick = function() {
+            showStep(3);
+        };
+
+        // Password requirements check
+        const regPassword = document.getElementById('regPassword');
+        if (regPassword) {
+            regPassword.addEventListener('input', function() {
+                const val = regPassword.value;
+                document.getElementById('pwReqLen').style.color = val.length >= 8 ? '#00b894' : '#ff7675';
+                document.getElementById('pwReqLen').innerHTML = (val.length >= 8 ? '<i class="fa fa-check"></i>' : '<i class="fa fa-times"></i>') + ' At least 8 characters';
+                document.getElementById('pwReqUpper').style.color = /[A-Z]/.test(val) ? '#00b894' : '#ff7675';
+                document.getElementById('pwReqUpper').innerHTML = (/[A-Z]/.test(val) ? '<i class="fa fa-check"></i>' : '<i class="fa fa-times"></i>') + ' 1 uppercase letter';
+                document.getElementById('pwReqNum').style.color = /\d/.test(val) ? '#00b894' : '#ff7675';
+                document.getElementById('pwReqNum').innerHTML = (/\d/.test(val) ? '<i class="fa fa-check"></i>' : '<i class="fa fa-times"></i>') + ' 1 number';
+                document.getElementById('pwReqSpecial').style.color = /[^A-Za-z0-9]/.test(val) ? '#00b894' : '#ff7675';
+                document.getElementById('pwReqSpecial').innerHTML = (/[^A-Za-z0-9]/.test(val) ? '<i class="fa fa-check"></i>' : '<i class="fa fa-times"></i>') + ' 1 special character';
+            });
+        }
+
+        // Phone number validation (only digits, max 11)
+        document.querySelector('#registerStep2 input[name="phone"]').addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '');
+            if (this.value.length > 11) {
+                this.value = this.value.slice(0, 11);
+            }
+        });
+
+        const gradeToSections = {
+            "7": ["Love", "Faith", "Hope", "Peace"],
+            "8": ["Matthew", "Mark", "Luke", "John"],
+            "9": ["Psalms", "Jeremiah", "Isaiah", "Proverbs"],
+            "10": ["Deuteronomy", "Leviticus", "Exodus", "Genesis"]
+        };
+
+        // Update section options when year_level changes
+        document.querySelector('#registerForm select[name="year_level"]').addEventListener('change', function() {
+            const grade = this.value;
+            let sectionInput = document.querySelector('#registerForm input[name="section"], #registerForm select[name="section"]');
+            if (gradeToSections[grade]) {
+                // Replace input with select if not already a select
+                if (sectionInput.tagName.toLowerCase() !== 'select') {
+                    const select = document.createElement('select');
+                    select.className = 'form-control';
+                    select.name = 'section';
+                    select.required = true;
+                    select.innerHTML = `<option value="">Section</option>` + gradeToSections[grade].map(s => `<option>${s}</option>`).join('');
+                    sectionInput.parentNode.replaceChild(select, sectionInput);
+                } else {
+                    // If already a select, just update options
+                    sectionInput.innerHTML = `<option value="">Section</option>` + gradeToSections[grade].map(s => `<option>${s}</option>`).join('');
+                }
+            } else {
+                // Replace select with input if grade is not in gradeToSections
+                if (sectionInput.tagName.toLowerCase() !== 'input') {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'form-control';
+                    input.name = 'section';
+                    input.placeholder = 'Section';
+                    input.required = true;
+                    sectionInput.parentNode.replaceChild(input, sectionInput);
+                }
+            }
+        });
+
+        // Registration form submit (AJAX)
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validate all steps before submission
+            if (!validateStep1() || !validateStep2() || !validateStep3() || !validateStep4()) {
+                showToast('Please fill in all required fields correctly before submitting.', 'error', 4000);
+                return;
+            }
+            
+            const form = e.target;
+            const data = {
+                firstName: form.first_name.value,
+                middleName: form.middle_name.value,
+                lastName: form.last_name.value,
+                gender: form.gender.value,
+                email: form.email.value,
+                mobileNo: form.phone.value,
+                userRole: "student",
+                grade: form.year_level.value,
+                section: form.section.value,
+                password: form.password.value,
+                confirm_password: form.confirm_password.value,
+                generatePassword: false,
+                sendWelcomeEmail: true
+            };
+            
+            if (data.password !== data.confirm_password) {
+                showToast('Passwords do not match!', 'error', 4000);
+                return;
+            }
+            
+            const res = await fetch('/api/register-student', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    first_name: form.first_name.value,
+                    middle_name: form.middle_name.value,
+                    last_name: form.last_name.value,
+                    gender: form.gender.value,
+                    email: form.email.value,
+                    phone: form.phone.value,
+                    year_level: form.year_level.value,
+                    section: form.section.value,
+                    password: form.password.value,
+                    confirm_password: form.confirm_password.value
+                })
+            });
+            
+            const result = await res.json();
+            if (result.success) {
+                showToast('Registration submitted! Await admin approval.', 'success', 4000);
+                form.reset();
+                showStep(1);
+                document.getElementById('registerForm').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'block';
+            } else {
+                showToast(result.message || 'Registration failed.', 'error', 4000);
+            }
+        });
+    </script>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div id="flask-flash-messages">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert" style="position:absolute;top:24px;right:24px;z-index:1000;">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+</body>
+</html>

@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Learn2Earn - Analytics{% endblock %}
+
+{% block page_title %}Analytics{% endblock %}
+
+{% block admin_content %}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Analytics</h1>
+            <p class="text-muted">Gain insights into user activity.</p>
+        </div>
+        <!-- Change the export button to have an id -->
+        <button class="btn btn-admin" id="exportReportBtn">
+            <i class="fas fa-download me-2"></i>Export Report
+        </button>
+    </div>
+
+    <!-- Analytics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card card-1">
+                <div class="icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="stat-value">{{ active_users }}</h3>
+                <p class="stat-label">Active Users</p>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card card-2">
+                <div class="icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h3 class="stat-value">{{ student_engagement }}%</h3>
+                <p class="stat-label">Student Engagement</p>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card card-3">
+                <div class="icon">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <h3 class="stat-value">{{ monthly_redeemed_rewards }}</h3>
+                <p class="stat-label">Redeemed Rewards (Monthly)</p>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card card-4">
+                <div class="icon">
+                    <i class="fas fa-award"></i>
+                </div>
+                <h3 class="stat-value">{{ total_points_awarded }}</h3>
+                <p class="stat-label">Total Points Awarded</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section: All three in one row -->
+    <div class="row">
+        <!-- User Activity Chart -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">User Activity</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="userActivityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Points Trend Chart (smaller, in the middle) -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Monthly Points Trend</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyPointsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Engagement Breakdown Chart -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">User Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="engagementBreakdownChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // User Activity Chart (Line)
+    const userActivityCtx = document.getElementById('userActivityChart').getContext('2d');
+    const userActivityChart = new Chart(userActivityCtx, {
+        type: 'line',
+        data: {
+            labels: {{ day_labels|tojson }},
+            datasets: [{
+                label: 'Logins',
+                data: {{ daily_logins|tojson }},
+                borderColor: 'rgba(78, 115, 223, 1)',
+                backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true
+                }
+            }
+        }
+    });
+
+    // Engagement Breakdown Chart (Doughnut)
+    const engagementBreakdownCtx = document.getElementById('engagementBreakdownChart').getContext('2d');
+    const engagementBreakdownChart = new Chart(engagementBreakdownCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Teachers', 'Students', 'Admins'],
+            datasets: [{
+                data: {{ engagement_breakdown|tojson }},
+                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true
+                }
+            }
+        }
+    });
+
+    // Monthly Points Trend Chart (Line)
+    const monthlyPointsCtx = document.getElementById('monthlyPointsChart').getContext('2d');
+    const monthlyPointsChart = new Chart(monthlyPointsCtx, {
+        type: 'line',
+        data: {
+            labels: {{ monthly_points_labels|tojson }},
+            datasets: [{
+                label: 'Points Awarded (All Teachers)',
+                data: {{ monthly_points_data|tojson }},
+                borderColor: 'rgba(54, 185, 204, 1)',
+                backgroundColor: 'rgba(54, 185, 204, 0.1)',
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true
+                }
+            }
+        }
+    });
+
+    // PDF Export functionality (same as analytics.html)
+    const exportBtn = document.getElementById('exportReportBtn');
+    exportBtn.addEventListener('click', function() {
+        const dashboard = document.querySelector('.container-fluid');
+        exportBtn.style.visibility = 'hidden';
+        html2canvas(dashboard, {backgroundColor: '#fff', scale: 2}).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new window.jspdf.jsPDF({
+                orientation: 'landscape',
+                unit: 'pt',
+                format: [canvas.width, canvas.height]
+            });
+            pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+            pdf.save('Analytics_Dashboard_Report.pdf');
+            exportBtn.style.visibility = 'visible';
+            // Show export success toast
+            showToast('Report exported successfully!', 'success', 3000);
+        });
+    });
+
+    // Show toast when page loads
+    showToast('Activity Log Loaded Successfully!', 'success', 3000);
+});
+
+function exportToExcel(logs) {
+    if (!logs.length) {
+        showToast('No data to export!', 'error', 3000);
+        return;
+    }
+    // ...existing export code...
+    XLSX.writeFile(wb, filename);
+    showToast('Exported successfully!', 'success', 3000);
+}
+
+function showToast(message, type = 'success', duration = 4000) {
+    // Remove any existing toasts
+    document.querySelectorAll('.toast-notification').forEach(toast => {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+    });
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type === 'error' ? 'error' : 'success'}`;
+    let icon = type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle';
+    toast.innerHTML = `<div class="toast-content"><i class="fas ${icon} me-2"></i>${message}</div>`;
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.classList.add('show'); }, 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+    }, duration);
+    toast.addEventListener('click', function() {
+        this.classList.remove('show');
+        setTimeout(() => { if (this.parentNode) this.parentNode.removeChild(this); }, 300);
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,3174 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Maker - Learn2Earn{% endblock %}
+
+{% block page_title %}Quiz Maker{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/quiz_maker.css">
+{% endblock %}
+
+{% block main_content %}
+<div class="container-fluid">
+    <div class="col-md-6">
+        <h5 class="mb-0">My Quizzes</h5>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <!-- Tab Navigation -->
+            <div class="quiz-tabs">
+                <button class="tab-btn active" onclick="switchTab('create', event)">
+                    <i class="fas fa-plus-circle"></i> Create Quiz
+                </button>
+                <button class="tab-btn" onclick="switchTab('my-quizzes', event)">
+                    <i class="fas fa-list"></i> My Quizzes
+                </button>
+                <button class="tab-btn" onclick="switchTab('results', event)">
+                    <i class="fas fa-chart-bar"></i> Results
+                </button>
+            </div>
+
+            <!-- Create Quiz Tab -->
+            <div id="createTab" class="tab-content active">
+                <!-- Edit Mode Indicator (initially hidden) -->
+                <div id="editModeIndicator" class="edit-mode-indicator" style="display: none;">
+                    <span><i class="fas fa-edit"></i> Edit Mode - You are editing an existing quiz</span>
+                    <button onclick="exitEditMode()">Exit Edit Mode</button>
+                </div>
+
+                <!-- File Upload -->
+                <div class="quiz-section upload-section">
+                    <h4>Step 1: Upload Your Lesson Plan</h4>
+                    <div class="upload-area" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Drag and drop your lesson plan here or click to browse</strong></p>
+                        <p class="text-muted" style="font-size: 0.9em;">Supported: PDF, DOCX, TXT (Max 16MB)</p>
+                    </div>
+                    <input type="file" id="fileInput" accept=".pdf,.docx,.txt" style="display: none;">
+                    
+                    <div id="fileInfo" class="file-info">
+                        <strong>✓ File uploaded:</strong> <span id="fileName"></span>
+                    </div>
+                    
+                    <div id="topicsFound" class="topics-found">
+                        <strong><i class="fas fa-tag"></i> Topics found:</strong>
+                        <div id="topicsList" style="margin-top: 10px;"></div>
+                    </div>
+                    
+                    <div id="errorMessage" class="error-message"></div>
+                </div>
+
+                <!-- Options -->
+                <div class="quiz-section config-section">
+                    <h4>Step 2: Configure Quiz Settings</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label><strong>Number of Questions:</strong></label>
+                            <input type="number" id="numQuestions" class="question-input" value="5" min="1" max="20">
+                        </div>
+                    
+                        <div class="col-md-6">
+                            <label><strong>Filter by Topic (Optional):</strong></label>
+                            <select id="topicFilter" class="question-input">
+                                <option value="">All Topics</option>
+                                <option id="noTopicsOption" style="display: none;" disabled>Upload a file to see topics</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Hidden field for detected quarter -->
+                    <input type="hidden" id="detectedQuarter" value="">
+                </div>
+
+                <!-- Action Button -->
+                <div class="quiz-section generate-section">
+                    <button class="btn-generate" id="generateBtn" onclick="handleGenerate()">
+                        <i class="fas fa-magic"></i> Generate Quiz
+                    </button>
+                </div>
+
+                <!-- Loading -->
+                <div id="loadingDiv" class="loading">
+                    <div class="spinner"></div>
+                    <p>Generating your quiz questions...</p>
+                </div>
+
+                <!-- Results -->
+                <div id="quizResult" class="quiz-result">
+                    <div class="result-header">
+                        <h3 id="resultTitle"><i class="fas fa-star"></i> Generated Quiz</h3>
+                        <div class="result-stats" id="resultStats"></div>
+                    </div>
+                    <div id="resultContent"></div>
+                    
+                    <!-- Action Buttons for Teacher -->
+                    <div class="action-buttons" id="teacherActions" style="display: none;">
+                        <button class="btn-save" onclick="saveThenAssign()">
+                            <i class="fas fa-save"></i> Save & Assign Quiz
+                        </button>
+                    </div>
+                </div>
+
+                <div id="successMessage" class="success-message"></div>
+            </div>
+
+            <!-- My Quizzes Tab -->
+            <div id="myQuizzesTab" class="tab-content">
+                <!-- Search and Filter Section -->
+                <div class="search-filter-section">
+                    <div class="search-container">
+                        <div class="filter-row">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" placeholder="Search quizzes..." id="quizSearchInput" onkeyup="filterMyQuizzes()">
+                            </div>
+                        </div>
+                        
+                        <div class="filter-tabs-container">
+                            <!-- Filters Dropdowns -->
+                            <div class="sort-dropdown" id="quizGradeDropdown">
+                                <button class="sort-dropdown-toggle" id="quizGradeDropdownToggle">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    <span class="sort-dropdown-info">
+                                        <span class="sort-dropdown-name" id="selectedQuizGradeName">All Grades</span>
+                                    </span>
+                                    <i class="fas fa-chevron-down" style="margin-left: auto; font-size: 0.9em;"></i>
+                                </button>
+                                <div class="sort-dropdown-menu" id="quizGradeDropdownMenu">
+                                    <button class="sort-dropdown-option" data-quiz-grade="all" onclick="filterMyQuizzesDropdown('grade', 'all')">
+                                        <div class="sort-dropdown-info">
+                                            <span class="sort-dropdown-name">All Grades</span>
+                                        </div>
+                                        <span class="sort-dropdown-active-badge" id="allQuizGradesBadge">ALL</span>
+                                    </button>
+                                    <button class="sort-dropdown-option" data-quiz-grade="7" onclick="filterMyQuizzesDropdown('grade', '7')">
+                                        <div class="sort-dropdown-info">
+                                            <span class="sort-dropdown-name">Grade 7</span>
+                                        </div>
+                                        <span class="sort-dropdown-active-badge" id="grade7Badge" style="display: none;">SELECTED</span>
+                                    </button>
+                                    <button class="sort-dropdown-option" data-quiz-grade="8" onclick="filterMyQuizzesDropdown('grade', '8')">
+                                        <div class="sort-dropdown-info">
+                                            <span class="sort-dropdown-name">Grade 8</span>
+                                        </div>
+                                        <span class="sort-dropdown-active-badge" id="grade8Badge" style="display: none;">SELECTED</span>
+                                    </button>
+                                    <button class="sort-dropdown-option" data-quiz-grade="9" onclick="filterMyQuizzesDropdown('grade', '9')">
+                                        <div class="sort-dropdown-info">
+                                            <span class="sort-dropdown-name">Grade 9</span>
+                                        </div>
+                                        <span class="sort-dropdown-active-badge" id="grade9Badge" style="display: none;">SELECTED</span>
+                                    </button>
+                                    <button class="sort-dropdown-option" data-quiz-grade="10" onclick="filterMyQuizzesDropdown('grade', '10')">
+                                        <div class="sort-dropdown-info">
+                                            <span class="sort-dropdown-name">Grade 10</span>
+                                        </div>
+                                        <span class="sort-dropdown-active-badge" id="grade10Badge" style="display: none;">SELECTED</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Section Filter Dropdown -->
+                            <div class="sort-dropdown section-dropdown" id="quizSectionDropdown">
+                                <button class="sort-dropdown-toggle" id="quizSectionDropdownToggle">
+                                    <i class="fas fa-layer-group"></i>
+                                    <span class="sort-dropdown-info">
+                                        <span class="sort-dropdown-name" id="selectedQuizSectionName">All Sections</span>
+                                    </span>
+                                    <i class="fas fa-chevron-down" style="margin-left: auto; font-size: 0.9em;"></i>
+                                </button>
+                                <div class="sort-dropdown-menu section-dropdown-menu" id="quizSectionDropdownMenu">
+                                    <button class="sort-dropdown-option" data-quiz-section="all" onclick="filterMyQuizzesDropdown('section', 'all')">
+                                        <div class="sort-dropdown-info">
+                                            <span class="sort-dropdown-name">All Sections</span>
+                                        </div>
+                                        <span class="sort-dropdown-active-badge" id="allQuizSectionsBadge">ALL</span>
+                                    </button>
+                                    <!-- Section options will be dynamically added here -->
+                                </div>
+                            </div>
+
+                            <!-- Status Filter Dropdown -->
+                            <div class="sort-dropdown status-dropdown" id="quizStatusDropdown">
+                                <button class="sort-dropdown-toggle" id="quizStatusDropdownToggle">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span class="sort-dropdown-info">
+                                        <span class="sort-dropdown-name" id="selectedQuizStatusName">All Status</span>
+                                    </span>
+                                    <i class="fas fa-chevron-down" style="margin-left: auto; font-size: 0.9em;"></i>
+                                </button>
+                                <div class="sort-dropdown-menu status-dropdown-menu" id="quizStatusDropdownMenu">
+                                    <button class="sort-dropdown-option" data-quiz-status="all" onclick="filterMyQuizzesDropdown('status', 'all')">
+                                        <div class="sort-dropdown-info">
+                                            <span class="sort-dropdown-name">All Status</span>
+                                        </div>
+                                        <span class="sort-dropdown-active-badge" id="allQuizStatusBadge">ALL</span>
+                                    </button>
+                                    <button class="sort-dropdown-option" data-quiz-status="active" onclick="filterMyQuizzesDropdown('status', 'active')">
+                                        <div class="sort-dropdown-info">
+                                            <span class="sort-dropdown-name">Active</span>
+                                        </div>
+                                        <span class="sort-dropdown-active-badge" id="activeStatusBadge" style="display: none;">SELECTED</span>
+                                    </button>
+                                    <button class="sort-dropdown-option" data-quiz-status="completed" onclick="filterMyQuizzesDropdown('status', 'completed')">
+                                        <div class="sort-dropdown-info">
+                                            <span class="sort-dropdown-name">Completed</span>
+                                        </div>
+                                        <span class="sort-dropdown-active-badge" id="completedStatusBadge" style="display: none;">SELECTED</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quiz-section">
+                    <h4><i class="fas fa-list"></i> My Created Quizzes</h4>
+
+                    <!-- Quiz Grid -->
+                    <div id="quizGrid" class="quiz-grid">
+                        <!-- Quizzes will be loaded here -->
+                        <div class="no-quizzes">
+                            <i class="fas fa-clipboard-list"></i>
+                            <h5>No quizzes yet</h5>
+                            <p>Switch to the Create Quiz tab to generate your first quiz</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Tab -->
+            <div id="resultsTab" class="tab-content">
+                <!-- Search and Filter Section -->
+                <div class="search-filter-section">
+                    <div class="search-container">
+                        <div class="filter-row">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" placeholder="Search results..." id="resultSearchInput" onkeyup="filterResults()">
+                            </div>
+                        </div>
+                        
+                        <div class="filter-tabs-container">
+                            <!-- Quiz Selection Dropdown -->
+                            <div class="sort-dropdown" id="resultQuizDropdown">
+                                <button class="sort-dropdown-toggle" id="resultQuizDropdownToggle">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span class="sort-dropdown-info">
+                                        <span class="sort-dropdown-name" id="selectedResultQuizName">Select Quiz</span>
+                                    </span>
+                                    <i class="fas fa-chevron-down" style="margin-left: auto; font-size: 0.9em;"></i>
+                                </button>
+                                <div class="sort-dropdown-menu" id="resultQuizDropdownMenu">
+                                    <button class="sort-dropdown-option" data-result-quiz="all" onclick="filterResultsDropdown('quiz', 'all')">
+                                        <div class="sort-dropdown-info">
+                                            <span class="sort-dropdown-name">All Quizzes</span>
+                                        </div>
+                                        <span class="sort-dropdown-active-badge" id="allResultQuizzesBadge">ALL</span>
+                                    </button>
+                                    <!-- Quiz options will be dynamically added here -->
+                                </div>
+                            </div>
+
+                            <!-- Grade Level Filter Dropdown -->
+                            <div class="sort-dropdown" id="resultGradeDropdown">
+                                <button class="sort-dropdown-toggle" id="resultGradeDropdownToggle">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    <span class="sort-dropdown-info">
+                                        <span class="sort-dropdown-name" id="selectedResultGradeName">All Grades</span>
+                                    </span>
+                                    <i class="fas fa-chevron-down" style="margin-left: auto; font-size: 0.9em;"></i>
+                                </button>
+                                <div class="sort-dropdown-menu" id="resultGradeDropdownMenu">
+                                    <button class="sort-dropdown-option" data-result-grade="all" onclick="filterResultsDropdown('grade', 'all')">
+                                        <div class="sort-dropdown-info">
+                                            <span class="sort-dropdown-name">All Grades</span>
+                                        </div>
+                                        <span class="sort-dropdown-active-badge" id="allResultGradesBadge">ALL</span>
+                                    </button>
+                                    <button class="sort-dropdown-option" data-result-grade="7" onclick="filterResultsDropdown('grade', '7')">
+                                        <div class="sort-dropdown-info">
+                                            <span class="sort-dropdown-name">Grade 7</span>
+                                        </div>
+                                        <span class="sort-dropdown-active-badge" id="resultGrade7Badge" style="display: none;">SELECTED</span>
+                                    </button>
+                                    <button class="sort-dropdown-option" data-result-grade="8" onclick="filterResultsDropdown('grade', '8')">
+                                        <div class="sort-dropdown-info">
+                                            <span class="sort-dropdown-name">Grade 8</span>
+                                        </div>
+                                        <span class="sort-dropdown-active-badge" id="resultGrade8Badge" style="display: none;">SELECTED</span>
+                                    </button>
+                                    <button class="sort-dropdown-option" data-result-grade="9" onclick="filterResultsDropdown('grade', '9')">
+                                        <div class="sort-dropdown-info">
+                                            <span class="sort-dropdown-name">Grade 9</span>
+                                        </div>
+                                        <span class="sort-dropdown-active-badge" id="resultGrade9Badge" style="display: none;">SELECTED</span>
+                                    </button>
+                                    <button class="sort-dropdown-option" data-result-grade="10" onclick="filterResultsDropdown('grade', '10')">
+                                        <div class="sort-dropdown-info">
+                                            <span class="sort-dropdown-name">Grade 10</span>
+                                        </div>
+                                        <span class="sort-dropdown-active-badge" id="resultGrade10Badge" style="display: none;">SELECTED</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Section Filter Dropdown -->
+                            <div class="sort-dropdown section-dropdown" id="resultSectionDropdown">
+                                <button class="sort-dropdown-toggle" id="resultSectionDropdownToggle">
+                                    <i class="fas fa-layer-group"></i>
+                                    <span class="sort-dropdown-info">
+                                        <span class="sort-dropdown-name" id="selectedResultSectionName">All Sections</span>
+                                    </span>
+                                    <i class="fas fa-chevron-down" style="margin-left: auto; font-size: 0.9em;"></i>
+                                </button>
+                                <div class="sort-dropdown-menu section-dropdown-menu" id="resultSectionDropdownMenu">
+                                    <button class="sort-dropdown-option" data-result-section="all" onclick="filterResultsDropdown('section', 'all')">
+                                        <div class="sort-dropdown-info">
+                                            <span class="sort-dropdown-name">All Sections</span>
+                                        </div>
+                                        <span class="sort-dropdown-active-badge" id="allResultSectionsBadge">ALL</span>
+                                    </button>
+                                    <!-- Section options will be dynamically added here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quiz-section">
+                    <h4><i class="fas fa-chart-bar"></i> Quiz Results</h4>
+
+                    <!-- Results Table -->
+                    <div id="resultsContainer" style="margin-top: 20px;">
+                        <!-- Results will be loaded here -->
+                        <div class="no-quizzes">
+                            <i class="fas fa-chart-line"></i>
+                            <h5>No results to display</h5>
+                            <p>Select a quiz to view student performance</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Quiz Modal -->
+<div id="assignModal" class="modal assign-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-cog"></i> Configure & Save Quiz</h3>
+            <span class="close-modal" onclick="closeAssignModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Quiz Title</label>
+                <input type="text" id="quizTitle" class="question-input" placeholder="Enter quiz title" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Subject/Topic</label>
+                <input type="text" id="assignTopic" class="question-input" readonly disabled placeholder="Auto-detected subject">
+                <small>Subject is automatically detected from your lesson</small>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Time Limit (minutes)</label>
+                        <input type="number" id="quizTimeLimit" class="question-input" value="30" min="1" max="180" required>
+                        <small>Maximum time allowed for the quiz</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Points per Question</label>
+                        <input type="number" id="quizPointsPerItem" class="question-input" value="1" min="1" max="10" required>
+                        <small>Each correct answer = this many points</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Grade Level</label>
+                        <select id="assignGradeLevel" class="question-input" required>
+                            <option value="7">Grade 7</option>
+                            <option value="8">Grade 8</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Section</label>
+                        <select id="assignSection" class="question-input" required>
+                            <option value="">Select Section</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Quarter</label>
+                        <input type="text" id="assignQuarter" class="question-input" readonly disabled placeholder="Auto-detected quarter">
+                        <small>Quarter is automatically detected from your lesson</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Due Date & Time</label>
+                        <input type="datetime-local" id="dueDate" class="question-input" required>
+                        <small>Select a future date and time for the quiz deadline</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Instructions (Optional)</label>
+                <textarea id="quizInstructions" class="question-input" rows="3" placeholder="Enter any special instructions for students"></textarea>
+            </div>
+            
+            <!-- Quiz Summary -->
+            <div class="quiz-summary">
+                <h6><i class="fas fa-calculator"></i> Quiz Summary</h6>
+                <div class="row">
+                    <div class="col-6">
+                        <small>Number of Questions:</small>
+                        <strong><span id="summaryQuestionCount">0</span></strong>
+                    </div>
+                    <div class="col-6">
+                        <small>Points per Question:</small>
+                        <strong><span id="summaryPointsPerItem">1</span></strong>
+                    </div>
+                    <div class="col-6">
+                        <small>Time Limit:</small>
+                        <strong><span id="summaryTimeLimit">30</span> minutes</strong>
+                    </div>
+                    <div class="col-6">
+                        <small>Total Points:</small>
+                        <strong><span id="summaryTotalPoints">0</span></strong>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn-submit-assign" onclick="confirmAndAssignQuiz()">
+                <i class="fas fa-save"></i> Save & Assign Quiz
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- View Quiz Modal -->
+<div id="viewQuizModal" class="modal view-quiz-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-eye"></i> <span id="viewQuizTitle"></span></h3>
+            <span class="close-modal" onclick="closeViewQuizModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="viewQuizContent">
+                <!-- Quiz content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Answer Review Modal -->
+<div id="answerReviewModal" class="modal answer-review-modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3><i class="fas fa-clipboard-check"></i> Student Answers Review</h3>
+            <span class="close-modal" onclick="closeAnswerReviewModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="answerReviewContent">
+                <!-- Answer review content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Non-Submitted Students Modal -->
+<div id="nonSubmittedModal" class="modal non-submitted-modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-check"></i> <span id="nonSubmittedTitle">Submission Status</span></h3>
+            <span class="close-modal" onclick="closeNonSubmittedModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="submission-stats">
+                <div class="stat-box submitted">
+                    <div class="stat-number" id="completedCount">0</div>
+                    <div class="stat-label">Students Submitted</div>
+                </div>
+                <div class="stat-box pending">
+                    <div class="stat-number" id="pendingCount">0</div>
+                    <div class="stat-label">Students Pending</div>
+                </div>
+            </div>
+            
+            <div class="non-submitted-content">
+                <h5><i class="fas fa-hourglass-end"></i> Students Yet to Submit</h5>
+                <div id="nonSubmittedList">
+                    <!-- Non-submitted students will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reminder Modal -->
+<div id="reminderModal" class="modal reminder-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-bell"></i> Send Reminder</h3>
+            <span class="close-modal" onclick="closeReminderModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="reminderStudentInfo" style="margin-bottom: 15px;">
+                <!-- Student info will be populated here -->
+            </div>
+            
+            <div class="reminder-options" id="reminderOptions">
+                <div class="reminder-option" onclick="selectReminderOption('default')">
+                    <input type="radio" name="reminderType" id="reminderDefault" value="default" checked>
+                    <label for="reminderDefault">
+                        <strong>Default Reminder</strong>
+                        <small>"Please complete your pending quiz. It's still available for submission."</small>
+                    </label>
+                </div>
+                <div class="reminder-option" onclick="selectReminderOption('urgent')">
+                    <input type="radio" name="reminderType" id="reminderUrgent" value="urgent">
+                    <label for="reminderUrgent">
+                        <strong>Urgent Reminder</strong>
+                        <small>"This is a reminder that your quiz is due soon. Please submit it as soon as possible."</small>
+                    </label>
+                </div>
+                <div class="reminder-option" onclick="selectReminderOption('custom')">
+                    <input type="radio" name="reminderType" id="reminderCustom" value="custom">
+                    <label for="reminderCustom">
+                        <strong>Custom Message</strong>
+                        <small>Write your own reminder message</small>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="custom-message-area" id="customMessageArea">
+                <textarea id="customReminderMessage" placeholder="Enter your custom reminder message here..."></textarea>
+            </div>
+            
+            <button class="btn-send-reminder" onclick="sendReminder()">
+                <i class="fas fa-paper-plane"></i> Send Reminder
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    let uploadedFile = null;
+    let editModeFile = null;
+    let extractedTopics = [];
+    let currentQuiz = null;
+    let teacherInfo = null;
+    let userRole = null;
+    let myQuizzes = [];
+    let allResults = [];
+    let currentQuizId = null;
+    let currentStudentId = null;
+    let pendingStudents = [];
+    let currentEditQuizId = null;
+    let refreshCounts = {};
+    let isEditMode = false;
+
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const topicsFound = document.getElementById('topicsFound');
+    const topicsList = document.getElementById('topicsList');
+    const topicFilter = document.getElementById('topicFilter');
+    const teacherActions = document.getElementById('teacherActions');
+    const teacherInfoDiv = document.getElementById('teacherInfo');
+    const teacherName = document.getElementById('teacherName');
+    const teacherClasses = document.getElementById('teacherClasses');
+    const assignSection = document.getElementById('assignSection');
+    const editModeIndicator = document.getElementById('editModeIndicator');
+    
+    // Create hidden file input for edit mode
+    if (!document.getElementById('editModeFileInput')) {
+        const editFileInput = document.createElement('input');
+        editFileInput.type = 'file';
+        editFileInput.id = 'editModeFileInput';
+        editFileInput.accept = '.pdf,.docx,.txt';
+        editFileInput.style.display = 'none';
+        document.body.appendChild(editFileInput);
+        editFileInput.addEventListener('change', () => {
+            if (editFileInput.files[0]) {
+                handleEditModeFileSelect(editFileInput.files[0]);
+            }
+        });
+    }
+    
+    // Hidden field for detected quarter
+    if (!document.getElementById('detectedQuarter')) {
+        const hiddenField = document.createElement('input');
+        hiddenField.type = 'hidden';
+        hiddenField.id = 'detectedQuarter';
+        document.body.appendChild(hiddenField);
+    }
+
+    // Check user role on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        checkUserRole();
+        loadTeacherInfo();
+        
+        // Setup dropdown toggles
+        setupDropdowns();
+    });
+
+    // Setup dropdown functionality
+    function setupDropdowns() {
+        const setupDropdown = (toggleId, menuId) => {
+            const toggle = document.getElementById(toggleId);
+            const menu = document.getElementById(menuId);
+            
+            if (toggle && menu) {
+                toggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.sort-dropdown-menu.show').forEach(m => {
+                        if (m.id !== menuId) m.classList.remove('show');
+                    });
+                    menu.classList.toggle('show');
+                });
+            }
+        };
+        
+        setupDropdown('quizGradeDropdownToggle', 'quizGradeDropdownMenu');
+        setupDropdown('quizSectionDropdownToggle', 'quizSectionDropdownMenu');
+        setupDropdown('quizStatusDropdownToggle', 'quizStatusDropdownMenu');
+        setupDropdown('resultQuizDropdownToggle', 'resultQuizDropdownMenu');
+        setupDropdown('resultGradeDropdownToggle', 'resultGradeDropdownMenu');
+        setupDropdown('resultSectionDropdownToggle', 'resultSectionDropdownMenu');
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.sort-dropdown-menu.show').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        });
+    }
+
+    // Function to enter edit mode
+    function enterEditMode() {
+        isEditMode = true;
+        
+        document.querySelector('.upload-section').style.display = 'none';
+        document.querySelector('.config-section').style.display = 'none';
+        document.querySelector('.generate-section').style.display = 'none';
+        
+        editModeIndicator.style.display = 'flex';
+        
+        const generateBtn = document.getElementById('generateBtn');
+        generateBtn.innerHTML = '<i class="fas fa-save"></i> Update Quiz';
+        generateBtn.onclick = updateEditedQuiz;
+    }
+
+    // Function to exit edit mode
+    function exitEditMode() {
+        isEditMode = false;
+        currentEditQuizId = null;
+        
+        document.querySelector('.upload-section').style.display = 'block';
+        document.querySelector('.config-section').style.display = 'block';
+        document.querySelector('.generate-section').style.display = 'block';
+        
+        editModeIndicator.style.display = 'none';
+        
+        const generateBtn = document.getElementById('generateBtn');
+        generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Quiz';
+        generateBtn.onclick = handleGenerate;
+        
+        document.getElementById('quizResult').style.display = 'none';
+        currentQuiz = null;
+        
+        refreshCounts = {};
+    }
+
+    // Tab switching function
+    function switchTab(tabName, event) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        if (tabName === 'create') {
+            document.getElementById('createTab').classList.add('active');
+            if (!isEditMode) {
+                document.querySelector('.upload-section').style.display = 'block';
+                document.querySelector('.config-section').style.display = 'block';
+                document.querySelector('.generate-section').style.display = 'block';
+                editModeIndicator.style.display = 'none';
+            }
+        } else {
+            if (isEditMode) {
+                exitEditMode();
+            }
+            if (tabName === 'my-quizzes') {
+                document.getElementById('myQuizzesTab').classList.add('active');
+                loadMyQuizzes();
+            } else if (tabName === 'results') {
+                document.getElementById('resultsTab').classList.add('active');
+                loadQuizzesForResults();
+            }
+        }
+    }
+
+    async function checkUserRole() {
+        try {
+            const response = await fetch('/api/current-user');
+            const data = await response.json();
+            
+            if (data.success) {
+                userRole = data.user.role;
+                if (userRole === 'Teacher') {
+                    teacherActions.style.display = 'flex';
+                }
+            }
+        } catch (error) {
+            console.error('Error checking user role:', error);
+        }
+    }
+
+    async function loadTeacherInfo() {
+        try {
+            const response = await fetch('/api/teacher-info');
+            const data = await response.json();
+            
+            if (data.success) {
+                teacherInfo = data;
+                teacherName.textContent = data.name;
+                
+                const classes = data.assignments.map(a => `Grade ${a.grade_level} - ${a.section}`).join(', ');
+                teacherClasses.textContent = classes;
+                teacherInfoDiv.style.display = 'block';
+                
+                populateTeacherSections();
+            }
+        } catch (error) {
+            console.error('Error loading teacher info:', error);
+        }
+    }
+
+    function populateTeacherSections() {
+        if (!teacherInfo || !teacherInfo.assignments) return;
+        
+        assignSection.innerHTML = '<option value="">Select Section</option>';
+        
+        const gradeLevel = document.getElementById('assignGradeLevel').value;
+        const filtered = teacherInfo.assignments.filter(a => a.grade_level == gradeLevel);
+        
+        filtered.forEach(assignment => {
+            const option = document.createElement('option');
+            option.value = assignment.section;
+            option.textContent = assignment.section;
+            assignSection.appendChild(option);
+        });
+
+        // Populate quiz section dropdown
+        populateQuizSectionDropdown();
+        populateResultSectionDropdown();
+    }
+
+    function populateQuizSectionDropdown() {
+        if (!teacherInfo || !teacherInfo.assignments) return;
+        
+        const sectionMenu = document.getElementById('quizSectionDropdownMenu');
+        if (!sectionMenu) return;
+        
+        const options = sectionMenu.querySelectorAll('[data-quiz-section]');
+        options.forEach(option => {
+            if (option.dataset.quizSection !== 'all') {
+                option.remove();
+            }
+        });
+        
+        const addedSections = new Set();
+        teacherInfo.assignments.forEach(assignment => {
+            if (!addedSections.has(assignment.section)) {
+                addedSections.add(assignment.section);
+                const option = document.createElement('button');
+                option.className = 'sort-dropdown-option';
+                option.setAttribute('data-quiz-section', assignment.section);
+                option.setAttribute('onclick', `filterMyQuizzesDropdown('section', '${assignment.section}')`);
+                
+                option.innerHTML = `
+                    <div class="sort-dropdown-info">
+                        <span class="sort-dropdown-name">${assignment.section}</span>
+                    </div>
+                    <span class="sort-dropdown-active-badge" style="display: none;">SELECTED</span>
+                `;
+                
+                sectionMenu.appendChild(option);
+            }
+        });
+    }
+
+    function populateResultSectionDropdown() {
+        if (!teacherInfo || !teacherInfo.assignments) return;
+        
+        const sectionMenu = document.getElementById('resultSectionDropdownMenu');
+        if (!sectionMenu) return;
+        
+        const options = sectionMenu.querySelectorAll('[data-result-section]');
+        options.forEach(option => {
+            if (option.dataset.resultSection !== 'all') {
+                option.remove();
+            }
+        });
+        
+        const addedSections = new Set();
+        teacherInfo.assignments.forEach(assignment => {
+            if (!addedSections.has(assignment.section)) {
+                addedSections.add(assignment.section);
+                const option = document.createElement('button');
+                option.className = 'sort-dropdown-option';
+                option.setAttribute('data-result-section', assignment.section);
+                option.setAttribute('onclick', `filterResultsDropdown('section', '${assignment.section}')`);
+                
+                option.innerHTML = `
+                    <div class="sort-dropdown-info">
+                        <span class="sort-dropdown-name">${assignment.section}</span>
+                    </div>
+                    <span class="sort-dropdown-active-badge" style="display: none;">SELECTED</span>
+                `;
+                
+                sectionMenu.appendChild(option);
+            }
+        });
+    }
+
+    document.getElementById('assignGradeLevel').addEventListener('change', populateTeacherSections);
+
+    // Upload handlers
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.background = '#eef0ff';
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.background = '#f8f9fe';
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.background = '#f8f9fe';
+        if (e.dataTransfer.files.length) {
+            handleFileSelect(e.dataTransfer.files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files[0]) {
+            handleFileSelect(fileInput.files[0]);
+        }
+    });
+
+    function handleFileSelect(file) {
+        uploadedFile = file;
+        fileName.textContent = file.name;
+        fileInfo.style.display = 'block';
+        
+        // Update button text based on whether a quiz already exists
+        const generateBtn = document.getElementById('generateBtn');
+        if (currentQuiz) {
+            generateBtn.innerHTML = '<i class="fas fa-redo"></i> Regenerate';
+            // IMPORTANT: Reset onclick handler to handleGenerate for regeneration
+            generateBtn.onclick = handleGenerate;
+        } else {
+            generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Quiz';
+            generateBtn.onclick = handleGenerate;
+        }
+        
+        analyzeLesson();
+    }
+
+    async function analyzeLesson() {
+        if (!uploadedFile) return;
+
+        const formData = new FormData();
+        formData.append('file', uploadedFile);
+
+        try {
+            const response = await fetch('/api/analyze-lesson', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || data.error) {
+                // Display validation error clearly to user
+                showError(data.error || 'Failed to analyze the lesson plan. Please try a different file.');
+                console.warn('File validation failed:', data.error);
+                return;
+            }
+
+            if (response.ok && data.topics) {
+                const topics = data.topics;
+                extractedTopics = Object.keys(topics).sort((a, b) => topics[b].percentage - topics[a].percentage);
+                
+                let topicsHTML = '';
+
+                extractedTopics.slice(0, 5).forEach(topic => {
+                    const percentage = topics[topic].percentage.toFixed(1);
+                    topicsHTML += `<span class="topic-tag">${topic} <strong>${percentage}%</strong></span>`;
+                });
+
+                if (data.detected_subject) {
+                    updateSubjectDisplay(data.detected_subject);
+                }
+                
+                if (data.detected_quarter) {
+                    const quarterColors = {
+                        'First Quarter': '#5e72e4',
+                        'Second Quarter': '#2dce89',
+                        'Third Quarter': '#f5365c',
+                        'Fourth Quarter': '#ffb300'
+                    };
+                    const quarterColor = quarterColors[data.detected_quarter] || '#5e72e4';
+                    
+                    topicsHTML += `<span class="topic-tag" style="background: ${quarterColor};">
+                        <i class="fas fa-calendar-alt"></i> ${data.detected_quarter}
+                    </span>`;
+                    
+                    document.getElementById('detectedQuarter').value = data.detected_quarter;
+                    showQuarterDetection(data.detected_quarter);
+                    updateQuarterDisplay(data.detected_quarter);
+                }
+
+                topicsList.innerHTML = topicsHTML;
+                topicsFound.style.display = 'block';
+
+                populateTopicFilter(topics);
+            }
+        } catch (error) {
+            showError('Error analyzing lesson: ' + error.message);
+        }
+    }
+
+    function showQuarterDetection(detectedQuarter) {
+        // Silently set the quarter without showing detection message
+        updateQuarterDisplay(detectedQuarter);
+    }
+
+    function updateQuarterDisplay(quarter) {
+        const assignQuarter = document.getElementById('assignQuarter');
+        if (assignQuarter) {
+            const quarterMap = {
+                'First Quarter': '1st Quarter',
+                'Second Quarter': '2nd Quarter',
+                'Third Quarter': '3rd Quarter',
+                'Fourth Quarter': '4th Quarter'
+            };
+            const mappedQuarter = quarterMap[quarter] || quarter;
+            
+            // Set the value directly since it's now a read-only input field
+            assignQuarter.value = mappedQuarter;
+        }
+    }
+
+    function updateSubjectDisplay(subject) {
+        const assignTopic = document.getElementById('assignTopic');
+        if (assignTopic && subject) {
+            // Set the value directly since it's now a read-only input field
+            assignTopic.value = subject;
+        }
+    }
+
+    function verifyQuarter(isCorrect) {
+        // Quarter verification removed
+    }
+
+    function submitQuarterCorrection() {
+        const correctQuarter = document.getElementById('correctQuarterSelect').value;
+        const detectedQuarter = document.getElementById('detectedQuarter').value;
+        
+        logQuarterDetection(detectedQuarter, false, correctQuarter);
+        
+        document.getElementById('detectedQuarter').value = correctQuarter;
+        updateQuarterDisplay(correctQuarter);
+        
+        const quarterBadge = document.querySelector('.topic-tag[style*="calendar-alt"]');
+        if (quarterBadge) {
+            quarterBadge.innerHTML = `<i class="fas fa-calendar-alt"></i> ${correctQuarter}`;
+        }
+        
+        showSuccess(`Quarter updated to ${correctQuarter}. Thank you for your feedback!`);
+        document.getElementById('quarterCorrection').style.display = 'none';
+    }
+
+    async function logQuarterDetection(detected, isCorrect, corrected = null) {
+        try {
+            await fetch('/api/log-quarter-detection', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    detected_quarter: detected,
+                    is_correct: isCorrect,
+                    corrected_quarter: corrected,
+                    file_name: document.getElementById('fileName').textContent,
+                    timestamp: new Date().toISOString()
+                })
+            });
+        } catch (error) {
+            console.error('Error logging quarter detection:', error);
+        }
+    }
+
+    function populateTopicFilter(topics) {
+        topicFilter.innerHTML = '<option value="">All Topics</option>';
+        
+        const sortedTopics = Object.keys(topics)
+            .sort((a, b) => topics[b].percentage - topics[a].percentage);
+        
+        sortedTopics.forEach(topic => {
+            const option = document.createElement('option');
+            option.value = topic;
+            option.textContent = `${topic} (${topics[topic].percentage.toFixed(1)}%)`;
+            topicFilter.appendChild(option);
+        });
+    }
+
+    async function handleGenerate() {
+        if (!uploadedFile) {
+            showError('Please upload a lesson plan file first');
+            return;
+        }
+
+        const numQuestions = parseInt(document.getElementById('numQuestions').value);
+        const topicFilterValue = document.getElementById('topicFilter').value;
+        const detectedQuarter = document.getElementById('detectedQuarter').value;
+
+        if (!detectedQuarter) {
+            showError('Please wait for quarter detection to complete or upload a valid science lesson plan');
+            return;
+        }
+
+        showLoading(true);
+
+        const formData = new FormData();
+        formData.append('file', uploadedFile);
+        formData.append('num_questions', numQuestions);
+        formData.append('topic_filter', topicFilterValue);
+        formData.append('quarter', detectedQuarter);
+
+        try {
+            const response = await fetch('/api/generate-quiz', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.quiz) {
+                currentQuiz = data.quiz;
+                displayQuizResults(data, detectedQuarter);
+            } else {
+                // Show specific validation error message
+                const errorMsg = data.error || 'Unable to generate quiz from this file. Please upload a proper Science lesson plan.';
+                showError(errorMsg);
+                console.warn('Quiz generation validation failed:', errorMsg);
+            }
+        } catch (error) {
+            showError('Error generating quiz: ' + error.message);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function displayQuizResults(data, detectedQuarter) {
+        const resultContent = document.getElementById('resultContent');
+        const resultStats = document.getElementById('resultStats');
+        const resultTitle = document.getElementById('resultTitle');
+
+        resultTitle.innerHTML = '<i class="fas fa-star"></i> Generated Quiz - Ready to Customize';
+
+        resultStats.innerHTML = `
+            <div class="stat">
+                <div class="label">Questions Generated</div>
+                <div class="value">${data.count}</div>
+            </div>
+            <div class="stat">
+                <div class="label">Detected Quarter</div>
+                <div class="value">${detectedQuarter || 'Auto-detected'}</div>
+            </div>
+            <div class="stat">
+                <div class="label">Status</div>
+                <div class="value">Editing Mode</div>
+            </div>
+        `;
+
+        const quarterCounts = {};
+        data.quiz.forEach(q => {
+            quarterCounts[q.quarter] = (quarterCounts[q.quarter] || 0) + 1;
+        });
+        
+        if (Object.keys(quarterCounts).length > 1) {
+            let distHTML = '<div class="stat" style="min-width: 100%; margin-top: 10px;"><div class="label">Quarter Distribution:</div><div style="display: flex; gap: 10px; flex-wrap: wrap;">';
+            for (const [quarter, count] of Object.entries(quarterCounts)) {
+                distHTML += `<span style="background: #e9ecef; padding: 3px 10px; border-radius: 20px; font-size: 0.85em;">${quarter}: ${count}</span>`;
+            }
+            distHTML += '</div></div>';
+            resultStats.innerHTML += distHTML;
+        }
+
+        // Store the generated quiz for editing
+        currentQuiz = data.quiz;
+        isEditMode = true;
+        refreshCounts = {};
+
+        let html = '';
+        data.quiz.forEach((q, index) => {
+            if (!refreshCounts[index]) {
+                refreshCounts[index] = 0;
+            }
+            
+            html += `
+                <div class="question-card editing-mode" data-question-index="${index}">
+                    <div class="question-meta">
+                        <div class="question-header">
+                            <div class="question-title">
+                                <span class="badge-topic">${q.topic}</span>
+                                <span class="badge-grade">Grade ${q.grade}</span>
+                                <span class="badge-quarter">${q.quarter}</span>
+                            </div>
+                            <div class="refresh-container">
+                                <span class="refresh-count">Refreshed: ${refreshCounts[index]}x</span>
+                                <button class="btn-remove-question" onclick="removeQuestion(${index})" title="Remove question">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="question-text">
+                        <strong>${index + 1}.</strong>
+                        <textarea class="edit-question-input" onchange="updateQuestion(${index}, 'question', this.value)">${q.question}</textarea>
+                    </div>
+                    <div class="choices">
+            `;
+            
+            q.choices.forEach((choice, i) => {
+                const isCorrect = i === q.correct_answer;
+                const correctClass = isCorrect ? 'correct-answer' : '';
+                html += `
+                    <div class="choice ${correctClass}">
+                        <input type="radio" name="correct_${index}" ${isCorrect ? 'checked' : ''} 
+                               onchange="setCorrectAnswer(${index}, ${i})">
+                        <input type="text" class="edit-choice-input" value="${choice}" 
+                               onchange="updateChoice(${index}, ${i}, this.value)">
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                    <div class="edit-actions">
+                        <button class="btn-add-choice" onclick="addChoice(${index})">
+                            <i class="fas fa-plus"></i> Add Choice
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `
+            <div class="add-question-section">
+                <button class="btn-add-question" onclick="addNewQuestion()">
+                    <i class="fas fa-plus-circle"></i> Add Custom Question
+                </button>
+            </div>
+        `;
+
+        resultContent.innerHTML = html;
+        document.getElementById('quizResult').style.display = 'block';
+        document.getElementById('quizResult').scrollIntoView({ behavior: 'smooth' });
+        
+        // Change button text
+        const generateBtn = document.getElementById('generateBtn');
+        generateBtn.innerHTML = '<i class="fas fa-save"></i> Save & Assign Quiz';
+        generateBtn.onclick = saveNewQuiz;
+    }
+
+    async function saveNewQuiz() {
+        // Validate that we have a quiz to save
+        if (!currentQuiz || currentQuiz.length === 0) {
+            showError('No quiz to save. Please generate a quiz first.');
+            return;
+        }
+
+        // Open the assignment modal with prepopulated values
+        showAssignModal();
+    }
+
+    // My Quizzes Functions
+    async function loadMyQuizzes() {
+        try {
+            const gradeFilter = getSelectedQuizGrade();
+            const sectionFilter = getSelectedQuizSection();
+            const statusFilter = getSelectedQuizStatus();
+            
+            let url = '/api/teacher/my-quizzes?';
+            if (gradeFilter && gradeFilter !== 'all') url += `grade_level=${gradeFilter}&`;
+            if (sectionFilter && sectionFilter !== 'all') url += `section=${sectionFilter}&`;
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.success) {
+                displayMyQuizzes(data.quizzes, gradeFilter, sectionFilter, statusFilter);
+            } else {
+                showError(data.error || 'Failed to load quizzes');
+            }
+        } catch (error) {
+            console.error('Error loading quizzes:', error);
+            showError('Error loading quizzes: ' + error.message);
+        }
+    }
+
+    function getSelectedQuizGrade() {
+        const selectedGradeName = document.getElementById('selectedQuizGradeName');
+        if (selectedGradeName) {
+            const gradeText = selectedGradeName.textContent;
+            if (gradeText === 'All Grades') return 'all';
+            return gradeText.replace('Grade ', '');
+        }
+        return 'all';
+    }
+
+    function getSelectedQuizSection() {
+        const selectedSectionName = document.getElementById('selectedQuizSectionName');
+        if (selectedSectionName) {
+            const sectionText = selectedSectionName.textContent;
+            if (sectionText === 'All Sections') return 'all';
+            return sectionText;
+        }
+        return 'all';
+    }
+
+    function getSelectedQuizStatus() {
+        const selectedStatusName = document.getElementById('selectedQuizStatusName');
+        if (selectedStatusName) {
+            const statusText = selectedStatusName.textContent.toLowerCase();
+            if (statusText === 'all status') return 'all';
+            return statusText;
+        }
+        return 'all';
+    }
+
+    function filterMyQuizzesDropdown(type, value) {
+        if (type === 'grade') {
+            const gradeName = document.getElementById('selectedQuizGradeName');
+            if (value === 'all') {
+                gradeName.textContent = 'All Grades';
+            } else {
+                gradeName.textContent = `Grade ${value}`;
+            }
+            
+            document.querySelectorAll('[data-quiz-grade]').forEach(btn => {
+                const badge = btn.querySelector('.sort-dropdown-active-badge');
+                if (btn.dataset.quizGrade === value) {
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+            
+            document.getElementById('quizGradeDropdownMenu').classList.remove('show');
+        } 
+        else if (type === 'section') {
+            const sectionName = document.getElementById('selectedQuizSectionName');
+            if (value === 'all') {
+                sectionName.textContent = 'All Sections';
+            } else {
+                sectionName.textContent = value;
+            }
+            
+            document.querySelectorAll('[data-quiz-section]').forEach(btn => {
+                const badge = btn.querySelector('.sort-dropdown-active-badge');
+                if (btn.dataset.quizSection === value) {
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+            
+            document.getElementById('quizSectionDropdownMenu').classList.remove('show');
+        } 
+        else if (type === 'status') {
+            const statusName = document.getElementById('selectedQuizStatusName');
+            if (value === 'all') {
+                statusName.textContent = 'All Status';
+            } else {
+                statusName.textContent = value.charAt(0).toUpperCase() + value.slice(1);
+            }
+            
+            document.querySelectorAll('[data-quiz-status]').forEach(btn => {
+                const badge = btn.querySelector('.sort-dropdown-active-badge');
+                if (btn.dataset.quizStatus === value) {
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+            
+            document.getElementById('quizStatusDropdownMenu').classList.remove('show');
+        }
+        
+        loadMyQuizzes();
+    }
+
+    function filterMyQuizzes() {
+        const searchTerm = document.getElementById('quizSearchInput').value.toLowerCase();
+        const quizCards = document.querySelectorAll('#quizGrid .quiz-card');
+        
+        quizCards.forEach(card => {
+            const title = card.querySelector('h3')?.textContent.toLowerCase() || '';
+            const topic = card.querySelector('.quiz-detail span:last-child')?.textContent.toLowerCase() || '';
+            
+            if (title.includes(searchTerm) || topic.includes(searchTerm)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    function displayMyQuizzes(quizzes, gradeFilter, sectionFilter, statusFilter) {
+        const quizGrid = document.getElementById('quizGrid');
+        
+        if (!quizGrid) {
+            console.error('quizGrid element not found');
+            return;
+        }
+        
+        let filteredQuizzes = quizzes || [];
+        
+        if (gradeFilter && gradeFilter !== 'all') {
+            filteredQuizzes = filteredQuizzes.filter(q => q.grade_level == gradeFilter);
+        }
+        if (sectionFilter && sectionFilter !== 'all') {
+            filteredQuizzes = filteredQuizzes.filter(q => q.section === sectionFilter);
+        }
+        if (statusFilter && statusFilter !== 'all') {
+            filteredQuizzes = filteredQuizzes.filter(q => q.status === statusFilter);
+        }
+        
+        if (!filteredQuizzes || filteredQuizzes.length === 0) {
+            quizGrid.innerHTML = `
+                <div class="no-quizzes">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h5>No quizzes found</h5>
+                    <p>Create a quiz using the Create Quiz tab to get started</p>
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '';
+        filteredQuizzes.forEach(quiz => {
+            const assignDate = new Date(quiz.assigned_date || quiz.created_at);
+            const dueDate = quiz.due_date ? new Date(quiz.due_date) : null;
+            
+            let dueText = 'No due date';
+            if (dueDate) {
+                const dateStr = dueDate.toLocaleDateString();
+                const timeStr = dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                dueText = `${dateStr} at ${timeStr}`;
+                const now = new Date();
+                if (dueDate < now) {
+                    dueText += ' (Overdue)';
+                }
+            }
+            
+            const canEdit = quiz.submission_count === 0;
+            
+            html += `
+                <div class="quiz-card ${!canEdit ? 'quiz-card-locked' : ''}">
+                    <div class="quiz-card-header">
+                        <h3>${quiz.quiz_title}</h3>
+                        <div class="quiz-meta">
+                            <span>Grade ${quiz.grade_level} - ${quiz.section}</span>
+                            <span>${quiz.quarter}</span>
+                        </div>
+                    </div>
+                    <div class="quiz-card-body">
+                        <div class="quiz-detail">
+                            <span class="label">Topic:</span>
+                            <span>${quiz.topic || 'General Science'}</span>
+                        </div>
+                        <div class="quiz-detail">
+                            <span class="label">Created:</span>
+                            <span>${assignDate.toLocaleDateString()}</span>
+                        </div>
+                        <div class="quiz-detail">
+                            <span class="label">Due:</span>
+                            <span>${dueText}</span>
+                        </div>
+                        <div class="quiz-stats">
+                            <div class="stat-item">
+                                <span class="stat-value">${quiz.total_items}</span>
+                                <span class="stat-label">Questions</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">${quiz.total_points}</span>
+                                <span class="stat-label">Points</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">${quiz.time_limit_minutes}</span>
+                                <span class="stat-label">Minutes</span>
+                            </div>
+                        </div>
+                        <div class="quiz-submission-info">
+                            <button class="submission-badge ${quiz.submission_count > 0 ? 'has-submissions' : 'no-submissions'}" onclick="showNonSubmittedStudents(${quiz.id}, '${quiz.quiz_title}', ${quiz.submission_count}, ${quiz.total_students})">
+                                <i class="fas ${quiz.submission_count > 0 ? 'fa-users' : 'fa-user-slash'}"></i>
+                                ${quiz.submission_count || 0}/${quiz.total_students || 0} students
+                            </button>
+                            ${!canEdit ? '<span class="locked-badge"><i class="fas fa-lock"></i> Locked (has submissions)</span>' : ''}
+                        </div>
+                        <div class="quiz-actions">
+                            <button class="btn-view" onclick="viewQuiz(${quiz.id})">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            ${canEdit ? `
+                            <button class="btn-edit" onclick="loadQuizForEditing(${quiz.id})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            ` : ''}
+                            <button class="btn-results" onclick="viewQuizResults(${quiz.id})">
+                                <i class="fas fa-chart-bar"></i> Results
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        quizGrid.innerHTML = html;
+    }
+
+    // Edit Quiz Functions
+    function loadQuizForEditing(quizId) {
+        currentEditQuizId = quizId;
+        refreshCounts = {};
+        
+        showToast('Loading quiz for editing...', 'info');
+        
+        fetch(`/api/quiz/${quizId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    editModeFile = null;
+                    const editFileInfo = document.getElementById('editFileInfo');
+                    if (editFileInfo) {
+                        editFileInfo.innerHTML = '';
+                    }
+                    
+                    const quiz = data.quiz;
+                    
+                    switchTab('create', {target: document.querySelectorAll('.tab-btn')[0]});
+                    
+                    enterEditMode();
+                    
+                    document.getElementById('quizTitle').value = quiz.quiz_title;
+                    document.getElementById('quizTimeLimit').value = quiz.time_limit_minutes;
+                    document.getElementById('quizPointsPerItem').value = quiz.points_per_item;
+                    document.getElementById('assignGradeLevel').value = quiz.grade_level;
+                    
+                    const quarterMap = {
+                        '1st Quarter': 'First Quarter',
+                        '2nd Quarter': 'Second Quarter',
+                        '3rd Quarter': 'Third Quarter',
+                        '4th Quarter': 'Fourth Quarter'
+                    };
+                    const detectedQuarter = quarterMap[quiz.quarter] || quiz.quarter;
+                    document.getElementById('detectedQuarter').value = detectedQuarter;
+                    
+                    populateTeacherSections();
+                    setTimeout(() => {
+                        document.getElementById('assignSection').value = quiz.section;
+                    }, 100);
+                    
+                    document.getElementById('assignQuarter').value = quiz.quarter;
+                    if (quiz.due_date) {
+                        // Convert ISO datetime to datetime-local format
+                        const dueDateTime = new Date(quiz.due_date);
+                        const year = dueDateTime.getFullYear();
+                        const month = String(dueDateTime.getMonth() + 1).padStart(2, '0');
+                        const day = String(dueDateTime.getDate()).padStart(2, '0');
+                        const hours = String(dueDateTime.getHours()).padStart(2, '0');
+                        const minutes = String(dueDateTime.getMinutes()).padStart(2, '0');
+                        document.getElementById('dueDate').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+                    }
+                    document.getElementById('quizInstructions').value = quiz.instructions || '';
+                    
+                    currentQuiz = quiz.quiz_data;
+                    
+                    if (currentQuiz && Array.isArray(currentQuiz)) {
+                        currentQuiz.forEach((_, index) => {
+                            refreshCounts[index] = 0;
+                        });
+                    }
+                    
+                    displayQuizForEditing(quiz);
+                    
+                    showSuccess('Quiz loaded for editing!');
+                    
+                    document.getElementById('quizResult').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    showError(data.error || 'Failed to load quiz');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading quiz for editing:', error);
+                showError('Error loading quiz: ' + error.message);
+            });
+    }
+
+    function displayQuizForEditing(quiz) {
+        const resultContent = document.getElementById('resultContent');
+        const resultStats = document.getElementById('resultStats');
+        const resultTitle = document.getElementById('resultTitle');
+
+        resultTitle.innerHTML = '<i class="fas fa-edit"></i> Editing Quiz';
+
+        resultStats.innerHTML = `
+            <div class="stat">
+                <div class="label">Questions</div>
+                <div class="value">${quiz.quiz_data.length}</div>
+            </div>
+            <div class="stat">
+                <div class="label">Quarter</div>
+                <div class="value">${quiz.quarter}</div>
+            </div>
+            <div class="stat">
+                <div class="label">Status</div>
+                <div class="value">Edit Mode</div>
+            </div>
+        `;
+
+        let html = '';
+
+        html += `
+            <div class="quiz-section" style="background: #f8f9fe; border: 1px dashed #ddd; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <h5 style="margin: 0 0 5px 0;"><i class="fas fa-file-upload"></i> Upload Lesson Plan for Refresh</h5>
+                        <p style="margin: 0; color: #888; font-size: 0.9em;">Upload your lesson plan file to enable question refresh with content alignment</p>
+                        <div id="editFileInfo" style="margin-top: 8px; color: #666; font-size: 0.9em;"></div>
+                    </div>
+                    <button type="button" class="btn-upload-edit" onclick="document.getElementById('editModeFileInput').click();" style="background: #5e72e4; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; white-space: nowrap;">
+                        <i class="fas fa-cloud-upload-alt"></i> Upload File
+                    </button>
+                </div>
+            </div>
+        `;
+
+        quiz.quiz_data.forEach((q, index) => {
+            if (!refreshCounts[index]) {
+                refreshCounts[index] = 0;
+            }
+            
+            html += `
+                <div class="question-card editing-mode" data-question-index="${index}">
+                    <div class="question-meta">
+                        <div class="question-header">
+                            <div class="question-title">
+                                <span class="badge-topic">${q.topic}</span>
+                                <span class="badge-grade">Grade ${q.grade}</span>
+                                <span class="badge-quarter">${q.quarter}</span>
+                            </div>
+                            <div class="refresh-container">
+                                <span class="refresh-count">Refreshed: ${refreshCounts[index]}x</span>
+                                <button class="btn-refresh-question" onclick="refreshQuestion(${index})" title="Generate new question">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                                <button class="btn-remove-question" onclick="removeQuestion(${index})" title="Remove question">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="question-text">
+                        <strong>${index + 1}.</strong>
+                        <textarea class="edit-question-input" onchange="updateQuestion(${index}, 'question', this.value)">${q.question}</textarea>
+                    </div>
+                    <div class="choices">
+            `;
+            
+            q.choices.forEach((choice, i) => {
+                const isCorrect = i === q.correct_answer;
+                const correctClass = isCorrect ? 'correct-answer' : '';
+                html += `
+                    <div class="choice ${correctClass}">
+                        <input type="radio" name="correct_${index}" ${isCorrect ? 'checked' : ''} 
+                               onchange="setCorrectAnswer(${index}, ${i})">
+                        <input type="text" class="edit-choice-input" value="${choice}" 
+                               onchange="updateChoice(${index}, ${i}, this.value)">
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                    <div class="edit-actions">
+                        <button class="btn-add-choice" onclick="addChoice(${index})">
+                            <i class="fas fa-plus"></i> Add Choice
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `
+            <div class="add-question-section">
+                <button class="btn-add-question" onclick="addNewQuestion()">
+                    <i class="fas fa-plus-circle"></i> Add Custom Question
+                </button>
+            </div>
+        `;
+
+        resultContent.innerHTML = html;
+        document.getElementById('quizResult').style.display = 'block';
+    }
+
+    function handleEditModeFileSelect(file) {
+        editModeFile = file;
+        const editFileInfo = document.getElementById('editFileInfo');
+        if (editFileInfo) {
+            editFileInfo.innerHTML = `<i class="fas fa-check-circle" style="color: #2dce89;"></i> File loaded: <strong>${file.name}</strong>`;
+        }
+        showSuccess('Lesson plan file loaded. You can now refresh questions based on this content.');
+    }
+
+    async function refreshQuestion(index) {
+        const fileToUse = editModeFile || uploadedFile;
+        
+        if (!fileToUse) {
+            showToast('Please upload a lesson plan file first to refresh questions', 'error');
+            return;
+        }
+
+        const quarterFilter = document.getElementById('detectedQuarter').value;
+
+        const refreshBtn = document.querySelector(`[data-question-index="${index}"] .btn-refresh-question`);
+        if (refreshBtn) {
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        }
+
+        try {
+            const currentQuestion = currentQuiz[index];
+            const topicFilter = currentQuestion.topic;
+            
+            const usedQuestions = currentQuiz.map(q => ({
+                question: q.question,
+                choices: q.choices
+            }));
+
+            const formData = new FormData();
+            formData.append('file', fileToUse);
+            formData.append('num_questions', 1);
+            formData.append('quarter', quarterFilter);
+            formData.append('topic_filter', topicFilter);
+            formData.append('exclude_questions', JSON.stringify(usedQuestions));
+
+            const response = await fetch('/api/generate-quiz', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.quiz && data.quiz.length > 0) {
+                const newQuestion = data.quiz[0];
+                
+                currentQuiz[index] = newQuestion;
+                
+                refreshCounts[index] = (refreshCounts[index] || 0) + 1;
+                
+                displayQuizForEditing({quiz_data: currentQuiz, quarter: document.getElementById('assignQuarter').value});
+                
+                showSuccess('Question refreshed successfully!');
+            } else {
+                showError(data.error || 'Failed to generate new question');
+            }
+        } catch (error) {
+            console.error('Error refreshing question:', error);
+            showError('Error generating question: ' + error.message);
+        }
+    }
+
+    function updateQuestion(index, field, value) {
+        if (currentQuiz && currentQuiz[index]) {
+            currentQuiz[index][field] = value;
+        }
+    }
+
+    function updateChoice(questionIndex, choiceIndex, value) {
+        if (currentQuiz && currentQuiz[questionIndex] && currentQuiz[questionIndex].choices) {
+            currentQuiz[questionIndex].choices[choiceIndex] = value;
+        }
+    }
+
+    function setCorrectAnswer(questionIndex, choiceIndex) {
+        if (currentQuiz && currentQuiz[questionIndex]) {
+            currentQuiz[questionIndex].correct_answer = choiceIndex;
+            
+            const questionCard = document.querySelector(`[data-question-index="${questionIndex}"]`);
+            const choices = questionCard.querySelectorAll('.choice');
+            choices.forEach((choice, i) => {
+                if (i === choiceIndex) {
+                    choice.classList.add('correct-answer');
+                } else {
+                    choice.classList.remove('correct-answer');
+                }
+            });
+        }
+    }
+
+    function removeQuestion(index) {
+        if (currentQuiz && currentQuiz.length > 1) {
+            showConfirmationDialogue(
+                'Remove Question',
+                'Are you sure you want to remove this question?',
+                () => {
+                    currentQuiz.splice(index, 1);
+                    delete refreshCounts[index];
+                    displayQuizForEditing({quiz_data: currentQuiz, quarter: document.getElementById('assignQuarter').value});
+                }
+            );
+        } else {
+            showToast('Quiz must have at least one question', 'error');
+        }
+    }
+
+    function addChoice(questionIndex) {
+        if (currentQuiz && currentQuiz[questionIndex]) {
+            currentQuiz[questionIndex].choices.push(`New Choice ${currentQuiz[questionIndex].choices.length + 1}`);
+            displayQuizForEditing({quiz_data: currentQuiz, quarter: document.getElementById('assignQuarter').value});
+        }
+    }
+
+    function addNewQuestion() {
+        const newQuestion = {
+            question: "New Question",
+            choices: ["Choice A", "Choice B", "Choice C", "Choice D"],
+            correct_answer: 0,
+            topic: document.getElementById('topicFilter').value || "General Science",
+            quarter: document.getElementById('detectedQuarter').value || "1st Quarter",
+            grade: document.getElementById('assignGradeLevel').value || "7"
+        };
+        
+        if (!currentQuiz) {
+            currentQuiz = [];
+        }
+        const newIndex = currentQuiz.length;
+        currentQuiz.push(newQuestion);
+        refreshCounts[newIndex] = 0;
+        displayQuizForEditing({quiz_data: currentQuiz, quarter: document.getElementById('assignQuarter').value});
+    }
+
+    function updateEditedQuiz() {
+        if (!currentQuiz || currentQuiz.length === 0) {
+            showToast('Quiz cannot be empty', 'error');
+            return;
+        }
+        
+        showAssignModal();
+    }
+
+    // Results Functions
+    async function loadQuizzesForResults() {
+        try {
+            const response = await fetch('/api/teacher/my-quizzes');
+            const data = await response.json();
+            
+            if (data.success && data.quizzes) {
+                const quizMenu = document.getElementById('resultQuizDropdownMenu');
+                if (!quizMenu) return;
+                
+                const options = quizMenu.querySelectorAll('[data-result-quiz]');
+                options.forEach(option => {
+                    if (option.dataset.resultQuiz !== 'all') {
+                        option.remove();
+                    }
+                });
+                
+                data.quizzes.forEach(quiz => {
+                    const option = document.createElement('button');
+                    option.className = 'sort-dropdown-option';
+                    option.setAttribute('data-result-quiz', quiz.id);
+                    option.setAttribute('onclick', `filterResultsDropdown('quiz', ${quiz.id})`);
+                    
+                    const assignDate = new Date(quiz.assigned_date || quiz.created_at);
+                    option.innerHTML = `
+                        <div class="sort-dropdown-info">
+                            <span class="sort-dropdown-name">${quiz.quiz_title} - Grade ${quiz.grade_level} ${quiz.section}</span>
+                            <small style="color: #8898aa; font-size: 0.8em;">${assignDate.toLocaleDateString()}</small>
+                        </div>
+                        <span class="sort-dropdown-active-badge" style="display: none;">SELECTED</span>
+                    `;
+                    
+                    quizMenu.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading quizzes for results:', error);
+            showError('Error loading quizzes: ' + error.message);
+        }
+    }
+
+    function filterResultsDropdown(type, value) {
+        if (type === 'quiz') {
+            const quizName = document.getElementById('selectedResultQuizName');
+            if (value === 'all') {
+                quizName.textContent = 'All Quizzes';
+                currentQuizId = null;
+            } else {
+                const selectedOption = document.querySelector(`[data-result-quiz="${value}"] .sort-dropdown-name`);
+                if (selectedOption) {
+                    quizName.textContent = selectedOption.textContent;
+                }
+                currentQuizId = value;
+            }
+            
+            document.querySelectorAll('[data-result-quiz]').forEach(btn => {
+                const badge = btn.querySelector('.sort-dropdown-active-badge');
+                if (btn.dataset.resultQuiz == value) {
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+            
+            document.getElementById('resultQuizDropdownMenu').classList.remove('show');
+        }
+        else if (type === 'grade') {
+            const gradeName = document.getElementById('selectedResultGradeName');
+            if (value === 'all') {
+                gradeName.textContent = 'All Grades';
+            } else {
+                gradeName.textContent = `Grade ${value}`;
+            }
+            
+            document.querySelectorAll('[data-result-grade]').forEach(btn => {
+                const badge = btn.querySelector('.sort-dropdown-active-badge');
+                if (btn.dataset.resultGrade === value) {
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+            
+            document.getElementById('resultGradeDropdownMenu').classList.remove('show');
+        }
+        else if (type === 'section') {
+            const sectionName = document.getElementById('selectedResultSectionName');
+            if (value === 'all') {
+                sectionName.textContent = 'All Sections';
+            } else {
+                sectionName.textContent = value;
+            }
+            
+            document.querySelectorAll('[data-result-section]').forEach(btn => {
+                const badge = btn.querySelector('.sort-dropdown-active-badge');
+                if (btn.dataset.resultSection === value) {
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+            
+            document.getElementById('resultSectionDropdownMenu').classList.remove('show');
+        }
+        
+        loadQuizResults();
+    }
+
+    function filterResults() {
+        const searchTerm = document.getElementById('resultSearchInput').value.toLowerCase();
+        const tableRows = document.querySelectorAll('#resultsContainer tbody tr');
+        
+        tableRows.forEach(row => {
+            const studentName = row.querySelector('td:first-child')?.textContent.toLowerCase() || '';
+            if (studentName.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    async function loadQuizResults() {
+        if (!currentQuizId) {
+            document.getElementById('resultsContainer').innerHTML = `
+                <div class="no-quizzes">
+                    <i class="fas fa-chart-line"></i>
+                    <h5>Select a quiz to view results</h5>
+                </div>
+            `;
+            return;
+        }
+        
+        const gradeFilter = getSelectedResultGrade();
+        const sectionFilter = getSelectedResultSection();
+        
+        try {
+            const resultsResponse = await fetch(`/api/quiz/${currentQuizId}/results`);
+            const resultsData = await resultsResponse.json();
+            
+            const nonSubmittedResponse = await fetch(`/api/quiz/${currentQuizId}/non-submitted`);
+            const nonSubmittedData = await nonSubmittedResponse.json();
+            
+            console.log('Results Data:', resultsData);
+            console.log('Non-Submitted Data:', nonSubmittedData);
+            
+            if (resultsData.success) {
+                // Fix: Access the non-submitted students correctly from the response
+                // The non-submitted endpoint returns { success: true, quiz_title, submitted_count, total_students, non_submitted_students }
+                const nonSubmittedStudents = nonSubmittedData.success ? (nonSubmittedData.non_submitted_students || []) : [];
+                
+                console.log('Non-Submitted Students to Display:', nonSubmittedStudents);
+                
+                displayQuizResultsTable(
+                    resultsData.results, 
+                    resultsData.quiz, 
+                    gradeFilter, 
+                    sectionFilter, 
+                    nonSubmittedStudents
+                );
+            }
+        } catch (error) {
+            console.error('Error loading results:', error);
+        }
+    }
+
+    function getSelectedResultGrade() {
+        const selectedGradeName = document.getElementById('selectedResultGradeName');
+        if (selectedGradeName) {
+            const gradeText = selectedGradeName.textContent;
+            if (gradeText === 'All Grades') return 'all';
+            return gradeText.replace('Grade ', '');
+        }
+        return 'all';
+    }
+
+    function getSelectedResultSection() {
+        const selectedSectionName = document.getElementById('selectedResultSectionName');
+        if (selectedSectionName) {
+            const sectionText = selectedSectionName.textContent;
+            if (sectionText === 'All Sections') return 'all';
+            return sectionText;
+        }
+        return 'all';
+    }
+
+    function displayQuizResultsTable(results, quiz, gradeFilter, sectionFilter, nonSubmittedStudents = []) {
+        const container = document.getElementById('resultsContainer');
+        
+        let filteredResults = results || [];
+        let filteredNonSubmitted = nonSubmittedStudents || [];
+        
+        console.log('Display Function - Received:', {
+            results: filteredResults,
+            nonSubmitted: filteredNonSubmitted,
+            nonSubmittedCount: filteredNonSubmitted.length
+        });
+        
+        // If gradeFilter or sectionFilter are applied, filter the non-submitted students
+        if (gradeFilter && gradeFilter !== 'all') {
+            filteredResults = filteredResults.filter(r => r.grade_level == gradeFilter);
+            filteredNonSubmitted = filteredNonSubmitted.filter(s => {
+                return s.grade_level ? s.grade_level == gradeFilter : true;
+            });
+        }
+        if (sectionFilter && sectionFilter !== 'all') {
+            filteredResults = filteredResults.filter(r => r.section === sectionFilter);
+            filteredNonSubmitted = filteredNonSubmitted.filter(s => {
+                return s.section ? s.section === sectionFilter : true;
+            });
+        }
+        
+        console.log('After Filtering:', {
+            filteredResults: filteredResults.length,
+            filteredNonSubmitted: filteredNonSubmitted.length
+        });
+        
+        // Group results by student_id to consolidate retakes
+        const groupedByStudent = {};
+        filteredResults.forEach(result => {
+            const studentId = result.student_id;
+            if (!groupedByStudent[studentId]) {
+                groupedByStudent[studentId] = [];
+            }
+            groupedByStudent[studentId].push(result);
+        });
+        
+        // Get best result for each student and previous attempts
+        const consolidatedResults = [];
+        Object.keys(groupedByStudent).forEach(studentId => {
+            const attempts = groupedByStudent[studentId].sort((a, b) => (b.score || 0) - (a.score || 0));
+            consolidatedResults.push({
+                best: attempts[0],
+                previous: attempts.slice(1)
+            });
+        });
+        
+        if ((consolidatedResults.length === 0) && (!filteredNonSubmitted || filteredNonSubmitted.length === 0)) {
+            container.innerHTML = `
+                <div class="no-quizzes">
+                    <i class="fas fa-chart-line"></i>
+                    <h5>No results found</h5>
+                    <p>No students have submitted this quiz yet</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const totalPercentage = consolidatedResults.reduce((sum, item) => sum + (item.best.score / item.best.total_points * 100), 0);
+        const classAverage = consolidatedResults.length > 0 ? (totalPercentage / consolidatedResults.length).toFixed(1) : 0;
+        
+        let html = `
+            <div class="results-header">
+                <div class="class-average-info">
+                    <h5>Class Average</h5>
+                    <div class="average-stats">
+                        <span class="average-percentage">${classAverage}%</span>
+                        <span class="average-count">${consolidatedResults.length} submission${consolidatedResults.length !== 1 ? 's' : ''}</span>
+                    </div>
+                </div>
+                <button class="btn-remind" onclick="showRemindAllModal()" ${filteredNonSubmitted.length === 0 ? 'disabled' : ''}>
+                    <i class="fas fa-bell"></i> Remind All Pending
+                </button>
+            </div>
+            <div class="results-table-container">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Grade - Section</th>
+                            <th>Score</th>
+                            <th>Percentage</th>
+                            <th>Time Spent</th>
+                            <th>Submitted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        // Display submitted results (best scores only)
+        consolidatedResults.forEach(item => {
+            const result = item.best;
+            const previousAttempts = item.previous;
+            const totalPoints = result.total_points || (result.total_items * (quiz?.points_per_item || 1));
+            const percentage = (result.score / totalPoints * 100).toFixed(1);
+            const timeSpent = result.time_spent ? `${result.time_spent} min` : 'N/A';
+            const profilePicture = result.student_profile_picture || '/static/image/default-avatar.png';
+            
+            // Build previous attempt info if exists
+            let previousAttemptInfo = '';
+            if (previousAttempts && previousAttempts.length > 0) {
+                const previous = previousAttempts[0];
+                const prevPercentage = (previous.score / totalPoints * 100).toFixed(1);
+                const improvement = result.score - previous.score;
+                previousAttemptInfo = `<div class="previous-attempt-info">
+                    <span class="prev-label">Previous:</span>
+                    <span class="prev-score">${previous.score}/${totalPoints}</span>
+                    <span class="prev-percentage">(${prevPercentage}%)</span>
+                    ${improvement > 0 ? `<span class="improvement"><i class="fas fa-arrow-up"></i> +${improvement} pts</span>` : ''}
+                </div>`;
+            }
+            
+            html += `
+                <tr>
+                    <td>
+                        <div class="student-cell">
+                            <img src="${profilePicture}" alt="Student Avatar" class="student-avatar">
+                            <span class="student-name-text">${result.student_name}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="grade-section">Grade ${result.grade_level} - ${result.section}</span>
+                    </td>
+                    <td>
+                        <div class="score-cell">
+                            <span class="score-link" onclick="viewStudentAnswers(${result.teacher_quiz_id}, ${result.student_id}, '${result.student_name}')">
+                                ${result.score}/${totalPoints}
+                            </span>
+                            ${previousAttemptInfo}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="percentage-cell">
+                            <div class="progress">
+                                <div class="progress-bar" style="width: ${percentage}%"></div>
+                            </div>
+                            <span class="percentage-text">${percentage}%</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="time-spent">${timeSpent}</span>
+                    </td>
+                    <td>
+                        <span class="student-status status-submitted">
+                            ${new Date(result.submitted_date).toLocaleString()}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="actions-cell">
+                            ${previousAttempts && previousAttempts.length > 0 ? 
+                                `<span class="badge-retake-completed">
+                                    <i class="fas fa-check"></i> Retake Completed
+                                </span>` :
+                                (result.retake_allowed_by_teacher ?
+                                    `<span class="badge-retake-completed">
+                                        <i class="fas fa-bell"></i> Retake Allowed
+                                    </span>` :
+                                    `<button class="btn-retake-allow retake-btn" data-student-id="${result.student_id}" data-student-name="${result.student_name}" data-quiz-id="${result.teacher_quiz_id}" title="Allow this student to retake the quiz">
+                                        <i class="fas fa-redo"></i> Allow Retake
+                                    </button>`
+                                )
+                            }
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        // Display non-submitted students
+        filteredNonSubmitted.forEach(student => {
+            // Ensure student object has the required properties
+            const studentName = student.first_name && student.last_name ? 
+                `${student.first_name} ${student.last_name}` : 
+                (student.student_name || student.name || 'Unknown Student');
+            
+            const studentId = student.id || student.student_id;
+            const gradeLevel = student.grade_level || (quiz ? quiz.grade_level : 'N/A');
+            const section = student.section || (quiz ? quiz.section : 'N/A');
+            const profilePicture = student.profile_picture || '/static/image/default-avatar.png';
+            
+            html += `
+                <tr style="background-color: #fef3e2; opacity: 0.95;">
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <img src="${profilePicture}" alt="Student Avatar" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+                            <strong>${studentName}</strong>
+                        </div>
+                    </td>
+                    <td>Grade ${gradeLevel} - ${section}</td>
+                    <td colspan="3" style="text-align: center;">
+                        <span style="background-color: #fed7aa; color: #92400e; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; font-weight: 600;">
+                            <i class="fas fa-exclamation-circle"></i> Not Submitted
+                        </span>
+                    </td>
+                    <td>
+                        <span class="student-status status-pending" style="color: #d97706;">
+                            <i class="fas fa-clock"></i> Pending
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn-remind" onclick="showReminderModal(${studentId}, '${studentName}', '${quiz?.quiz_title}')" style="background-color: #d97706; border-color: #d97706;">
+                            <i class="fas fa-bell"></i> Remind
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        container.innerHTML = html;
+    }
+
+    function viewQuiz(quizId) {
+        fetch(`/api/quiz/${quizId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const quiz = data.quiz;
+                    
+                    document.getElementById('viewQuizTitle').textContent = quiz.quiz_title;
+                    
+                    let html = `
+                        <div class="quiz-info-bar">
+                            <div><strong>Grade:</strong> ${quiz.grade_level} - ${quiz.section}</div>
+                            <div><strong>Quarter:</strong> ${quiz.quarter}</div>
+                            <div><strong>Time Limit:</strong> ${quiz.time_limit_minutes} minutes</div>
+                            <div><strong>Total Points:</strong> ${quiz.total_points}</div>
+                        </div>
+                    `;
+                    
+                    quiz.quiz_data.forEach((q, index) => {
+                        html += `
+                            <div class="question-card">
+                                <div class="question-meta">
+                                    <span class="badge-topic">${q.topic}</span>
+                                    <span class="badge-quarter">${q.quarter}</span>
+                                </div>
+                                <div class="question-text"><strong>${index + 1}.</strong> ${q.question}</div>
+                                <div class="choices">
+                        `;
+                        
+                        q.choices.forEach((choice, i) => {
+                            const isCorrect = i === q.correct_answer;
+                            const correctClass = isCorrect ? 'correct-answer' : '';
+                            html += `<div class="choice ${correctClass}">${choice}</div>`;
+                        });
+                        
+                        html += `
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    document.getElementById('viewQuizContent').innerHTML = html;
+                    const modal = document.getElementById('viewQuizModal');
+                    modal.style.display = 'flex';
+                    modal.classList.add('show');
+                    document.body.classList.add('modal-open');
+                }
+            })
+            .catch(error => console.error('Error loading quiz:', error));
+    }
+
+    function viewQuizResults(quizId) {
+        switchTab('results', {target: document.querySelectorAll('.tab-btn')[2]});
+        
+        setTimeout(() => {
+            // Use filterResultsDropdown to properly set the dropdown and update UI
+            filterResultsDropdown('quiz', quizId);
+            loadQuizResults();
+        }, 500);
+    }
+
+    async function viewStudentAnswers(quizId, studentId, studentName) {
+        try {
+            console.log('Fetching answers for:', { quizId, studentId, studentName });
+            const response = await fetch(`/api/quiz/${quizId}/student/${studentId}/answers`);
+            const data = await response.json();
+            console.log('Student answers data structure:', data);
+            
+            if (data.success) {
+                // Also fetch previous attempts for comparison
+                try {
+                    const attemptsResponse = await fetch(`/api/student/${studentId}/quiz/${quizId}/attempts`);
+                    if (attemptsResponse.ok) {
+                        const attemptsData = await attemptsResponse.json();
+                        if (attemptsData.success && attemptsData.attempts && attemptsData.attempts.length > 1) {
+                            // Sort by score descending to get the best previous attempt
+                            const sortedAttempts = attemptsData.attempts.sort((a, b) => b.score - a.score);
+                            data.previous_results = [sortedAttempts[1]]; // Get second best (previous best)
+                        }
+                    }
+                } catch (error) {
+                    console.log('Could not fetch previous attempts:', error);
+                }
+                
+                displayStudentAnswers(data);
+            } else {
+                showError('Could not load student answers');
+            }
+        } catch (error) {
+            console.error('Error loading student answers:', error);
+            showError('Error loading student answers');
+        }
+    }
+
+    // Allow student to retake quiz
+    async function allowStudentRetake(studentId, studentName, quizId) {
+        if (!confirm(`Allow ${studentName} to retake this quiz? They will receive a notification.`)) {
+            return;
+        }
+
+        try {
+            showToast('Sending retake notification...', 'info');
+            const response = await fetch(`/api/quiz/${quizId}/allow-retake/${studentId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showToast(`${studentName} has been notified. They can now retake the quiz!`, 'success');
+                // Reload quiz results to reflect the updated retake_allowed_by_teacher status
+                await loadQuizResults();
+            } else {
+                showError(data.error || 'Failed to allow retake');
+            }
+        } catch (error) {
+            console.error('Error allowing retake:', error);
+            showError('Error sending retake notification: ' + error.message);
+        }
+    }
+
+    // Set up event listener for Allow Retake buttons using event delegation
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.retake-btn')) {
+            const button = e.target.closest('.retake-btn');
+            const studentId = parseInt(button.dataset.studentId);
+            const studentName = button.dataset.studentName;
+            const quizId = parseInt(button.dataset.quizId);
+            
+            console.log(`Allow retake clicked for student: ${studentName} (${studentId}), quiz: ${quizId}`);
+            allowStudentRetake(studentId, studentName, quizId);
+        }
+    });
+
+    function displayStudentAnswers(data) {
+        const result = data.result;
+        const quiz = data.quiz;
+        
+        // Get profile picture
+        let studentPic = '/static/image/default-avatar.png';
+        
+        if (data.student && data.student.profile_picture) {
+            studentPic = data.student.profile_picture;
+        } else if (data.student_pic) {
+            studentPic = data.student_pic;
+        } else if (data.student && data.student.avatar) {
+            studentPic = data.student.avatar;
+        } else if (data.profile_picture) {
+            studentPic = data.profile_picture;
+        } else if (result && result.profile_picture) {
+            studentPic = result.profile_picture;
+        }
+        
+        // Calculate values
+        const pointsPerItem = quiz.points_per_item || 5;
+        const totalPoints = result.total_points || (result.total_items * pointsPerItem);
+        const percentage = (result.score / totalPoints) * 100;
+        
+        // Get teacher info - try from various sources
+        let teacherName = 'Unknown';
+        let teacherSubject = 'General';
+        let teacherAvatar = '/static/image/default-avatar.png';
+        
+        if (data.teacher_info) {
+            teacherName = data.teacher_info.name || 'Unknown';
+            teacherSubject = data.teacher_info.subject || 'General';
+            teacherAvatar = data.teacher_info.avatar || '/static/image/default-avatar.png';
+        } else if (quiz.teacher_name) {
+            teacherName = quiz.teacher_name;
+            teacherSubject = quiz.subject || 'General';
+            teacherAvatar = quiz.teacher_avatar || '/static/image/default-avatar.png';
+        } else if (teacherInfo) {
+            teacherName = teacherInfo.name || 'Unknown';
+            teacherSubject = teacherInfo.subject || 'General';
+            teacherAvatar = teacherInfo.avatar || '/static/image/default-avatar.png';
+        }
+        
+        // Determine score status and colors
+        let statusGradient = 'linear-gradient(135deg, #5e72e4 0%, #7485e8 100%)';
+        let badgeBackground = 'rgba(255, 255, 255, 0.2)';
+        let statusEmoji = 'Needs Improvement 📚';
+        
+        if (percentage >= 75) {
+            statusGradient = 'linear-gradient(135deg, #2dce89 0%, #1cbe76 100%)';
+            badgeBackground = 'rgba(255, 255, 255, 0.25)';
+            statusEmoji = 'Excellent Work! 🎉';
+        } else if (percentage >= 50) {
+            statusGradient = 'linear-gradient(135deg, #fb6340 0%, #f5365c 100%)';
+            badgeBackground = 'rgba(255, 255, 255, 0.25)';
+            statusEmoji = 'Keep Improving! 💪';
+        } else {
+            statusGradient = 'linear-gradient(135deg, #f5365c 0%, #d42d4e 100%)';
+            badgeBackground = 'rgba(255, 255, 255, 0.25)';
+            statusEmoji = 'Needs More Practice 📚';
+        }
+        
+        // Check for previous results
+        let hasPreviousResults = false;
+        let previousScore = 0;
+        if (data.previous_results && data.previous_results.length > 0) {
+            hasPreviousResults = true;
+            previousScore = data.previous_results[0].score || 0;
+        }
+        
+        let html = `
+            <div style="display: flex; align-items: center; gap: 20px; padding: 20px; background: ${statusGradient}; border-radius: 16px; color: white; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);">
+                <div style="width: 100px; height: 100px; border-radius: 50%; background: ${badgeBackground}; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 2.5em; line-height: 1;">${result.score}</div>
+                        <div style="font-size: 1.2em; opacity: 0.9;">/${totalPoints}</div>
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-size: 2.5em; font-weight: 700; line-height: 1.2;">${Math.round(percentage)}%</div>
+                    <div style="font-size: 1.1em; opacity: 0.95;">${statusEmoji}</div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px;">
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; text-align: center;">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 10px;">
+                        <img src="${teacherAvatar}" alt="Teacher" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #5e72e4;" onerror="this.src='/static/image/default-avatar.png'">
+                        <div style="text-align: left;">
+                            <span style="display: block; font-size: 0.85em; color: #6c757d; margin-bottom: 3px;">Teacher</span>
+                            <span style="display: block; font-size: 1.2em; font-weight: 700; color: #495057;">${teacherName}</span>
+                            <span style="display: block; font-size: 0.9em; color: #5e72e4; font-weight: 500;">${teacherSubject}</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; text-align: center;">
+                    <span style="display: block; font-size: 0.85em; color: #6c757d; margin-bottom: 5px;">Correct Answers</span>
+                    <span style="display: block; font-size: 1.3em; font-weight: 600; color: #495057;">${Math.round(result.score / pointsPerItem)}/${result.total_items}</span>
+                </div>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; text-align: center;">
+                    <span style="display: block; font-size: 0.85em; color: #6c757d; margin-bottom: 5px;">Points per Question</span>
+                    <span style="display: block; font-size: 1.3em; font-weight: 600; color: #495057;">${pointsPerItem} pts</span>
+                </div>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; text-align: center;">
+                    <span style="display: block; font-size: 0.85em; color: #6c757d; margin-bottom: 5px;">Date</span>
+                    <span style="display: block; font-size: 1.3em; font-weight: 600; color: #495057;">${new Date(result.submitted_date).toLocaleDateString()}</span>
+                </div>
+            </div>
+
+            ${hasPreviousResults ? `
+            <div style="background: linear-gradient(135deg, #fef3e2 0%, #fef9f0 100%); border-left: 4px solid #f59e0b; padding: 15px; border-radius: 10px; margin-bottom: 25px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 0.9em; font-weight: 600; color: #b45309; text-transform: uppercase;">
+                    <i class="fas fa-history" style="font-size: 0.95em;"></i>
+                    Previous Attempt Comparison
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                    <div>
+                        <span style="display: block; font-size: 0.8em; color: #b45309; margin-bottom: 4px;">Current Score</span>
+                        <span style="display: block; font-size: 1.4em; font-weight: 700; color: #92400e;">${Math.round(result.score / pointsPerItem)}/${result.total_items}</span>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 0.8em; color: #b45309; margin-bottom: 4px;">Previous Best</span>
+                        <span style="display: block; font-size: 1.4em; font-weight: 700; color: #92400e;">${Math.round(previousScore / pointsPerItem)}/${result.total_items}</span>
+                    </div>
+                </div>
+                ${result.score > previousScore ? `
+                <div style="margin-top: 10px; padding: 8px 10px; background: rgba(16, 185, 129, 0.1); border-radius: 6px; color: #065f46; font-size: 0.9em; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-arrow-up"></i>
+                    +${Math.round((result.score - previousScore) / pointsPerItem)} points improvement!
+                </div>
+                ` : ''}
+            </div>
+            ` : ''}
+
+            <div style="border-top: 2px solid #f0f2f5; padding-top: 20px; margin-bottom: 20px;">
+                <h4 style="color: #495057; margin: 0 0 15px 0; font-size: 1.1em; font-weight: 600;">
+                    <i class="fas fa-clipboard-list" style="color: #5e72e4; margin-right: 8px;"></i>Detailed Answer Review
+                </h4>
+            </div>
+
+            <form id="reviewForm">
+        `;
+        
+        // Display quiz answers
+        const quizData = quiz.quiz_data || [];
+        quizData.forEach((question, index) => {
+            const questionKey = `q${index + 1}`;
+            const studentAnswerIndex = result.answers ? result.answers[questionKey] : -1;
+            
+            let badgeText = '';
+            let badgeIcon = '';
+            let badgeColor = '#e9ecef';
+            let badgeTextColor = '#495057';
+            let isAnswered = studentAnswerIndex !== -1 && studentAnswerIndex !== null;
+            let isCorrect = isAnswered && studentAnswerIndex === question.correct_answer;
+            
+            if (!isAnswered) {
+                badgeText = 'NOT ANSWERED';
+                badgeIcon = 'fas fa-exclamation-circle';
+                badgeColor = '#e9ecef';
+                badgeTextColor = '#495057';
+            } else if (isCorrect) {
+                badgeText = 'CORRECT';
+                badgeIcon = 'fas fa-check-circle';
+                badgeColor = '#d4edda';
+                badgeTextColor = '#155724';
+            } else {
+                badgeText = 'INCORRECT';
+                badgeIcon = 'fas fa-times-circle';
+                badgeColor = '#f8d7da';
+                badgeTextColor = '#721c24';
+            }
+            
+            html += `
+                <div class="quiz-question mb-4" data-question="${index}">
+                    <div class="question-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+                        <span class="question-number" style="display: inline-block; color: #5e72e4; font-weight: 600;">Question ${question.question_number || (index + 1)}</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600; background: ${badgeColor}; color: ${badgeTextColor};">
+                                <i class="${badgeIcon}" style="font-size: 0.9em;"></i> ${badgeText}
+                            </span>
+                            <span style="padding: 5px 12px; border-radius: 6px; background: #f0f2f5; color: #495057; font-size: 0.85em; font-weight: 600;">
+                                <i class="fas fa-star" style="color: #ffc107; margin-right: 4px;"></i>${pointsPerItem} point(s)
+                            </span>
+                        </div>
+                    </div>
+                    <div class="question-text" style="margin-bottom: 15px; color: #495057; font-weight: 500;">${question.question || ''}</div>
+                    <div class="choices" style="display: flex; flex-direction: column; gap: 8px;">
+            `;
+            
+            question.choices.forEach((choice, choiceIndex) => {
+                const isCorrectChoice = choiceIndex === question.correct_answer;
+                const isStudentChoice = choiceIndex === studentAnswerIndex;
+                
+                let backgroundColor = 'white';
+                let borderColor = '#e9ecef';
+                let textColor = '#6c757d';
+                let indicator = '';
+                let iconColor = '';
+                
+                if (isCorrectChoice && isStudentChoice) {
+                    backgroundColor = 'white';
+                    borderColor = '#28a745';
+                    textColor = '#155724';
+                    indicator = '<span style="margin-left: auto; font-weight: 600; color: #28a745; font-size: 0.9em;"><i class="fas fa-check" style="margin-right: 4px;"></i>Your Answer</span>';
+                    iconColor = 'color: #28a745;';
+                } else if (isCorrectChoice) {
+                    backgroundColor = 'white';
+                    borderColor = '#28a745';
+                    textColor = '#155724';
+                    indicator = '<span style="margin-left: auto; font-weight: 600; color: #28a745; font-size: 0.9em;"><i class="fas fa-check" style="margin-right: 4px;"></i>Correct</span>';
+                    iconColor = 'color: #28a745;';
+                } else if (isStudentChoice) {
+                    backgroundColor = 'white';
+                    borderColor = '#dc3545';
+                    textColor = '#dc3545';
+                    indicator = '<span style="margin-left: auto; font-weight: 600; color: #dc3545; font-size: 0.9em;"><i class="fas fa-times" style="margin-right: 4px;"></i>Your Answer</span>';
+                    iconColor = 'color: #dc3545;';
+                }
+                
+                const letter = String.fromCharCode(65 + choiceIndex);
+                html += `
+                    <div class="choice-option" style="background-color: ${backgroundColor}; border: 2px solid ${borderColor}; color: ${textColor}; padding: 12px 15px; border-radius: 8px; display: flex; align-items: center; gap: 10px; cursor: default; transition: all 0.2s;">
+                        <span style="font-weight: 700; min-width: 30px; ${iconColor}">${letter}.</span>
+                        <span style="flex: 1;">${choice || ''}</span>
+                        ${indicator}
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `
+            </form>
+
+            <div class="preview-actions" style="display: flex; gap: 10px; margin-top: 25px;">
+                <button class="btn-start" onclick="closeAnswerReviewModal()" style="flex: 1; background: linear-gradient(135deg, #5e72e4 0%, #7485e8 100%); border: none; color: white; padding: 12px; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s;">
+                    <i class="fas fa-times"></i> Close Review
+                </button>
+            </div>
+        `;
+        
+        const modalContent = document.getElementById('answerReviewContent');
+        modalContent.innerHTML = html;
+        const modal = document.getElementById('answerReviewModal');
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+    }
+
+    function closeAnswerReviewModal() {
+        const modal = document.getElementById('answerReviewModal');
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+    }
+
+    // Reminder Functions
+    let currentReminderStudentId = null;
+    let currentReminderStudentName = null;
+    let currentReminderQuizTitle = null;
+    let selectedReminderType = 'default';
+
+    function showReminderModal(studentId, studentName, quizTitle) {
+        currentReminderStudentId = studentId;
+        currentReminderStudentName = studentName;
+        currentReminderQuizTitle = quizTitle;
+        
+        document.getElementById('reminderStudentInfo').innerHTML = `
+            <p><strong>Student:</strong> ${studentName}</p>
+            <p><strong>Quiz:</strong> ${quizTitle}</p>
+        `;
+        
+        document.getElementById('reminderDefault').checked = true;
+        document.getElementById('customMessageArea').style.display = 'none';
+        selectedReminderType = 'default';
+        
+        const modal = document.getElementById('reminderModal');
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+    }
+
+    function showRemindAllModal() {
+        currentReminderStudentId = null;
+        currentReminderStudentName = null;
+        
+        document.getElementById('reminderStudentInfo').innerHTML = `
+            <p><strong>Send reminder to all students who haven't submitted yet</strong></p>
+        `;
+        
+        document.getElementById('reminderDefault').checked = true;
+        document.getElementById('customMessageArea').style.display = 'none';
+        selectedReminderType = 'default';
+        
+        const modal = document.getElementById('reminderModal');
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+    }
+
+    function selectReminderOption(type) {
+        selectedReminderType = type;
+        const radioBtn = document.getElementById(`reminder${type.charAt(0).toUpperCase() + type.slice(1)}`);
+        if (radioBtn) radioBtn.checked = true;
+        
+        document.getElementById('customMessageArea').style.display = type === 'custom' ? 'block' : 'none';
+    }
+
+    async function sendReminder() {
+        let message = '';
+        
+        if (selectedReminderType === 'default') {
+            message = `Please complete your pending quiz "${currentReminderQuizTitle}". It's still available for submission.`;
+        } else if (selectedReminderType === 'urgent') {
+            message = `URGENT: This is a reminder that your quiz "${currentReminderQuizTitle}" is due soon. Please submit it as soon as possible.`;
+        } else if (selectedReminderType === 'custom') {
+            message = document.getElementById('customReminderMessage').value;
+            if (!message.trim()) {
+                showError('Please enter a custom message');
+                return;
+            }
+        }
+        
+        try {
+            const response = await fetch('/api/send-quiz-reminder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    student_id: currentReminderStudentId,
+                    quiz_id: currentQuizId,
+                    message: message,
+                    remind_all: !currentReminderStudentId
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                let successMsg = `Reminder sent ${currentReminderStudentName ? 'to ' + currentReminderStudentName : 'to pending students'}`;
+                if (data.skipped_count && data.skipped_count > 0) {
+                    successMsg += ` (${data.skipped_count} already reminded today)`;
+                }
+                showSuccess(successMsg);
+                closeReminderModal();
+                // Refresh the results to show updated status
+                setTimeout(() => loadQuizResults(), 1500);
+            } else {
+                if (data.cooldown_active) {
+                    showError(data.error || 'This student was already reminded in the last 24 hours. Please try again later.');
+                } else {
+                    showError(data.error || 'Error sending reminder');
+                }
+            }
+        } catch (error) {
+            console.error('Error sending reminder:', error);
+            showError('Error sending reminder');
+        }
+    }
+
+    function closeReminderModal() {
+        const modal = document.getElementById('reminderModal');
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        currentReminderStudentId = null;
+        currentReminderStudentName = null;
+    }
+
+    function closeViewQuizModal() {
+        const modal = document.getElementById('viewQuizModal');
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+    }
+
+    // Assign Quiz Functions
+    function saveThenAssign() {
+        if (!currentQuiz) {
+            showToast('Please generate a quiz first', 'error');
+            return;
+        }
+        
+        showAssignModal();
+    }
+
+    function showAssignModal() {
+        if (!currentQuiz) {
+            showToast('Please generate a quiz first', 'error');
+            return;
+        }
+        
+        if (!isEditMode || !currentEditQuizId) {
+            document.getElementById('quizTitle').value = `${document.getElementById('topicFilter').value || 'Science'} Quiz`;
+            document.getElementById('assignTopic').value = document.getElementById('topicFilter').value || 'Science';
+            document.getElementById('quizTimeLimit').value = 30;
+            document.getElementById('quizPointsPerItem').value = 1;
+            
+            const detectedQuarter = document.getElementById('detectedQuarter').value;
+            const quarterMap = {
+                'First Quarter': '1st Quarter',
+                'Second Quarter': '2nd Quarter',
+                'Third Quarter': '3rd Quarter',
+                'Fourth Quarter': '4th Quarter'
+            };
+            document.getElementById('assignQuarter').value = quarterMap[detectedQuarter] || '1st Quarter';
+            
+            const dueDate = new Date();
+            dueDate.setDate(dueDate.getDate() + 7);
+            document.getElementById('dueDate').value = dueDate.toISOString().split('T')[0];
+            
+            document.getElementById('quizInstructions').value = '';
+        }
+        
+        // Populate sections based on selected grade level
+        populateTeacherSections();
+        
+        updateQuizSummary();
+        
+        const modal = document.getElementById('assignModal');
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+    }
+
+    function updateQuizSummary() {
+        const numQuestions = currentQuiz ? currentQuiz.length : 0;
+        const pointsPerItem = parseInt(document.getElementById('quizPointsPerItem').value) || 1;
+        const timeLimit = parseInt(document.getElementById('quizTimeLimit').value) || 30;
+        
+        document.getElementById('summaryQuestionCount').textContent = numQuestions;
+        document.getElementById('summaryPointsPerItem').textContent = pointsPerItem;
+        document.getElementById('summaryTimeLimit').textContent = timeLimit;
+        document.getElementById('summaryTotalPoints').textContent = numQuestions * pointsPerItem;
+    }
+
+    document.getElementById('quizPointsPerItem').addEventListener('input', updateQuizSummary);
+    document.getElementById('quizTimeLimit').addEventListener('input', updateQuizSummary);
+
+    // Set minimum due date to current date/time
+    function setMinimumDueDate() {
+        const dueDateInput = document.getElementById('dueDate');
+        if (dueDateInput) {
+            const now = new Date();
+            // Format: YYYY-MM-DDTHH:mm
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+            
+            dueDateInput.min = minDateTime;
+        }
+    }
+
+    // Call on page load
+    setMinimumDueDate();
+
+    // Validate due date on change
+    document.getElementById('dueDate').addEventListener('change', function() {
+        if (this.value) {
+            const selectedDate = new Date(this.value);
+            const now = new Date();
+            
+            if (selectedDate < now) {
+                showError('Please select a future date and time');
+                this.value = '';
+            }
+        }
+    });
+
+    function closeAssignModal() {
+        const modal = document.getElementById('assignModal');
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+    }
+
+    function confirmAndAssignQuiz() {
+        // Comprehensive validation for all required fields
+        const quizTitle = document.getElementById('quizTitle').value;
+        const topic = document.getElementById('assignTopic').value;
+        const gradeLevel = document.getElementById('assignGradeLevel').value;
+        const section = document.getElementById('assignSection').value;
+        const quarter = document.getElementById('assignQuarter').value;
+        const timeLimit = document.getElementById('quizTimeLimit').value;
+        const pointsPerItem = document.getElementById('quizPointsPerItem').value;
+        const dueDate = document.getElementById('dueDate').value;
+        
+        // Build validation errors
+        let validationErrors = [];
+        
+        if (!quizTitle || quizTitle.trim() === '') {
+            validationErrors.push('✓ Quiz Title is required');
+        }
+        
+        if (!topic || topic.trim() === '') {
+            validationErrors.push('✓ Topic is required');
+        }
+        
+        if (!gradeLevel || gradeLevel === '') {
+            validationErrors.push('✓ Grade Level is required');
+        }
+        
+        if (!section || section === '') {
+            validationErrors.push('✓ Section is required');
+        }
+        
+        if (!quarter || quarter === '') {
+            validationErrors.push('✓ Quarter is required');
+        }
+        
+        if (!dueDate || dueDate.trim() === '') {
+            validationErrors.push('✓ Due Date & Time is required');
+        } else {
+            // Validate due date is in the future
+            const selectedDate = new Date(dueDate);
+            const now = new Date();
+            if (selectedDate < now) {
+                validationErrors.push('✓ Due Date & Time must be in the future');
+            }
+        }
+        
+        if (!timeLimit || parseInt(timeLimit) < 1 || parseInt(timeLimit) > 180) {
+            validationErrors.push('✓ Time Limit must be between 1 and 180 minutes');
+        }
+        
+        if (!pointsPerItem || parseInt(pointsPerItem) < 1 || parseInt(pointsPerItem) > 10) {
+            validationErrors.push('✓ Points per Question must be between 1 and 10');
+        }
+        
+        if (!currentQuiz || currentQuiz.length === 0) {
+            validationErrors.push('✓ Quiz must contain at least one question');
+        }
+        
+        // If there are validation errors, show them all at once
+        if (validationErrors.length > 0) {
+            const errorMessage = 'Please fill in the following required fields:\n\n' + validationErrors.join('\n');
+            showConfirmationDialogue(
+                '⚠️ Missing Required Fields',
+                errorMessage,
+                () => {},  // No action on confirm
+                () => {}   // No action on cancel
+            );
+            return;
+        }
+
+        // All validations passed, show confirmation dialog
+        const isUpdate = currentEditQuizId !== null && currentEditQuizId !== '';
+        const dialogTitle = isUpdate ? 'Update Quiz?' : 'Create Quiz?';
+        const dialogMessage = isUpdate 
+            ? `Are you sure you want to update "${quizTitle}" and assign it to your students?`
+            : `Are you sure you want to create and assign "${quizTitle}" to your students?`;
+
+        showConfirmationDialogue(
+            dialogTitle,
+            dialogMessage,
+            () => {
+                assignQuiz();
+            }
+        );
+    }
+
+    async function assignQuiz() {
+        // All required fields validated in confirmAndAssignQuiz() before reaching here
+        const gradeLevel = document.getElementById('assignGradeLevel').value;
+        const section = document.getElementById('assignSection').value;
+        const quizTitle = document.getElementById('quizTitle').value;
+        const topic = document.getElementById('assignTopic').value;
+        const timeLimit = document.getElementById('quizTimeLimit').value;
+        const pointsPerItem = document.getElementById('quizPointsPerItem').value;
+        const quarter = document.getElementById('assignQuarter').value;
+        const dueDate = document.getElementById('dueDate').value;
+        const instructions = document.getElementById('quizInstructions').value;
+
+        if (!currentQuiz || currentQuiz.length === 0) {
+            showToast('Quiz is empty. Please generate a quiz first.', 'error');
+            return;
+        }
+
+        const totalPoints = currentQuiz.length * parseInt(pointsPerItem);
+
+        let formattedDueDate = null;
+        if (dueDate) {
+            // datetime-local format: "2026-03-12T14:30" - convert to ISO with timezone
+            const dueDateObj = new Date(dueDate);
+            // Adjust for timezone offset to get the intended time
+            const tzOffset = dueDateObj.getTimezoneOffset() * 60000;
+            formattedDueDate = new Date(dueDateObj.getTime() + tzOffset).toISOString();
+        }
+
+        try {
+            showLoading(true);
+            showToast('Creating quiz...', 'success');
+            
+            const requestBody = {
+                quiz: currentQuiz,
+                quiz_title: quizTitle,
+                topic: topic,
+                quarter: quarter,
+                grade_level: gradeLevel,
+                section: section,
+                due_date: formattedDueDate,
+                time_limit: parseInt(timeLimit),
+                points_per_item: parseInt(pointsPerItem),
+                total_points: totalPoints,
+                instructions: instructions,
+                quiz_id: currentEditQuizId
+            };
+            
+            console.log('Creating quiz with data:', requestBody);
+            
+            const response = await fetch('/api/teacher/create-quiz', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            const data = await response.json();
+            
+            console.log('Server response:', response.status, data);
+
+            if (response.ok && data.success) {
+                showToast(`Quiz "${quizTitle}" ${currentEditQuizId ? 'updated' : 'created'} successfully!`, 'success');
+                closeAssignModal();
+                
+                if (isEditMode) {
+                    exitEditMode();
+                }
+                
+                document.getElementById('fileInput').value = '';
+                uploadedFile = null;
+                fileInfo.style.display = 'none';
+                currentQuiz = null;
+                currentEditQuizId = null;
+                document.getElementById('quizResult').style.display = 'none';
+                topicsFound.style.display = 'none';
+                topicsList.innerHTML = '';
+                
+                const generateBtn = document.getElementById('generateBtn');
+                generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Quiz';
+                generateBtn.onclick = handleGenerate;
+                
+                setTimeout(() => {
+                    loadMyQuizzes();
+                    switchTab('my-quizzes', {target: document.querySelectorAll('.tab-btn')[1]});
+                }, 1000);
+            } else {
+                const errorMsg = data.error || data.details || 'Error saving quiz';
+                console.error('Quiz creation failed:', errorMsg);
+                showToast(errorMsg, 'error');
+            }
+        } catch (error) {
+            console.error('Network or request error:', error);
+            showToast('Error: ' + error.message, 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // Close modals when clicking outside
+    // Note: Assign modal is protected from accidental closure
+    window.onclick = function(event) {
+        const assignModal = document.getElementById('assignModal');
+        const viewModal = document.getElementById('viewQuizModal');
+        const answerModal = document.getElementById('answerReviewModal');
+        const reminderModal = document.getElementById('reminderModal');
+        
+        // Don't close assign modal on outside clicks - requires explicit close button
+        // This prevents accidental data loss when user clicks outside
+        
+        if (event.target == viewModal) {
+            closeViewQuizModal();
+        }
+        if (event.target == answerModal) {
+            closeAnswerReviewModal();
+        }
+        if (event.target == reminderModal) {
+            closeReminderModal();
+        }
+    }
+
+    function showLoading(show) {
+        document.getElementById('loadingDiv').style.display = show ? 'block' : 'none';
+        document.getElementById('generateBtn').disabled = show;
+    }
+
+    function showToast(message, type = 'info') {
+        let toastContainer = document.getElementById('toastContainer');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toastContainer';
+            toastContainer.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+            `;
+            document.body.appendChild(toastContainer);
+        }
+        
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            background: ${type === 'success' ? '#2dce89' : type === 'error' ? '#f5365c' : '#5e72e4'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        `;
+        
+        const icon = document.createElement('i');
+        icon.className = `fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}`;
+        toast.appendChild(icon);
+        
+        const msgSpan = document.createElement('span');
+        msgSpan.textContent = message;
+        toast.appendChild(msgSpan);
+        
+        toastContainer.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                toast.remove();
+                if (toastContainer.children.length === 0) {
+                    toastContainer.remove();
+                }
+            }, 300);
+        }, 3000);
+    }
+
+    function showError(message) {
+        showToast(message, 'error');
+    }
+
+    function showSuccess(message) {
+        showToast(message, 'success');
+    }
+
+    function showConfirmationDialogue(title, message, onConfirm, onCancel = null) {
+        const overlay = document.createElement('div');
+        overlay.className = 'confirmation-dialogue-overlay';
+        overlay.id = 'tempConfirmationDialogue';
+        
+        const box = document.createElement('div');
+        box.className = 'confirmation-dialogue-box';
+        
+        box.innerHTML = `
+            <div class="confirmation-dialogue-title">${title}</div>
+            <div class="confirmation-dialogue-message">${message}</div>
+            <div class="confirmation-dialogue-actions">
+                <button class="confirmation-dialogue-btn confirm">Confirm</button>
+                <button class="confirmation-dialogue-btn cancel">Cancel</button>
+            </div>
+        `;
+        
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        
+        const confirmBtn = box.querySelector('.confirm');
+        const cancelBtn = box.querySelector('.cancel');
+        
+        confirmBtn.onclick = () => {
+            overlay.remove();
+            onConfirm();
+        };
+        
+        cancelBtn.onclick = () => {
+            overlay.remove();
+            if (onCancel) onCancel();
+        };
+        
+        overlay.onclick = (e) => {
+            if (e.target === overlay) {
+                overlay.remove();
+                if (onCancel) onCancel();
+            }
+        };
+    }
+
+    // Add keyframe animations for toast
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+{% endblock %}

@@ -1,0 +1,280 @@
+/* Add this at the top of your CSS files */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Apply Inter font globally */
+body, html, .inter {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+/* Teacher Feedback Modal Styling */
+#teacherFeedbackModal .modal-content {
+    border: none;
+    /* border-radius: 20px; */ /* Remove old radius */
+    /* box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); */ /* Remove old shadow */
+    /* backdrop-filter: blur(10px); */
+    /* background: rgba(255, 255, 255, 0.95); */
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+#teacherFeedbackModal .modal-header {
+    color: black;
+    /* border-radius: 20px 20px 0 0 !important; */
+    /* padding: 20px; */
+    /* border: none; */
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 0.75rem 1rem;
+}
+
+#teacherFeedbackModal .modal-header h5 {
+    margin: 0;
+    /* font-size: 1.5rem; */
+    /* font-weight: 700; */
+}
+
+#teacherFeedbackModal .modal-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+#teacherFeedbackModal .modal-body {
+    /* padding: 30px; */
+    padding: 1rem;
+}
+
+#teacherFeedbackModal .form-label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 10px;
+}
+
+#teacherFeedbackModal .form-control {
+    /* border-radius: 12px; */
+    /* border: 2px solid #e5e7eb; */
+    /* padding: 15px; */
+    font-size: 0.875rem;
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    padding: 15px;
+    /* font-size: 1rem; */
+    transition: all 0.3s ease;
+}
+
+#teacherFeedbackModal .form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+}
+
+#teacherFeedbackModal .btn-analyze {
+    /* background: linear-gradient(135deg, #6366f1, #8b5cf6); */
+    border: none;
+    border-radius: 6px;
+    /* border-radius: 12px; */
+    padding: 15px 40px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: white;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+#teacherFeedbackModal .btn-analyze:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+}
+
+#teacherFeedbackModal .btn-analyze:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#teacherFeedbackModal .result-container {
+    margin-top: 30px;
+    /* animation: fadeIn 0.5s ease; */
+    animation: fadeInCompact 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animation for results */
+@keyframes fadeInCompact {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#teacherFeedbackModal .sentiment-badge {
+    display: inline-block;
+    /* padding: 10px 25px; */
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    /* font-size: 1.2rem; */
+    /* font-weight: 700; */
+    margin: 20px 0;
+}
+
+#teacherFeedbackModal .sentiment-success {
+    /* background: linear-gradient(135deg, #10b981, #059669); */
+    /* color: white; */
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+#teacherFeedbackModal .sentiment-warning {
+    /* background: linear-gradient(135deg, #f59e0b, #d97706); */
+    /* color: white; */
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+#teacherFeedbackModal .sentiment-danger {
+    /* background: linear-gradient(135deg, #ef4444, #dc2626); */
+    /* color: white; */
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+#teacherFeedbackModal .score-card {
+    background: #f8f9fa;
+    /* border-radius: 12px; */
+    border-radius: 6px;
+    /* padding: 15px; */
+    padding: 0.5rem;
+    margin: 10px 0;
+    border-left: 3px solid #0d6efd;
+    /* border-left: 4px solid #6366f1; */
+}
+
+#teacherFeedbackModal .score-label {
+    /* font-weight: 600; */
+    /* color: #6b7280; */
+    /* font-size: 0.9rem; */
+    font-size: 0.75rem;
+    color: #6c757d;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#teacherFeedbackModal .score-value {
+    /* font-size: 1.5rem; */
+    /* font-weight: 700; */
+    /* color: #1f2937; */
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+#teacherFeedbackModal .motivation-box {
+    /* background: linear-gradient(135deg, #fef3c7, #fde68a); */
+    background: #fff3cd;
+    /* border-radius: 15px; */
+    border-radius: 6px;
+    /* padding: 25px; */
+    padding: 0.75rem;
+    margin-top: 25px;
+    border-left: 3px solid #ffc107;
+    /* border-left: 5px solid #f59e0b; */
+}
+
+#teacherFeedbackModal .motivation-box i {
+    color: #d97706;
+    margin-right: 10px;
+}
+
+#teacherFeedbackModal .motivation-text {
+    font-size: 1.1rem;
+    color: #78350f;
+    font-weight: 500;
+    line-height: 1.6;
+}
+
+#teacherFeedbackModal .feedback-display-box {
+    background: #f0f9ff;
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 20px;
+    border-left: 5px solid #0ea5e9;
+}
+
+#teacherFeedbackModal .feedback-display-box i {
+    color: #0284c7;
+    margin-right: 10px;
+}
+
+#teacherFeedbackModal .feedback-text {
+    font-size: 1rem;
+    color: #0c4a6e;
+    font-style: italic;
+    line-height: 1.6;
+}
+
+#teacherFeedbackModal .feedback-hidden-notice {
+    background: #f3f4f6;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    border: 2px dashed #9ca3af;
+    text-align: center;
+}
+
+#teacherFeedbackModal .feedback-hidden-notice i {
+    color: #6b7280;
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+#teacherFeedbackModal .feedback-hidden-notice p {
+    color: #4b5563;
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+#teacherFeedbackModal .spinner-border {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+#teacherFeedbackModal .spinner-border-sm {
+    width: 0.8rem;
+    height: 0.8rem;
+}
+
+/* Compact alert styling */
+#teacherFeedbackModal .alert {
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+#teacherFeedbackModal .alert strong {
+    font-size: 0.8rem;
+}
+
+#teacherFeedbackModal .error-alert {
+    border-radius: 12px;
+    border: none;
+    background: #fee2e2;
+    color: #991b1b;
+}

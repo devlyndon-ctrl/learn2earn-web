@@ -1,0 +1,47 @@
+WEB and Mobile
+[ ] Student Registration
+[ ] Student Web
+
+Information
+[ ] Remove Address (to not have many data)
+[ ] Do not add birthday
+
+Teacher
+[x] Add Template cards to the Task management so it doesn't look plain
+[x] Class Summary make it printable (pdf picture)
+[x] Export analytics
+[x] add loading effects on tasks and students
+[x] Activities filter and search
+[x] Award points have filter 
+[] Activities 
+[] add images/files/link for a system
+[] all classroom na tinuturuan
+
+when i open the award points its automatically checked and it says 1 selected
+
+when i click the check box again it says 2
+
+when i unchecked its says 1 but its unchcked so it should be only the checked one 
+
+
+
+Admin
+[x] Rename the Assign Teacher to Classroom to assign to subject 
+[x] Activity Log add name search
+[x] Export Analytics
+
+Settings
+[x] Just make the security password easier to navigate 
+[x] Make the password use alphanumeric
+
+Student
+[] Awarded is for points that is given by the teacher
+[] rewards di nag fifilter 
+
+wafawfwafawf
+Mobile 
+[ ] Add Achievements for streaks
+[ ] Logout/Login Activity log name it Authentication 
+[] Redeem rewards sa database make it have the name of the Rewards for history Redemptions if na delete na yung rewards
+Suggestions Mikel
+[] Make streaks base on the time that they have participated in class/given points and reset if they didn't do anything for a day

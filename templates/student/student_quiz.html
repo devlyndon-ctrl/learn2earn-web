@@ -1,0 +1,2147 @@
+{% extends "base.html" %}
+
+{% block title %}My Quizzes - Learn2Earn{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/student_quiz.css">
+{% endblock %}
+
+{% block main_content %}
+<div class="student-quiz-container">
+    <div class="container-fluid">
+        <!-- Header Section -->
+        <div class="welcome-section">
+            <div class="welcome-text">
+                <h1><i class="fas fa-graduation-cap"></i> My Quizzes</h1>
+                <p class="text-muted" id="studentInfo">Loading student information...</p>
+            </div>
+            <div class="student-stats-card" id="statsCard">
+                <div class="stat-item">
+                    <span class="stat-value" id="totalQuizzes">0</span>
+                    <span class="stat-label">Total Quizzes</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="completedQuizzes">0</span>
+                    <span class="stat-label">Completed</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="pendingQuizzes">0</span>
+                    <span class="stat-label">Pending</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="averageScore">0%</span>
+                    <span class="stat-label">Avg. Score</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="quiz-tabs">
+            <button class="tab-btn active" onclick="switchTab('assigned', event)">
+                <i class="fas fa-clock"></i> Assigned Quizzes
+                <span class="tab-badge" id="pendingBadge">0</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('completed', event)">
+                <i class="fas fa-check-circle"></i> Completed Quizzes
+                <span class="tab-badge" id="completedBadge">0</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('overdue', event)">
+                <i class="fas fa-exclamation-triangle"></i> Overdue
+                <span class="tab-badge overdue-badge" id="overdueBadge">0</span>
+            </button>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="search-filter-section">
+            <div class="search-container">
+                <div class="filter-row">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search quizzes by title or topic..." id="quizSearchInput" onkeyup="filterQuizzes()">
+                    </div>
+                </div>
+                
+                <div class="filter-tabs-container">
+                    <!-- Teacher Filter Dropdown -->
+                    <div class="custom-teacher-dropdown" id="customTeacherDropdown">
+                        <button class="teacher-dropdown-toggle" id="teacherDropdownToggle">
+                            <img src="/static/image/default-avatar.png" alt="Teacher" class="teacher-dropdown-avatar" id="selectedTeacherAvatar">
+                            <span class="teacher-dropdown-info">
+                                <span class="teacher-dropdown-name" id="selectedTeacherName">All Teachers</span>
+                                <span class="teacher-dropdown-subject" id="selectedTeacherSubject">Select a teacher</span>
+                            </span>
+                            <i class="fas fa-chevron-down" style="margin-left: auto; font-size: 0.9em;"></i>
+                        </button>
+                        <div class="teacher-dropdown-menu" id="teacherDropdownMenu">
+                            <button class="teacher-dropdown-option" data-teacher-id="all">
+                                <img src="/static/image/default-avatar.png" alt="All Teachers" class="teacher-dropdown-avatar">
+                                <div class="teacher-dropdown-info">
+                                    <span class="teacher-dropdown-name">All Teachers</span>
+                                    <span class="teacher-dropdown-subject">View quizzes from all teachers</span>
+                                </div>
+                                <span class="teacher-dropdown-active-badge" id="allTeachersBadge">ALL</span>
+                            </button>
+                            <!-- Teacher options will be populated dynamically here -->
+                        </div>
+                    </div>
+
+                    <!-- Sort By Dropdown -->
+                    <div class="sort-dropdown" id="sortDropdown">
+                        <button class="sort-dropdown-toggle" id="sortDropdownToggle">
+                            <i class="fas fa-sort-amount-down"></i>
+                            <span class="sort-dropdown-info">
+                                <span class="sort-dropdown-name" id="selectedSortName">Most Recent</span>
+                            </span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="sort-dropdown-menu" id="sortDropdownMenu">
+                            <button class="sort-dropdown-option" data-sort="recent" onclick="sortBy('recent')">
+                                <div class="sort-dropdown-info">
+                                    <span class="sort-dropdown-name">Most Recent</span>
+                                </div>
+                                <span class="sort-dropdown-active-badge" id="recentBadge">ACTIVE</span>
+                            </button>
+                            <button class="sort-dropdown-option" data-sort="oldest" onclick="sortBy('oldest')">
+                                <div class="sort-dropdown-info">
+                                    <span class="sort-dropdown-name">Oldest First</span>
+                                </div>
+                                <span class="sort-dropdown-active-badge" id="oldestBadge" style="display: none;">SELECTED</span>
+                            </button>
+                            <button class="sort-dropdown-option" data-sort="due" onclick="sortBy('due')">
+                                <div class="sort-dropdown-info">
+                                    <span class="sort-dropdown-name">Due Date</span>
+                                </div>
+                                <span class="sort-dropdown-active-badge" id="dueBadge" style="display: none;">SELECTED</span>
+                            </button>
+                            <button class="sort-dropdown-option" data-sort="score" onclick="sortBy('score')">
+                                <div class="sort-dropdown-info">
+                                    <span class="sort-dropdown-name">Highest Score</span>
+                                </div>
+                                <span class="sort-dropdown-active-badge" id="scoreBadge" style="display: none;">SELECTED</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assigned Quizzes Tab -->
+        <div id="assignedTab" class="tab-content active">
+            <div class="quiz-section">
+                <div class="section-header">
+                    <h4><i class="fas fa-tasks"></i> Quizzes Waiting for You</h4>
+                    <span class="section-badge" id="assignedCount">0 quizzes</span>
+                </div>
+
+                <!-- Loading Spinner -->
+                <div id="loadingSpinner" class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading quizzes...</p>
+                </div>
+
+                <!-- Quiz Grid - Assigned -->
+                <div id="assignedQuizGrid" class="quiz-grid">
+                    <!-- Quizzes will be populated dynamically -->
+                </div>
+                
+                <!-- Assigned Empty State -->
+                <div id="assignedEmptyState" class="empty-state" style="display: none;">
+                    <div class="empty-state-content">
+                        <i class="fas fa-clipboard-list"></i>
+                        <h3>No Assigned Quizzes</h3>
+                        <p>You don't have any assigned quizzes at the moment.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Quizzes Tab -->
+        <div id="completedTab" class="tab-content">
+            <div class="quiz-section">
+                <div class="section-header">
+                    <h4><i class="fas fa-check-circle"></i> Your Accomplishments</h4>
+                    <span class="section-badge" id="completedCount">0 quizzes</span>
+                </div>
+
+                <!-- Quiz Grid - Completed -->
+                <div id="completedQuizGrid" class="quiz-grid">
+                    <!-- Quizzes will be populated dynamically -->
+                </div>
+                
+                <!-- Completed Empty State -->
+                <div id="completedEmptyState" class="empty-state" style="display: none;">
+                    <div class="empty-state-content">
+                        <i class="fas fa-check-circle"></i>
+                        <h3>No Completed Quizzes</h3>
+                        <p>You haven't completed any quizzes yet.</p>
+                        <button class="btn-explore" onclick="switchTab('assigned', event)">
+                            <i class="fas fa-search"></i> Browse Quizzes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overdue Quizzes Tab -->
+        <div id="overdueTab" class="tab-content">
+            <div class="quiz-section">
+                <div class="section-header warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Overdue Quizzes</h4>
+                    <span class="section-badge warning" id="overdueCount">0 quizzes</span>
+                </div>
+
+                <!-- Quiz Grid - Overdue -->
+                <div id="overdueQuizGrid" class="quiz-grid">
+                    <!-- Quizzes will be populated dynamically -->
+                </div>
+                
+                <!-- Overdue Empty State -->
+                <div id="overdueEmptyState" class="empty-state" style="display: none;">
+                    <div class="empty-state-content">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>No Overdue Quizzes</h3>
+                        <p>You don't have any overdue quizzes. Great job staying on track!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quiz Preview Modal -->
+<div id="previewModal" class="modal preview-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-eye"></i> Quiz Preview / Review</h3>
+            <span class="close-modal" onclick="closePreviewModal()">&times;</span>
+        </div>
+        <div class="modal-body" id="previewModalBody">
+            <!-- Preview content will be populated dynamically -->
+        </div>
+    </div>
+</div>
+
+<!-- Take Quiz Modal -->
+<div id="takeQuizModal" class="modal take-quiz-modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3><i class="fas fa-pencil-alt"></i> <span id="takeQuizTitle">Take Quiz</span></h3>
+            <div class="quiz-timer" id="quizTimer">30:00</div>
+            <span class="close-modal" onclick="cancelQuiz()">&times;</span>
+        </div>
+        <div class="modal-body" id="takeQuizModalBody">
+            <!-- Quiz taking interface will be populated dynamically -->
+        </div>
+    </div>
+</div>
+
+<!-- Results Modal -->
+<div id="resultsModal" class="modal results-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-chart-bar"></i> Quiz Results</h3>
+            <span class="close-modal" onclick="closeResultsModal()">&times;</span>
+        </div>
+        <div class="modal-body" id="resultsModalBody">
+            <!-- Results content will be populated dynamically -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // Global variables
+    let allQuizzes = [];
+    let completedResults = [];
+    let currentQuiz = null;
+    let currentQuizQuestions = [];
+    let studentAnswers = [];
+    let timerInterval = null;
+    let timeRemaining = 0;
+    let currentTeacherId = 'all';
+    let currentSort = 'recent';
+    let searchTerm = '';
+    let allTeachers = [];
+    let isQuizActive = false;  // Track if a quiz is currently being taken
+    let tabSwitchAttempts = 0;  // Track number of tab switch attempts
+
+    // Load data on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadStudentData();
+        setupTeacherDropdown();
+        setupTabSwitchDetection();
+    });
+
+    // Detect tab switching and Alt+Tab
+    function setupTabSwitchDetection() {
+        // Prevent page unload when quiz is active
+        window.addEventListener('beforeunload', function(e) {
+            if (isQuizActive) {
+                // Auto-submit quiz with current progress when page is refreshed
+                submitQuizWithProgress();
+                // Show browser default message
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // Detect window blur (Alt+Tab or clicking another application)
+        window.addEventListener('blur', function() {
+            if (isQuizActive) {
+                tabSwitchAttempts++;  // Increment attempt counter
+                
+                // Auto-submit quiz on first attempt to switch
+                if (tabSwitchAttempts >= 1) {
+                    // Auto-submit quiz
+                    showConfirmationDialog(
+                        'Quiz Ended',
+                        'You switched away from the quiz. Your current answers will now be submitted automatically.',
+                        async function() {
+                            isQuizActive = false;
+                            await submitQuizWithProgress();
+                            closeTakeQuizModal();
+                            if (timerInterval) {
+                                clearInterval(timerInterval);
+                                timerInterval = null;
+                            }
+                        },
+                        null  // No cancel option
+                    );
+                    // Make buttons read-only
+                    const cancelBtn = document.getElementById('confirmationDialogueCancelBtn');
+                    if (cancelBtn) cancelBtn.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    // Show confirmation dialog for tab/window switch
+    function showTabSwitchConfirmation(title, message) {
+        showConfirmationDialog(
+            title,
+            message,
+            async function() {
+                // User confirmed they want to switch - end the quiz and close modal
+                isQuizActive = false;  // Disable the beforeunload protection
+                
+                // Submit quiz with current progress
+                await submitQuizWithProgress();
+                
+                // Close the quiz modal
+                closeTakeQuizModal();
+                
+                // Clear timer
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            },
+            function() {
+                // User cancelled - keep them on quiz (refocus window)
+                window.focus();
+                document.getElementById('takeQuizModal')?.querySelector('input')?.focus?.();
+            }
+        );
+    }
+
+    // Load student data and quizzes
+    async function loadStudentData() {
+        showLoading(true);
+        
+        try {
+            // Fetch quizzes
+            const quizzesResponse = await fetch('/api/student/get-quizzes');
+            const quizzesData = await quizzesResponse.json();
+            
+            // Fetch teachers
+            const teachersResponse = await fetch('/api/student-teachers-rewards');
+            const teachersData = await teachersResponse.json();
+            
+            if (quizzesData.success && teachersData.success) {
+                // Update student info
+                document.getElementById('studentInfo').textContent = 
+                    `Grade ${quizzesData.student.grade_level} - Section ${quizzesData.student.section}`;
+                
+                // Store quizzes and teachers
+                allQuizzes = quizzesData.quizzes;
+                allTeachers = teachersData.teachers || [];
+                
+                // Fetch completed results
+                await loadCompletedResults();
+                
+                // Populate teacher dropdown
+                populateTeacherDropdown();
+                
+                // Update stats
+                updateStats();
+                
+                // Render the active tab
+                renderActiveTab();
+            } else {
+                showError('Failed to load quizzes or teachers');
+            }
+        } catch (error) {
+            console.error('Error loading student data:', error);
+            showError('Error loading quizzes. Please try again.');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // Clear quiz cache to force fresh fetch from server
+    function clearQuizCache() {
+        allQuizzes = [];
+        completedResults = [];
+        currentQuiz = null;
+        currentQuizQuestions = [];
+        studentAnswers = [];
+    }
+
+    // Switch to Completed Tab after quiz submission
+    function switchToCompletedTab() {
+        // Find and click the Completed tab button
+        const tabs = document.querySelectorAll('.tab-btn');
+        let completedTabBtn = null;
+        
+        tabs.forEach(tab => {
+            if (tab.textContent.includes('Completed')) {
+                completedTabBtn = tab;
+            }
+        });
+        
+        if (completedTabBtn) {
+            completedTabBtn.click();
+        }
+    }
+
+    // Load completed quiz results
+    async function loadCompletedResults() {
+        try {
+            const response = await fetch('/api/student/my-performance');
+            const data = await response.json();
+            
+            if (data.success) {
+                completedResults = data.recent_results || [];
+            }
+        } catch (error) {
+            console.error('Error loading results:', error);
+        }
+    }
+
+    // Show/hide loading spinner
+    function showLoading(show) {
+        const spinner = document.getElementById('loadingSpinner');
+        const activeTab = document.querySelector('.tab-content.active');
+        
+        if (show) {
+            spinner.style.display = 'block';
+            if (activeTab) {
+                activeTab.style.display = 'none';
+            }
+        } else {
+            spinner.style.display = 'none';
+            if (activeTab) {
+                activeTab.style.display = 'block';
+            }
+        }
+    }
+
+    // Render the active tab
+    function renderActiveTab() {
+        const activeTab = document.querySelector('.tab-content.active');
+        
+        if (!activeTab) return;
+        
+        const now = new Date();
+        
+        if (activeTab.id === 'assignedTab') {
+            // Assigned: not submitted and not overdue
+            const assignedQuizzes = allQuizzes.filter(q => !q.submitted && new Date(q.due_date) > now);
+            const filtered = filterAndSortQuizzes(assignedQuizzes);
+            renderAssignedQuizzes(filtered);
+        } else if (activeTab.id === 'overdueTab') {
+            // Overdue: not submitted and past due date
+            const overdueQuizzes = allQuizzes.filter(q => !q.submitted && new Date(q.due_date) < now);
+            const filtered = filterAndSortQuizzes(overdueQuizzes);
+            renderOverdueQuizzes(filtered);
+        } else if (activeTab.id === 'completedTab') {
+            // Completed: apply filters and sorting to completed results
+            const filtered = filterAndSortCompletedQuizzes(completedResults);
+            renderCompletedQuizzes(filtered);
+        }
+    }
+
+    // Populate teacher dropdown
+    function populateTeacherDropdown() {
+        const teacherDropdownMenu = document.getElementById('teacherDropdownMenu');
+        
+        if (!teacherDropdownMenu) {
+            console.error('Teacher dropdown menu not found');
+            return;
+        }
+        
+        // Clear all existing buttons except the first one (All Teachers)
+        const buttons = teacherDropdownMenu.querySelectorAll('button');
+        buttons.forEach((btn, index) => {
+            if (index > 0) btn.remove();
+        });
+        
+        // Add teacher options from the API response
+        allTeachers.forEach(teacher => {
+            const teacherOption = document.createElement('button');
+            teacherOption.className = 'teacher-dropdown-option';
+            teacherOption.setAttribute('data-teacher-id', teacher.id);
+            
+            teacherOption.innerHTML = `
+                <img src="${teacher.avatar}" alt="${teacher.name}" class="teacher-dropdown-avatar" onerror="this.src='/static/image/default-avatar.png'">
+                <div class="teacher-dropdown-info">
+                    <span class="teacher-dropdown-name">${teacher.name}</span>
+                    <span class="teacher-dropdown-subject">${teacher.subject || 'General'}</span>
+                </div>
+                <span class="teacher-dropdown-active-badge" style="display: none;">SELECTED</span>
+            `;
+            
+            teacherOption.addEventListener('click', function() {
+                selectTeacher(teacher.id, teacher.name, teacher.subject, teacher.avatar);
+            });
+            
+            teacherDropdownMenu.appendChild(teacherOption);
+        });
+    }
+
+    // Select teacher and update filter
+    function selectTeacher(teacherId, teacherName, teacherSubject, teacherAvatar) {
+        // Update selected teacher display
+        document.getElementById('selectedTeacherAvatar').src = teacherAvatar || '/static/image/default-avatar.png';
+        document.getElementById('selectedTeacherName').textContent = teacherName;
+        document.getElementById('selectedTeacherSubject').textContent = teacherSubject || 'Select a teacher';
+        
+        // Update active badges
+        document.querySelectorAll('.teacher-dropdown-active-badge').forEach(badge => {
+            badge.style.display = 'none';
+        });
+        
+        if (teacherId === 'all') {
+            document.getElementById('allTeachersBadge').style.display = 'inline-block';
+        } else {
+            const selectedOption = document.querySelector(`[data-teacher-id="${teacherId}"] .teacher-dropdown-active-badge`);
+            if (selectedOption) {
+                selectedOption.style.display = 'inline-block';
+            }
+        }
+        
+        // Close dropdown
+        const teacherDropdownMenu = document.getElementById('teacherDropdownMenu');
+        const teacherDropdownToggle = document.getElementById('teacherDropdownToggle');
+        teacherDropdownMenu.classList.remove('open');
+        teacherDropdownToggle.classList.remove('active');
+        
+        // Update current teacher filter
+        currentTeacherId = teacherId;
+        
+        // Re-render active tab with new filter
+        renderActiveTab();
+    }
+
+    // Update statistics
+    function updateStats() {
+        const now = new Date();
+        const completed = allQuizzes.filter(q => q.submitted).length;
+        const pending = allQuizzes.filter(q => !q.submitted && new Date(q.due_date) > now).length;
+        const overdue = allQuizzes.filter(q => !q.submitted && new Date(q.due_date) < now).length;
+        
+        // Group results by quiz to get unique quiz count (for retakes)
+        const uniqueQuizzes = {};
+        completedResults.forEach(r => {
+            const quizId = r.teacher_quiz_id;
+            if (!uniqueQuizzes[quizId]) {
+                uniqueQuizzes[quizId] = [];
+            }
+            uniqueQuizzes[quizId].push(r);
+        });
+        
+        // Calculate average score using best attempt per quiz
+        let totalPercentage = 0;
+        Object.keys(uniqueQuizzes).forEach(quizId => {
+            const attempts = uniqueQuizzes[quizId].sort((a, b) => (b.score || 0) - (a.score || 0));
+            const bestResult = attempts[0];
+            const totalPoints = bestResult.total_points || (bestResult.total_items * (bestResult.points_per_item || 5));
+            totalPercentage += (bestResult.score / totalPoints) * 100;
+        });
+        const avgScore = Object.keys(uniqueQuizzes).length > 0 ? 
+            Math.round(totalPercentage / Object.keys(uniqueQuizzes).length) : 0;
+        
+        document.getElementById('totalQuizzes').textContent = allQuizzes.length;
+        document.getElementById('completedQuizzes').textContent = completed;
+        document.getElementById('pendingQuizzes').textContent = pending;
+        document.getElementById('averageScore').textContent = avgScore + '%';
+        
+        document.getElementById('pendingBadge').textContent = pending;
+        document.getElementById('completedBadge').textContent = completed;
+        document.getElementById('overdueBadge').textContent = overdue;
+        
+        document.getElementById('assignedCount').textContent = pending + ' quizzes';
+        document.getElementById('completedCount').textContent = completed + ' quizzes';
+        document.getElementById('overdueCount').textContent = overdue + ' quizzes';
+    }
+
+    // Filter and sort quizzes (for assigned and overdue)
+    function filterAndSortQuizzes(quizzes) {
+        // Apply search filter
+        let filtered = quizzes;
+        if (searchTerm) {
+            filtered = filtered.filter(q => 
+                (q.quiz_title && q.quiz_title.toLowerCase().includes(searchTerm)) ||
+                (q.topic && q.topic.toLowerCase().includes(searchTerm)) ||
+                (q.teacher_name && q.teacher_name.toLowerCase().includes(searchTerm))
+            );
+        }
+        
+        // Apply teacher filter
+        if (currentTeacherId !== 'all') {
+            filtered = filtered.filter(q => q.teacher_id == currentTeacherId);
+        }
+        
+        // Apply sort
+        filtered.sort((a, b) => {
+            switch(currentSort) {
+                case 'recent':
+                    return new Date(b.assigned_date) - new Date(a.assigned_date);
+                case 'oldest':
+                    return new Date(a.assigned_date) - new Date(b.assigned_date);
+                case 'due':
+                    return new Date(a.due_date) - new Date(b.due_date);
+                case 'score':
+                    return 0; // Score sort not applicable for assigned/overdue
+                default:
+                    return 0;
+            }
+        });
+        
+        return filtered;
+    }
+
+    // Filter and sort completed quizzes
+    function filterAndSortCompletedQuizzes(results) {
+        // Apply search filter
+        let filtered = results;
+        if (searchTerm) {
+            filtered = filtered.filter(r => {
+                const quiz = allQuizzes.find(q => q.id === r.teacher_quiz_id) || {};
+                return (quiz.quiz_title && quiz.quiz_title.toLowerCase().includes(searchTerm)) ||
+                       (quiz.topic && quiz.topic.toLowerCase().includes(searchTerm)) ||
+                       (r.student_name && r.student_name.toLowerCase().includes(searchTerm));
+            });
+        }
+        
+        // Apply teacher filter
+        if (currentTeacherId !== 'all') {
+            filtered = filtered.filter(r => r.teacher_id == currentTeacherId);
+        }
+        
+        // Apply sort
+        filtered.sort((a, b) => {
+            switch(currentSort) {
+                case 'recent':
+                    return new Date(b.submitted_date) - new Date(a.submitted_date);
+                case 'oldest':
+                    return new Date(a.submitted_date) - new Date(b.submitted_date);
+                case 'due':
+                    return 0; // Due date sort not applicable for completed
+                case 'score':
+                    // Sort by percentage score (highest first)
+                    const totalPointsA = a.total_points || a.total_items || 1;
+                    const totalPointsB = b.total_points || b.total_items || 1;
+                    const percentageA = (a.score / totalPointsA) * 100;
+                    const percentageB = (b.score / totalPointsB) * 100;
+                    return percentageB - percentageA;
+                default:
+                    return 0;
+            }
+        });
+        
+        return filtered;
+    }
+
+    // Render assigned quizzes
+    function renderAssignedQuizzes(quizzes) {
+        const grid = document.getElementById('assignedQuizGrid');
+        const emptyState = document.getElementById('assignedEmptyState');
+        
+        if (quizzes.length === 0) {
+            grid.innerHTML = '';
+            emptyState.style.display = 'flex';
+        } else {
+            emptyState.style.display = 'none';
+            grid.innerHTML = quizzes.map(quiz => createAssignedQuizCard(quiz)).join('');
+        }
+    }
+
+    // Render overdue quizzes
+    function renderOverdueQuizzes(quizzes) {
+        const grid = document.getElementById('overdueQuizGrid');
+        const emptyState = document.getElementById('overdueEmptyState');
+        
+        if (quizzes.length === 0) {
+            grid.innerHTML = '';
+            emptyState.style.display = 'flex';
+        } else {
+            emptyState.style.display = 'none';
+            grid.innerHTML = quizzes.map(quiz => createOverdueQuizCard(quiz)).join('');
+        }
+    }
+
+    // Render completed quizzes
+    async function renderCompletedQuizzes(quizzes = completedResults) {
+        const grid = document.getElementById('completedQuizGrid');
+        const emptyState = document.getElementById('completedEmptyState');
+        
+        if (quizzes.length === 0) {
+            grid.innerHTML = '';
+            emptyState.style.display = 'flex';
+        } else {
+            emptyState.style.display = 'none';
+            // Show loading state while fetching permissions
+            grid.innerHTML = '<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin"></i> Loading quizzes...</div>';
+            
+            // Group results by teacher_quiz_id to consolidate retakes
+            const groupedByQuiz = {};
+            quizzes.forEach(result => {
+                const quizId = result.teacher_quiz_id;
+                if (!groupedByQuiz[quizId]) {
+                    groupedByQuiz[quizId] = [];
+                }
+                groupedByQuiz[quizId].push(result);
+            });
+            
+            // For each quiz, keep best result and get all attempts
+            const cardsPromises = Object.keys(groupedByQuiz).map(async quizId => {
+                const attempts = groupedByQuiz[quizId].sort((a, b) => (b.score || 0) - (a.score || 0));
+                const bestResult = attempts[0]; // Best score
+                const previousResults = attempts.slice(1); // Earlier attempts
+                const quiz = allQuizzes.find(q => q.id === bestResult.teacher_quiz_id) || {};
+                
+                // Fetch retake permission
+                let retakeAllowed = false;
+                let retakeAllowedByTeacher = false;
+                try {
+                    const historyResponse = await fetch(`/api/quiz/${bestResult.teacher_quiz_id}/retake-history`);
+                    const historyData = await historyResponse.json();
+                    retakeAllowed = historyData.can_retake || false;
+                    retakeAllowedByTeacher = historyData.retake_allowed_by_teacher || false;
+                } catch (error) {
+                    console.error('Error fetching retake permission:', error);
+                }
+                
+                return createCompletedQuizCard(bestResult, quiz, retakeAllowed, previousResults);
+            });
+            
+            const cardsHtml = await Promise.all(cardsPromises);
+            grid.innerHTML = cardsHtml.join('');
+        }
+    }
+
+    // Create assigned quiz card HTML
+    function createAssignedQuizCard(quiz) {
+        const dueDate = new Date(quiz.due_date);
+        const now = new Date();
+        const daysUntilDue = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+        
+        const dueText = daysUntilDue <= 1 ? 
+            '<span class="quiz-type-badge urgent"><i class="fas fa-exclamation-circle"></i> Due Tomorrow!</span>' :
+            `<span class="quiz-type-badge"><i class="fas fa-clock"></i> Due in ${daysUntilDue} days</span>`;
+        
+        return `
+            <div class="quiz-card assigned ${daysUntilDue <= 1 ? 'urgent' : ''}">
+                <div class="quiz-card-header assigned">
+                    ${dueText}
+                    <h3>${quiz.quiz_title || 'Untitled Quiz'}</h3>
+                    <div class="quiz-meta">
+                        <span><i class="fas fa-book"></i> ${quiz.topic || 'General'}</span>
+                        <span><i class="fas fa-layer-group"></i> Grade ${quiz.grade_level} - ${quiz.section}</span>
+                    </div>
+                </div>
+                <div class="quiz-card-body">
+                    <div class="quiz-detail">
+                        <span class="label"><i class="fas fa-calendar-alt"></i> Due Date:</span>
+                        <span class="due-date ${daysUntilDue <= 1 ? 'urgent' : ''}">${formatDateWithTime(quiz.due_date)}</span>
+                    </div>
+                    <div class="quiz-detail">
+                        <span class="label"><i class="fas fa-hourglass-half"></i> Time Limit:</span>
+                        <span>${quiz.time_limit_minutes || 30} minutes</span>
+                    </div>
+                    <div class="quiz-detail">
+                        <span class="label"><i class="fas fa-star"></i> Total Points:</span>
+                        <span>${quiz.total_points || 0} points</span>
+                    </div>
+                    
+                    <div class="quiz-progress-info">
+                        <div class="info-item">
+                            <i class="fas fa-question-circle"></i>
+                            <span>${quiz.total_items || 0} Questions</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <span>${quiz.teacher_name || 'Unknown Teacher'}</span>
+                        </div>
+                    </div>
+
+                    <div class="quiz-actions">
+                        <button class="btn-start" onclick="startQuiz(${quiz.id})">
+                            <i class="fas fa-play"></i> Start Quiz
+                        </button>
+                        <button class="btn-preview" onclick="previewQuiz(${quiz.id})">
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Create overdue quiz card HTML
+    function createOverdueQuizCard(quiz) {
+        const dueDate = new Date(quiz.due_date);
+        const now = new Date();
+        const daysOverdue = Math.ceil((now - dueDate) / (1000 * 60 * 60 * 24));
+        
+        return `
+            <div class="quiz-card overdue">
+                <div class="quiz-card-header overdue">
+                    <div class="quiz-type-badge overdue">
+                        <i class="fas fa-exclamation-triangle"></i> Overdue by ${daysOverdue} days
+                    </div>
+                    <h3>${quiz.quiz_title || 'Untitled Quiz'}</h3>
+                    <div class="quiz-meta">
+                        <span><i class="fas fa-book"></i> ${quiz.topic || 'General'}</span>
+                        <span><i class="fas fa-layer-group"></i> Grade ${quiz.grade_level} - ${quiz.section}</span>
+                    </div>
+                </div>
+                <div class="quiz-card-body">
+                    <div class="quiz-detail">
+                        <span class="label"><i class="fas fa-calendar-alt"></i> Due Date:</span>
+                        <span class="due-date overdue">${formatDateWithTime(quiz.due_date)}</span>
+                    </div>
+                    <div class="quiz-detail">
+                        <span class="label"><i class="fas fa-hourglass-half"></i> Time Limit:</span>
+                        <span>${quiz.time_limit_minutes || 30} minutes</span>
+                    </div>
+                    <div class="quiz-detail">
+                        <span class="label"><i class="fas fa-star"></i> Total Points:</span>
+                        <span>${quiz.total_points || 0} points</span>
+                    </div>
+                    
+                    <div class="quiz-progress-info">
+                        <div class="info-item">
+                            <i class="fas fa-question-circle"></i>
+                            <span>${quiz.total_items || 0} Questions</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <span>${quiz.teacher_name || 'Unknown Teacher'}</span>
+                        </div>
+                    </div>
+
+                    <div class="warning-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>This quiz is overdue. Please submit as soon as possible.</span>
+                    </div>
+
+                    <div class="quiz-actions">
+                        <button class="btn-start urgent" onclick="startQuiz(${quiz.id})">
+                            <i class="fas fa-play"></i> Start Now
+                        </button>
+                        <button class="btn-preview" onclick="previewQuiz(${quiz.id})">
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Create completed quiz card HTML
+    function createCompletedQuizCard(result, quiz, retakeAllowed = false, previousResults = []) {
+        const pointsPerItem = quiz.points_per_item || 5;
+        const totalPoints = result.total_points || (result.total_items * pointsPerItem);
+        const totalQuestions = result.total_items || 0;
+        const numCorrectQuestions = Math.round(result.score / pointsPerItem);
+        const percentage = (result.score / totalPoints) * 100;
+        const passed = percentage >= 75;
+        const mediocre = percentage >= 50 && percentage < 75;
+        const scoreClass = passed ? 'passed' : (mediocre ? 'mediocre' : 'failed');
+        const statusEmoji = passed ? 'Completed' : (mediocre ? 'Needs Improvement' : 'Needs Improvement');
+        
+        // Check if this has any previous attempts
+        const hasPreviousAttempt = previousResults && previousResults.length > 0;
+        const totalAttempts = 1 + (hasPreviousAttempt ? previousResults.length : 0);
+        let previousScoreHTML = '';
+        let scoreImprovement = 0;
+        let attemptsHTML = '';
+        
+        if (hasPreviousAttempt) {
+            const previousResult = previousResults[0];
+            const previousScore = previousResult.score || 0;
+            const previousNumCorrect = Math.round(previousScore / pointsPerItem);
+            const previousPercentage = (previousScore / totalPoints) * 100;
+            scoreImprovement = result.score - previousScore;
+            
+            // Build attempts list showing all attempts chronologically (most recent first)
+            let attemptsContent = '<div style="margin-top: 12px; padding: 12px; background: #f8f9fa; border-radius: 10px;">';
+            attemptsContent += `<div style="font-size: 0.9em; font-weight: 600; color: #495057; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;"><i class="fas fa-history"></i> Attempt History (${totalAttempts} total)</div>`;
+            
+            // Current attempt (best)
+            attemptsContent += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.08); background: rgba(45,206,137,0.05); padding: 8px 6px; border-radius: 4px; margin: 4px 0;">
+                <span style="font-size: 0.9em; color: #2dce89; font-weight: 600;"><i class="fas fa-crown"></i> Best Score</span>
+                <span style="font-size: 0.9em; font-weight: 600; color: #2dce89;">${numCorrectQuestions}/${totalQuestions} (${Math.round(percentage)}%)</span>
+            </div>`;
+            
+            // Show all previous attempts in reverse chronological order (most recent after best)
+            const reversedPreviousResults = [...previousResults].reverse();
+            reversedPreviousResults.forEach((prevResult, idx) => {
+                const prevScore = prevResult.score || 0;
+                const prevNumCorrect = Math.round(prevScore / pointsPerItem);
+                const prevPercentage = (prevScore / totalPoints) * 100;
+                const attemptNum = totalAttempts - idx;
+                
+                attemptsContent += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; ${idx < reversedPreviousResults.length - 1 ? 'border-bottom: 1px solid rgba(0,0,0,0.08);' : ''}">
+                    <span style="font-size: 0.9em; color: #6c757d;">Attempt ${attemptNum}</span>
+                    <span style="font-size: 0.9em; font-weight: 600; color: #6c757d;">${prevNumCorrect}/${totalQuestions} (${Math.round(prevPercentage)}%)</span>
+                </div>`;
+            });
+            
+            attemptsContent += '</div>';
+            attemptsHTML = attemptsContent;
+            
+            previousScoreHTML = `
+                <div class="previous-attempt-box">
+                    <div class="previous-attempt-label">
+                        <i class="fas fa-history"></i> Previous Attempt
+                    </div>
+                    <div class="previous-attempt-stats">
+                        <div class="previous-score-item">
+                            <span class="prev-label">Score:</span>
+                            <span class="prev-value">${previousNumCorrect}/${totalQuestions} (${Math.round(previousPercentage)}%)</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        return `
+            <div class="quiz-card completed ${scoreClass === 'failed' ? 'failed' : (scoreClass === 'mediocre' ? 'mediocre' : '')}">
+                <div class="quiz-card-header completed ${scoreClass === 'failed' ? 'failed' : (scoreClass === 'mediocre' ? 'mediocre' : '')}">
+                    <div class="quiz-type-badge ${scoreClass === 'failed' ? 'failed' : (scoreClass === 'mediocre' ? 'mediocre' : 'completed')}">
+                        <i class="fas ${passed ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                        ${statusEmoji} ${hasPreviousAttempt ? `<span class="retake-badge">Attempt ${totalAttempts}</span>` : ''}
+                    </div>
+                    <h3>${quiz.quiz_title || 'Quiz'}</h3>
+                    <div class="quiz-meta">
+                        <span><i class="fas fa-book"></i> ${quiz.topic || result.topic || 'General'}</span>
+                        <span><i class="fas fa-layer-group"></i> Grade ${result.grade_level} - ${result.section}</span>
+                    </div>
+                </div>
+                <div class="quiz-card-body">
+                    <div class="score-display">
+                        <div class="score-circle ${scoreClass}">
+                            <span class="score-value">${numCorrectQuestions}</span>
+                            <span class="score-total">/${totalQuestions}</span>
+                        </div>
+                        <div class="score-details">
+                            <div class="score-percentage ${scoreClass}">${Math.round(percentage)}%</div>
+                            <div class="score-status ${scoreClass}">${passed ? 'Passed' : (mediocre ? 'Needs Improvement' : 'Failed')}</div>
+                            ${scoreImprovement > 0 ? `
+                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.1); display: flex; align-items: center; gap: 6px; font-size: 0.85em; font-weight: 600; color: #10b981;">
+                                <i class="fas fa-arrow-up"></i> +${scoreImprovement} pts improvement
+                            </div>
+                            ` : (scoreImprovement < 0 ? `
+                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.1); display: flex; align-items: center; gap: 6px; font-size: 0.85em; font-weight: 600; color: #f5365c;">
+                                <i class="fas fa-arrow-down"></i> ${scoreImprovement} pts (keep trying!)
+                            </div>
+                            ` : '')}
+                        </div>
+                    </div>
+                    
+                    ${previousScoreHTML}
+                    ${attemptsHTML}
+
+                    <div class="quiz-detail">
+                        <span class="label"><i class="fas fa-calendar-check"></i> Completed:</span>
+                        <span>${formatDateWithTime(result.submitted_date)}</span>
+                    </div>
+                    
+                    <div class="quiz-stats-mini">
+                        <div class="stat-item">
+                            <span class="stat-label">Time Spent</span>
+                            <span class="stat-value">${result.time_spent || 'N/A'} min</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Questions</span>
+                            <span class="stat-value">${numCorrectQuestions}/${totalQuestions}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Points</span>
+                            <span class="stat-value">${result.score}/${totalPoints}</span>
+                        </div>
+                    </div>
+
+                    <div class="quiz-actions">
+                        ${retakeAllowed ? `
+                        <button class="btn-retake" onclick="retakeQuiz(${result.teacher_quiz_id})">
+                            <i class="fas fa-redo"></i> Retake Quiz
+                        </button>
+                        ` : `
+                        <button class="btn-view-results" onclick="reviewAnswers(${result.teacher_quiz_id})">
+                            <i class="fas fa-chart-bar"></i> View Results
+                        </button>
+                        `}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Start quiz
+    async function startQuiz(quizId) {
+        // Show confirmation dialog
+        showConfirmationDialog(
+            'Start Quiz?',
+            'Once you start this quiz, refreshing the page or closing the tab will end the quiz and submit your current answers. Are you ready to begin?',
+            async function() {
+                // Confirm - proceed with starting quiz
+                await startQuizInternal(quizId);
+            },
+            function() {
+                // Cancel - do nothing
+                console.log('Quiz start cancelled');
+            }
+        );
+    }
+
+    // Retake quiz - prompts student about retake
+    async function retakeQuiz(quizId) {
+        try {
+            // Get retake history first
+            const historyResponse = await fetch(`/api/quiz/${quizId}/retake-history`);
+            const historyData = await historyResponse.json();
+            
+            // Check if teacher has allowed the retake
+            if (!historyData.retake_allowed_by_teacher) {
+                showConfirmationDialog(
+                    'Retake Not Available',
+                    'Your teacher has not yet approved a retake for this quiz. Please wait for your teacher to allow you to retake it.',
+                    function() {
+                        console.log('Acknowledged - waiting for teacher approval');
+                    },
+                    null,
+                    'OK',
+                    ''
+                );
+                return;
+            }
+            
+            // Check if student can retake (only 1 retake allowed)
+            if (!historyData.can_retake) {
+                showConfirmationDialog(
+                    'Retake Not Available',
+                    'You have already used your one retake attempt for this quiz. Your best score has been recorded.',
+                    function() {
+                        console.log('Acknowledged - no more retakes');
+                    },
+                    null,
+                    'OK',
+                    ''
+                );
+                return;
+            }
+            
+            let message = 'You can retake this quiz to improve your score. You have 1 retake attempt.\n\n';
+            
+            if (historyData.best_score !== undefined && historyData.best_score !== null) {
+                const bestScore = historyData.best_score;
+                const totalPoints = historyData.attempts && historyData.attempts.length > 0 ? historyData.attempts[0].total_points : 100;
+                message += `Your current best score: ${bestScore}/${totalPoints}\n\n`;
+                message += 'If you score higher, you\'ll earn bonus points equal to the difference.\n';
+                message += 'If you score lower, you won\'t lose any points.\n\n';
+            }
+            
+            message += 'Start the quiz?';
+            
+            showConfirmationDialog(
+                'Retake Quiz?',
+                message,
+                async function() {
+                    // Confirm - proceed with retaking quiz
+                    await startQuizInternal(quizId, true);
+                },
+                function() {
+                    // Cancel - do nothing
+                    console.log('Quiz retake cancelled');
+                }
+            );
+        } catch (error) {
+            console.error('Error getting retake info:', error);
+            // Proceed with retake anyway
+            showConfirmationDialog(
+                'Retake Quiz?',
+                'You can retake this quiz to improve your score. If you score higher, you\'ll earn bonus points. Are you ready?',
+                async function() {
+                    await startQuizInternal(quizId, true);
+                },
+                function() {
+                    console.log('Quiz retake cancelled');
+                }
+            );
+        }
+    }
+
+    // Internal function to start quiz
+    async function startQuizInternal(quizId, isRetake = false) {
+        try {
+            const response = await fetch(`/api/quiz/${quizId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                currentQuiz = data.quiz;
+                currentQuizQuestions = data.quiz.quiz_data || [];
+                studentAnswers = new Array(currentQuizQuestions.length).fill(null);
+                
+                // Show retake info if applicable
+                if (isRetake && data.quiz.previous_best_score !== undefined && data.quiz.previous_best_score !== null) {
+                    console.log(`Retake #${data.quiz.attempt_number}: Previous best score was ${data.quiz.previous_best_score}`);
+                }
+                
+                // Set up timer
+                timeRemaining = (currentQuiz.time_limit_minutes || 30) * 60;
+                startTimer();
+                
+                // Show take quiz modal
+                showTakeQuizModal();
+            } else {
+                showError('Error loading quiz: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error starting quiz:', error);
+            showError('Error loading quiz');
+        }
+    }
+
+    // Show confirmation dialog
+    function showConfirmationDialog(title, message, onConfirm, onCancel, confirmBtnText = 'Confirm', cancelBtnText = 'Cancel') {
+        const overlay = document.getElementById('confirmationDialogue');
+        const titleEl = document.getElementById('confirmationDialogueTitle');
+        const messageEl = document.getElementById('confirmationDialogueMessage');
+        const confirmBtn = document.getElementById('confirmationDialogueConfirmBtn');
+        const cancelBtn = document.getElementById('confirmationDialogueCancelBtn');
+        
+        // Set content
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        
+        // Remove old event listeners by cloning
+        confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+        cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+        
+        const newConfirmBtn = document.getElementById('confirmationDialogueConfirmBtn');
+        const newCancelBtn = document.getElementById('confirmationDialogueCancelBtn');
+        
+        // Set button text
+        newConfirmBtn.textContent = confirmBtnText;
+        newCancelBtn.textContent = cancelBtnText;
+        
+        // Add event listeners
+        newConfirmBtn.addEventListener('click', function() {
+            overlay.style.display = 'none';
+            if (onConfirm) onConfirm();
+        });
+        
+        newCancelBtn.addEventListener('click', function() {
+            overlay.style.display = 'none';
+            if (onCancel) onCancel();
+        });
+        
+        // Close on overlay click
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                overlay.style.display = 'none';
+                if (onCancel) onCancel();
+            }
+        });
+        
+        // Show overlay
+        overlay.style.display = 'flex';
+    }
+
+    // Show take quiz modal
+    function showTakeQuizModal() {
+        isQuizActive = true;  // Mark quiz as active
+        tabSwitchAttempts = 0;  // Reset tab switch attempts when starting new quiz
+        const modal = document.getElementById('takeQuizModal');
+        const title = document.getElementById('takeQuizTitle');
+        const body = document.getElementById('takeQuizModalBody');
+        
+        title.textContent = currentQuiz.quiz_title || 'Take Quiz';
+        
+        let html = `
+            <div class="quiz-instructions">
+                <h5>Instructions:</h5>
+                <p>${currentQuiz.instructions || 'Answer all questions carefully. You cannot go back to previous questions.'}</p>
+                <hr>
+            </div>
+            <form id="quizForm" onsubmit="event.preventDefault(); submitQuiz();">
+        `;
+        
+        currentQuizQuestions.forEach((question, index) => {
+            html += `
+                <div class="quiz-question mb-4" data-question="${index}">
+                    <div class="question-header">
+                        <span class="question-number">Question ${index + 1} of ${currentQuizQuestions.length}</span>
+                        <span class="question-points">${currentQuiz.points_per_item || 5} point(s)</span>
+                    </div>
+                    <div class="question-text mt-2">${question.question || ''}</div>
+                    <div class="choices mt-3">
+            `;
+            
+            (question.choices || []).forEach((choice, choiceIndex) => {
+                html += `
+                    <div class="choice-option mb-2" onclick="selectAnswer(${index}, ${choiceIndex})">
+                        <input type="radio" name="question_${index}" value="${choiceIndex}" 
+                               ${studentAnswers[index] === choiceIndex ? 'checked' : ''}>
+                        <span>${choice}</span>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+                <hr>
+            `;
+        });
+        
+        html += `
+                <div class="quiz-actions mt-4">
+                    <button type="button" class="btn-start" onclick="submitQuiz()">
+                        <i class="fas fa-paper-plane"></i> Submit Quiz
+                    </button>
+                    <button type="button" class="btn-preview" onclick="cancelQuiz()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        `;
+        
+        body.innerHTML = html;
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+    }
+
+    // Cancel quiz - shows confirmation dialog
+    function cancelQuiz() {
+        showConfirmationDialog(
+            'Cancel Quiz?',
+            'If you cancel now, this quiz will end immediately and you will NOT be able to retake it. Your current progress WILL be saved and scored based on your answers so far. Are you sure you want to cancel?',
+            function() {
+                // User confirmed cancellation - submit quiz with current progress
+                submitQuizWithProgress();
+            },
+            function() {
+                // User clicked cancel, don't close the quiz
+                console.log('Quiz cancellation cancelled - continuing with quiz');
+            }
+        );
+    }
+
+    // Submit quiz with partial progress (for cancellation)
+    async function submitQuizWithProgress() {
+        // Calculate score from answered questions only
+        let score = 0;
+        const pointsPerItem = currentQuiz.points_per_item || 5;
+        
+        currentQuizQuestions.forEach((question, index) => {
+            if (studentAnswers[index] !== null && studentAnswers[index] === question.correct_answer) {
+                score += pointsPerItem;
+            }
+        });
+        
+        // Prepare answers object - mark unanswered as -1
+        const answers = {};
+        studentAnswers.forEach((answer, index) => {
+            answers[`q${index + 1}`] = answer !== null ? answer : -1;
+        });
+        
+        // Calculate time spent
+        const timeSpent = Math.ceil(((currentQuiz.time_limit_minutes * 60) - timeRemaining) / 60);
+        
+        // Calculate total possible points
+        const totalPossiblePoints = currentQuizQuestions.length * pointsPerItem;
+        
+        try {
+            const response = await fetch('/api/student/submit-quiz', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    teacher_quiz_id: currentQuiz.id,
+                    answers: answers,
+                    score: score,
+                    time_spent: timeSpent,
+                    cancelled: true // Flag to indicate quiz was cancelled
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Stop timer
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+                
+                // Close modal
+                closeTakeQuizModal();
+                
+                // Show message about cancelled quiz with saved score
+                alert(`Quiz cancelled. Your progress has been saved!\n\nScore: ${score}/${totalPossiblePoints} (${Math.round((score/totalPossiblePoints)*100)}%)\n\nNote: You cannot retake this quiz.`);
+                
+                // Clear cache and reload data, then switch to Completed tab
+                clearQuizCache();
+                await loadStudentData();
+                
+                // Add a small delay to ensure UI is updated before switching tabs
+                setTimeout(() => {
+                    switchToCompletedTab();
+                }, 300);
+            } else {
+                alert(data.error || 'Error submitting quiz');
+            }
+        } catch (error) {
+            console.error('Error submitting quiz:', error);
+            alert('Error submitting quiz');
+        }
+    }
+
+    // Select answer
+    function selectAnswer(questionIndex, choiceIndex) {
+        studentAnswers[questionIndex] = choiceIndex;
+        
+        // Update radio button
+        const radios = document.getElementsByName(`question_${questionIndex}`);
+        if (radios[choiceIndex]) {
+            radios[choiceIndex].checked = true;
+        }
+    }
+
+    // Submit quiz - FIXED VERSION
+    async function submitQuiz(timeExpired = false) {
+        // Check if all questions answered (skip if time expired)
+        if (!timeExpired) {
+            const unanswered = studentAnswers.findIndex(a => a === null);
+            if (unanswered !== -1) {
+                // Show custom confirmation dialog for unanswered questions
+                showConfirmationDialog(
+                    'Unanswered Questions',
+                    `You have left ${currentQuizQuestions.length - studentAnswers.filter(a => a !== null).length} question(s) unanswered. Do you want to continue answering or submit the quiz anyway?`,
+                    async function() {
+                        // Submit Anyway button clicked
+                        performQuizSubmission(timeExpired);
+                    },
+                    function() {
+                        // Continue Quiz button clicked - just close dialog and return to quiz
+                        return;
+                    },
+                    'Submit Anyway',
+                    'Continue Quiz'
+                );
+                return;
+            }
+        }
+        
+        // All questions answered or time expired - proceed with submission
+        performQuizSubmission(timeExpired);
+    }
+
+    // Perform the actual quiz submission
+    async function performQuizSubmission(timeExpired = false) {
+        // Calculate score - FIXED: Use points_per_item correctly
+        let score = 0;
+        const pointsPerItem = currentQuiz.points_per_item || 5; // Default to 5 if not specified
+        
+        currentQuizQuestions.forEach((question, index) => {
+            if (studentAnswers[index] === question.correct_answer) {
+                score += pointsPerItem; // Add points for correct answer
+            }
+        });
+        
+        // Prepare answers object
+        const answers = {};
+        studentAnswers.forEach((answer, index) => {
+            answers[`q${index + 1}`] = answer !== null ? answer : -1;
+        });
+        
+        // Calculate time spent
+        const timeSpent = Math.ceil(((currentQuiz.time_limit_minutes * 60) - timeRemaining) / 60);
+        
+        // Calculate total possible points
+        const totalPossiblePoints = currentQuizQuestions.length * pointsPerItem;
+        
+        try {
+            const response = await fetch('/api/student/submit-quiz', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    teacher_quiz_id: currentQuiz.id,
+                    answers: answers,
+                    score: score,
+                    time_spent: timeSpent
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Stop timer
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+                
+                // Close modal
+                closeTakeQuizModal();
+                
+                // Prepare success message
+                let successMessage = `Quiz submitted!\n\nYour score: ${score}/${totalPossiblePoints} (${Math.round((score/totalPossiblePoints)*100)}%)`;
+                
+                // Add retake info if applicable
+                if (data.attempt_number && data.attempt_number > 1) {
+                    successMessage += `\n\nAttempt: ${data.attempt_number}`;
+                    if (data.previous_best_score !== undefined && data.previous_best_score !== null) {
+                        successMessage += `\nPrevious best: ${data.previous_best_score}/${totalPossiblePoints}`;
+                    }
+                    if (data.bonus_points_earned !== undefined) {
+                        successMessage += `\nBonus points earned: ${data.bonus_points_earned}`;
+                        if (data.is_best_score) {
+                            successMessage += ` ✓ New best score!`;
+                        }
+                    }
+                }
+                
+                // Show appropriate message
+                if (timeExpired) {
+                    alert(`Quiz Ended!\n\nYour quiz time has expired and has been automatically submitted.\n\n${successMessage}`);
+                } else {
+                    alert(successMessage);
+                }
+                
+                // Clear cache and reload data, then switch to Completed tab
+                clearQuizCache();
+                await loadStudentData();
+                
+                // Add a small delay to ensure UI is updated before switching tabs
+                setTimeout(() => {
+                    switchToCompletedTab();
+                }, 300);
+            } else {
+                alert(data.error || 'Error submitting quiz');
+            }
+        } catch (error) {
+            console.error('Error submitting quiz:', error);
+            alert('Error submitting quiz');
+        }
+    }
+
+    // Start timer
+    function startTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+        }
+        
+        const timerElement = document.getElementById('quizTimer');
+        
+        timerInterval = setInterval(() => {
+            timeRemaining--;
+            
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                isTimeExpired = true;
+                submitQuiz(true);
+                return;
+            }
+            
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Warning when 5 minutes left
+            if (timeRemaining === 300) {
+                alert('5 minutes remaining!');
+            }
+        }, 1000);
+    }
+
+    // Preview quiz
+    async function previewQuiz(quizId) {
+        try {
+            const response = await fetch(`/api/quiz/${quizId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                const quiz = data.quiz;
+                
+                const modalBody = document.getElementById('previewModalBody');
+                modalBody.innerHTML = `
+                    <div class="preview-info">
+                        <h4 style="margin: 0 0 25px 0; color: #495057; font-size: 1.8em; font-weight: 700;">${quiz.quiz_title || 'Quiz Preview'}</h4>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px;">
+                            <div style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); padding: 15px; border-radius: 12px;">
+                                <div style="font-size: 0.85em; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px;"><i class="fas fa-layer-group" style="margin-right: 6px;"></i>Grade & Section</div>
+                                <div style="font-size: 1.1em; font-weight: 600; color: #495057;">Grade ${quiz.grade_level} - ${quiz.section}</div>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); padding: 15px; border-radius: 12px;">
+                                <div style="font-size: 0.85em; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px;"><i class="fas fa-book" style="margin-right: 6px;"></i>Topic</div>
+                                <div style="font-size: 1.1em; font-weight: 600; color: #495057;">${quiz.topic || 'General'}</div>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); padding: 15px; border-radius: 12px;">
+                                <div style="font-size: 0.85em; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px;"><i class="fas fa-clock" style="margin-right: 6px;"></i>Time Limit</div>
+                                <div style="font-size: 1.1em; font-weight: 600; color: #495057;">${quiz.time_limit_minutes || 30} minutes</div>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); padding: 15px; border-radius: 12px;">
+                                <div style="font-size: 0.85em; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px;"><i class="fas fa-star" style="margin-right: 6px;"></i>Points per Question</div>
+                                <div style="font-size: 1.1em; font-weight: 600; color: #495057;">${quiz.points_per_item || 5} point(s)</div>
+                            </div>
+                        </div>
+
+                        <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; margin-bottom: 20px;">
+                            <h5 style="margin: 0 0 12px 0; color: #495057; font-size: 1.05em; font-weight: 600;"><i class="fas fa-info-circle" style="color: #5e72e4; margin-right: 8px;"></i>About This Quiz</h5>
+                            <p style="margin: 0; color: #6c757d; font-size: 0.95em; line-height: 1.6;">
+                                This quiz contains <strong>${quiz.total_items || 0} question${quiz.total_items !== 1 ? 's' : ''}</strong> and is designed to test your understanding of <strong>${quiz.topic || 'the material'}</strong>. 
+                                <br><br>
+                                You will have <strong>${quiz.time_limit_minutes || 30} minutes</strong> to complete it. Each correct answer will earn you <strong>${quiz.points_per_item || 5} point${(quiz.points_per_item || 5) !== 1 ? '(s)' : ''}</strong> for a maximum total of <strong>${quiz.total_points || (quiz.total_items * (quiz.points_per_item || 5))} points</strong>.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="preview-actions" style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button class="btn-start-preview" onclick="startQuiz(${quiz.id})" style="flex: 1; background: linear-gradient(135deg, #5e72e4 0%, #7485e8 100%); border: none; color: white; padding: 14px; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s;">
+                            <i class="fas fa-play"></i> Start Quiz
+                        </button>
+                        <button class="btn-close-preview" onclick="closePreviewModal()" style="flex: 1; background: #f8f9fa; border: 1px solid #e9ecef; color: #6c757d; padding: 14px; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s;">
+                            <i class="fas fa-times"></i> Close
+                        </button>
+                    </div>
+                `;
+                
+                document.getElementById('previewModal').classList.add('show');
+                document.body.classList.add('modal-open');
+            }
+        } catch (error) {
+            console.error('Error previewing quiz:', error);
+            alert('Error loading preview');
+        }
+    }
+
+    // View results - FIXED VERSION
+    async function viewResults(resultId, quizId) {
+        try {
+            const response = await fetch(`/api/quiz/${quizId}/review`);
+            const data = await response.json();
+            
+            if (data.success) {
+                // Add modal-lg class for consistent sizing
+                const resultsModal = document.getElementById('resultsModal');
+                resultsModal.querySelector('.modal-content').classList.add('modal-lg');
+                
+                const modalBody = document.getElementById('resultsModalBody');
+                const percentage = data.percentage || 0;
+                const passed = percentage >= 75;
+                const mediocre = percentage >= 50 && percentage < 75;
+                const scoreClass = passed ? 'passed' : (mediocre ? 'mediocre' : 'failed');
+                const pointsPerItem = data.points_per_item || 5;
+                const totalPoints = data.total_points || (data.total_items * pointsPerItem);
+                
+                modalBody.innerHTML = `
+                    <div class="results-summary">
+                        <div class="results-score-circle ${scoreClass}">
+                            <span class="results-score">${data.total_score}</span>
+                            <span class="results-total">/${totalPoints}</span>
+                        </div>
+                        <div class="results-details">
+                            <div class="result-percentage ${scoreClass}">${Math.round(percentage)}%</div>
+                            <div class="result-grade">${passed ? 'Passed! ✅' : (mediocre ? 'Needs Improvement 📚' : 'Needs More Practice 📚')}</div>
+                        </div>
+                    </div>
+
+                    <div class="results-stats-grid">
+                        <div class="results-stat">
+                            <span class="stat-label">Student</span>
+                            <span class="stat-value">${data.student_name || 'You'}</span>
+                        </div>
+                        <div class="results-stat">
+                            <span class="stat-label">Score</span>
+                            <span class="stat-value">${data.total_score}/${totalPoints}</span>
+                        </div>
+                        <div class="results-stat">
+                            <span class="stat-label">Questions</span>
+                            <span class="stat-value">${data.total_items}</span>
+                        </div>
+                        <div class="results-stat">
+                            <span class="stat-label">Date</span>
+                            <span class="stat-value">${formatDate(data.submitted_date)}</span>
+                        </div>
+                    </div>
+
+                    <div class="results-actions">
+                        <button class="btn-review-answers" onclick="reviewAnswers(${quizId})">
+                            <i class="fas fa-clipboard-check"></i> Review Answers
+                        </button>
+                        <button class="btn-close-preview" onclick="closeResultsModal()">
+                            <i class="fas fa-times"></i> Close
+                        </button>
+                    </div>
+                `;
+                
+                resultsModal.classList.add('show');
+                document.body.classList.add('modal-open');
+            } else {
+                alert(data.error || 'Error loading results');
+            }
+        } catch (error) {
+            console.error('Error viewing results:', error);
+            alert('Error loading results. Please try again.');
+        }
+    }
+
+    // Review answers - FIXED VERSION
+    async function reviewAnswers(quizId) {
+        try {
+            const response = await fetch(`/api/quiz/${quizId}/review`);
+            const data = await response.json();
+            
+            if (data.success) {
+                // Fetch retake history to check for previous attempts
+                let retakeHistory = null;
+                try {
+                    const historyResponse = await fetch(`/api/quiz/${quizId}/retake-history`);
+                    retakeHistory = await historyResponse.json();
+                } catch (error) {
+                    console.error('Error fetching retake history:', error);
+                }
+                
+                // Change modal header for review
+                const previewModal = document.getElementById('previewModal');
+                // Add modal-lg class to make it larger like the quiz-taking modal
+                previewModal.querySelector('.modal-content').classList.add('modal-lg');
+                
+                const modalHeader = previewModal.querySelector('.modal-header');
+                modalHeader.innerHTML = `
+                    <h3><i class="fas fa-clipboard-check"></i> ${data.quiz_title || 'Quiz'} - Answer Review</h3>
+                    <span class="close-modal" onclick="closePreviewModal()">&times;</span>
+                `;
+                
+                const modalBody = document.getElementById('previewModalBody');
+                
+                // Get points per item from data or use default
+                const pointsPerItem = data.points_per_item || 5;
+                const percentage = data.percentage || 0;
+                const passed = percentage >= 75;
+                const totalPoints = data.total_points || (data.total_items * pointsPerItem);
+                
+                // Find teacher information from allTeachers array using quiz data
+                let teacherName = 'Unknown';
+                let teacherSubject = 'General';
+                let teacherAvatar = '/static/image/default-avatar.png';
+                
+                if (data.teacher_id && allTeachers.length > 0) {
+                    const foundTeacher = allTeachers.find(t => t.id === data.teacher_id);
+                    if (foundTeacher) {
+                        teacherName = foundTeacher.name || 'Unknown';
+                        teacherSubject = foundTeacher.subject || 'General';
+                        teacherAvatar = foundTeacher.avatar || '/static/image/default-avatar.png';
+                    }
+                }
+                
+                // Create review interface with results summary at top and detailed answers below
+                // Determine score status and colors
+                let statusColor = '#5e72e4'; // Default blue
+                let statusGradient = 'linear-gradient(135deg, #5e72e4 0%, #7485e8 100%)';
+                let badgeBackground = 'rgba(255, 255, 255, 0.2)';
+                let statusEmoji = 'Needs Improvement 📚';
+                
+                if (percentage >= 75) {
+                    // Passed - Green
+                    statusGradient = 'linear-gradient(135deg, #2dce89 0%, #1cbe76 100%)';
+                    statusColor = '#2dce89';
+                    badgeBackground = 'rgba(255, 255, 255, 0.25)';
+                    statusEmoji = 'Excellent Work! 🎉';
+                } else if (percentage >= 50) {
+                    // Mediocre - Yellow/Orange
+                    statusGradient = 'linear-gradient(135deg, #fb6340 0%, #f5365c 100%)';
+                    statusColor = '#fb6340';
+                    badgeBackground = 'rgba(255, 255, 255, 0.25)';
+                    statusEmoji = 'Keep Improving! 💪';
+                } else {
+                    // Failed - Red
+                    statusGradient = 'linear-gradient(135deg, #f5365c 0%, #d42d4e 100%)';
+                    statusColor = '#f5365c';
+                    badgeBackground = 'rgba(255, 255, 255, 0.25)';
+                    statusEmoji = 'Needs More Practice 📚';
+                }
+                
+                let html = `
+                    <div style="display: flex; align-items: center; gap: 20px; padding: 20px; background: ${statusGradient}; border-radius: 16px; color: white; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);">
+                        <div style="width: 100px; height: 100px; border-radius: 50%; background: ${badgeBackground}; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 2.5em; line-height: 1;">${data.total_score}</div>
+                                <div style="font-size: 1.2em; opacity: 0.9;">/${totalPoints}</div>
+                            </div>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 2.5em; font-weight: 700; line-height: 1.2;">${Math.round(percentage)}%</div>
+                            <div style="font-size: 1.1em; opacity: 0.95;">${statusEmoji}</div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px;">
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 10px;">
+                                <img src="${teacherAvatar}" alt="Teacher" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #5e72e4;">
+                                <div style="text-align: left;">
+                                    <span style="display: block; font-size: 0.85em; color: #6c757d; margin-bottom: 3px;">Teacher</span>
+                                    <span style="display: block; font-size: 1.2em; font-weight: 700; color: #495057;">${teacherName}</span>
+                                    <span style="display: block; font-size: 0.9em; color: #5e72e4; font-weight: 500;">${teacherSubject}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; text-align: center;">
+                            <span style="display: block; font-size: 0.85em; color: #6c757d; margin-bottom: 5px;">Correct Answers</span>
+                            <span style="display: block; font-size: 1.3em; font-weight: 600; color: #495057;">${Math.round(data.total_score / pointsPerItem)}/${data.total_items}</span>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; text-align: center;">
+                            <span style="display: block; font-size: 0.85em; color: #6c757d; margin-bottom: 5px;">Points per Question</span>
+                            <span style="display: block; font-size: 1.3em; font-weight: 600; color: #495057;">${pointsPerItem} pts</span>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; text-align: center;">
+                            <span style="display: block; font-size: 0.85em; color: #6c757d; margin-bottom: 5px;">Date</span>
+                            <span style="display: block; font-size: 1.3em; font-weight: 600; color: #495057;">${formatDate(data.submitted_date)}</span>
+                        </div>
+                    </div>
+
+                    ${retakeHistory && retakeHistory.attempts && retakeHistory.attempts.length > 1 ? `
+                    <div style="background: linear-gradient(135deg, #fef3e2 0%, #fef9f0 100%); border-left: 4px solid #f59e0b; padding: 15px; border-radius: 10px; margin-bottom: 25px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 0.9em; font-weight: 600; color: #b45309; text-transform: uppercase;">
+                            <i class="fas fa-history" style="font-size: 0.95em;"></i>
+                            Previous Attempt Comparison
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                            <div>
+                                <span style="display: block; font-size: 0.8em; color: #b45309; margin-bottom: 4px;">Current Score</span>
+                                <span style="display: block; font-size: 1.4em; font-weight: 700; color: #92400e;">${Math.round(data.total_score / pointsPerItem)}/${data.total_items}</span>
+                            </div>
+                            <div>
+                                <span style="display: block; font-size: 0.8em; color: #b45309; margin-bottom: 4px;">Previous Best</span>
+                                <span style="display: block; font-size: 1.4em; font-weight: 700; color: #92400e;">${retakeHistory.best_score ? Math.round(retakeHistory.best_score / pointsPerItem) : 'N/A'}/${data.total_items}</span>
+                            </div>
+                        </div>
+                        ${data.total_score > retakeHistory.best_score ? `
+                        <div style="margin-top: 10px; padding: 8px 10px; background: rgba(16, 185, 129, 0.1); border-radius: 6px; color: #065f46; font-size: 0.9em; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-arrow-up"></i>
+                            +${Math.round((data.total_score - retakeHistory.best_score) / pointsPerItem)} points improvement!
+                        </div>
+                        ` : ''}
+                    </div>
+                    ` : ''}
+
+                    <div style="border-top: 2px solid #f0f2f5; padding-top: 20px; margin-bottom: 20px;">
+                        <h4 style="color: #495057; margin: 0 0 15px 0; font-size: 1.1em; font-weight: 600;">
+                            <i class="fas fa-clipboard-list" style="color: #5e72e4; margin-right: 8px;"></i>Detailed Answer Review
+                        </h4>
+                    </div>
+
+                    <form id="reviewForm">
+                `;
+                (data.questions || []).forEach((q, index) => {
+                    let badgeText = '';
+                    let badgeIcon = '';
+                    let badgeColor = '#e9ecef';
+                    let badgeTextColor = '#495057';
+                    
+                    if (!q.was_answered) {
+                        badgeText = 'NOT ANSWERED';
+                        badgeIcon = 'fas fa-exclamation-circle';
+                        badgeColor = '#e9ecef';
+                        badgeTextColor = '#495057';
+                    } else if (q.is_correct) {
+                        badgeText = 'CORRECT';
+                        badgeIcon = 'fas fa-check-circle';
+                        badgeColor = '#d4edda';
+                        badgeTextColor = '#155724';
+                    } else if (!q.was_answered) {
+                        badgeText = 'UNANSWERED';
+                        badgeIcon = 'fas fa-question-circle';
+                        badgeColor = '#fff3cd';
+                        badgeTextColor = '#856404';
+                    } else {
+                        badgeText = 'INCORRECT';
+                        badgeIcon = 'fas fa-times-circle';
+                        badgeColor = '#f8d7da';
+                        badgeTextColor = '#721c24';
+                    }
+                    
+                    html += `
+                        <div class="quiz-question mb-4" data-question="${index}">
+                            <div class="question-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+                                <span class="question-number" style="display: inline-block; color: #5e72e4; font-weight: 600;">Question ${q.question_number}</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600; background: ${badgeColor}; color: ${badgeTextColor};">
+                                        <i class="${badgeIcon}" style="font-size: 0.9em;"></i> ${badgeText}
+                                    </span>
+                                    <span style="padding: 5px 12px; border-radius: 6px; background: #f0f2f5; color: #495057; font-size: 0.85em; font-weight: 600;">
+                                        <i class="fas fa-star" style="color: #ffc107; margin-right: 4px;"></i>${pointsPerItem} point(s)
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="question-text" style="margin-bottom: 15px; color: #495057; font-weight: 500;">${q.question || ''}</div>
+                            <div class="choices" style="display: flex; flex-direction: column; gap: 8px;">
+                    `;
+                    
+                    (q.choices || []).forEach((choice, i) => {
+                        let isCorrect = i === q.correct_answer;
+                        let isSelected = q.was_answered && i === q.student_answer;
+                        let isWrongAnswer = isSelected && !isCorrect;
+                        let isCorrectAnswer = isSelected && isCorrect;
+                        
+                        let backgroundColor = 'white';
+                        let borderColor = '#e9ecef';
+                        let textColor = '#6c757d';
+                        
+                        if (isCorrect && !isSelected) {
+                            // Show correct answer that wasn't selected
+                            backgroundColor = 'white';
+                            borderColor = '#28a745';
+                            textColor = '#155724';
+                        } else if (isCorrectAnswer) {
+                            // Student's correct answer
+                            backgroundColor = 'white';
+                            borderColor = '#28a745';
+                            textColor = '#155724';
+                        } else if (isWrongAnswer) {
+                            // Student's wrong answer
+                            backgroundColor = 'white';
+                            borderColor = '#dc3545';
+                            textColor = '#dc3545';
+                        }
+                        
+                        const letter = String.fromCharCode(65 + i);
+                        let indicator = '';
+                        let iconColor = '';
+                        
+                        if (isCorrect && !isSelected) {
+                            indicator = '<span style="margin-left: auto; font-weight: 600; color: #28a745; font-size: 0.9em;"><i class="fas fa-check" style="margin-right: 4px;"></i>Correct</span>';
+                            iconColor = 'color: #28a745;';
+                        } else if (!q.was_answered && isSelected) {
+                            indicator = '<span style="margin-left: auto; font-weight: 600; color: #856404; font-size: 0.9em;"><i class="fas fa-question-circle" style="margin-right: 4px;"></i>Unanswered</span>';
+                            iconColor = 'color: #856404;';
+                        } else if (isWrongAnswer) {
+                            indicator = '<span style="margin-left: auto; font-weight: 600; color: #dc3545; font-size: 0.9em;"><i class="fas fa-times" style="margin-right: 4px;"></i>Your Answer</span>';
+                            iconColor = 'color: #dc3545;';
+                        } else if (isCorrectAnswer) {
+                            indicator = '<span style="margin-left: auto; font-weight: 600; color: #28a745; font-size: 0.9em;"><i class="fas fa-check" style="margin-right: 4px;"></i>Your Answer</span>';
+                            iconColor = 'color: #28a745;';
+                        }
+                        
+                        html += `
+                            <div class="choice-option" style="background-color: ${backgroundColor}; border: 2px solid ${borderColor}; color: ${textColor}; padding: 12px 15px; border-radius: 8px; display: flex; align-items: center; gap: 10px; cursor: default; transition: all 0.2s;">
+                                <span style="font-weight: 700; min-width: 30px; ${iconColor}">${letter}.</span>
+                                <span style="flex: 1;">${choice || ''}</span>
+                                ${indicator}
+                            </div>
+                        `;
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                    </form>
+
+                    <div class="preview-actions" style="display: flex; gap: 10px; margin-top: 25px;">
+                        <button class="btn-start" onclick="closePreviewModal()" style="flex: 1; background: linear-gradient(135deg, #5e72e4 0%, #7485e8 100%); border: none; color: white; padding: 12px; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s;">
+                            <i class="fas fa-times"></i> Close Review
+                        </button>
+                    </div>
+                `;
+                
+                modalBody.innerHTML = html;
+                previewModal.classList.add('show');
+                document.body.classList.add('modal-open');
+            } else {
+                alert(data.error || 'Error loading review data');
+            }
+        } catch (error) {
+            console.error('Error reviewing answers:', error);
+            alert('Error loading review. Please try again.');
+        }
+    }
+
+    // Tab switching function
+    function switchTab(tabName, event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        
+        // Check if a quiz is currently active
+        if (isQuizActive) {
+            tabSwitchAttempts++;  // Increment attempt counter
+            
+            // Auto-submit quiz on first attempt to switch
+            if (tabSwitchAttempts >= 1) {
+                // Auto-submit quiz
+                showConfirmationDialog(
+                    'Quiz Ended',
+                    'You tried to switch tabs. Your current answers will now be submitted automatically.',
+                    async function() {
+                        isQuizActive = false;
+                        await submitQuizWithProgress();
+                        closeTakeQuizModal();
+                        if (timerInterval) {
+                            clearInterval(timerInterval);
+                            timerInterval = null;
+                        }
+                        // Now proceed with tab switching after submission
+                        performTabSwitch(tabName, event);
+                    },
+                    null  // No cancel option
+                );
+                // Make cancel button hidden
+                const cancelBtn = document.getElementById('confirmationDialogueCancelBtn');
+                if (cancelBtn) cancelBtn.style.display = 'none';
+                return;
+            }
+        }
+        
+        // No quiz active - proceed with normal tab switching
+        performTabSwitch(tabName, event);
+    }
+    
+    // Helper function to actually perform the tab switch
+    function performTabSwitch(tabName, event) {
+        // Find the clicked button - handle if icon was clicked
+        let clickedBtn = event?.target;
+        if (clickedBtn && clickedBtn.tagName !== 'BUTTON') {
+            clickedBtn = clickedBtn.closest('.tab-btn');
+        }
+        
+        // Remove active class from all tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        
+        // Add active class to clicked tab button
+        if (clickedBtn) {
+            clickedBtn.classList.add('active');
+        }
+        
+        // Hide all tab contents - remove both active class and display
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+            content.style.display = 'none';
+        });
+        
+        // Show the selected tab content
+        let selectedTab = null;
+        if (tabName === 'assigned') {
+            selectedTab = document.getElementById('assignedTab');
+        } else if (tabName === 'completed') {
+            selectedTab = document.getElementById('completedTab');
+        } else if (tabName === 'overdue') {
+            selectedTab = document.getElementById('overdueTab');
+        }
+        
+        if (selectedTab) {
+            selectedTab.classList.add('active');
+            selectedTab.style.display = 'block';
+        }
+        
+        // Render the selected tab
+        renderActiveTab();
+    }
+
+    // Filter quizzes by search
+    function filterQuizzes() {
+        searchTerm = document.getElementById('quizSearchInput').value.toLowerCase();
+        renderActiveTab();
+    }
+
+    // Sort quizzes
+    function sortBy(sortType) {
+        currentSort = sortType;
+        
+        // Update UI
+        document.querySelectorAll('[data-sort]').forEach(btn => {
+            const badge = btn.querySelector('.sort-dropdown-active-badge');
+            if (btn.dataset.sort === sortType) {
+                badge.style.display = 'inline-block';
+                
+                const sortNames = {
+                    'recent': 'Most Recent',
+                    'oldest': 'Oldest First',
+                    'due': 'Due Date',
+                    'score': 'Highest Score'
+                };
+                document.getElementById('selectedSortName').textContent = sortNames[sortType] || 'Most Recent';
+            } else {
+                badge.style.display = 'none';
+            }
+        });
+        
+        // Close dropdown
+        const dropdownMenu = document.getElementById('sortDropdownMenu');
+        if (dropdownMenu) {
+            dropdownMenu.classList.remove('show');
+        }
+        
+        // Re-render active tab with new sort
+        renderActiveTab();
+    }
+
+    // Setup teacher dropdown
+    function setupTeacherDropdown() {
+        const teacherDropdownToggle = document.getElementById('teacherDropdownToggle');
+        const teacherDropdownMenu = document.getElementById('teacherDropdownMenu');
+        const sortDropdownToggle = document.getElementById('sortDropdownToggle');
+        const sortDropdownMenu = document.getElementById('sortDropdownMenu');
+        
+        // Teacher dropdown toggle
+        if (teacherDropdownToggle) {
+            teacherDropdownToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                teacherDropdownMenu.classList.toggle('open');
+                teacherDropdownToggle.classList.toggle('active');
+                if (sortDropdownMenu) sortDropdownMenu.classList.remove('show');
+            });
+        }
+        
+        // Sort dropdown toggle
+        if (sortDropdownToggle) {
+            sortDropdownToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                sortDropdownMenu.classList.toggle('show');
+                if (teacherDropdownMenu) teacherDropdownMenu.classList.remove('open');
+                if (teacherDropdownToggle) teacherDropdownToggle.classList.remove('active');
+            });
+        }
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.custom-teacher-dropdown') && teacherDropdownMenu) {
+                teacherDropdownMenu.classList.remove('open');
+                if (teacherDropdownToggle) teacherDropdownToggle.classList.remove('active');
+            }
+            if (!e.target.closest('.sort-dropdown') && sortDropdownMenu) {
+                sortDropdownMenu.classList.remove('show');
+            }
+        });
+        
+        // Add event listener for "All Teachers" option
+        if (teacherDropdownMenu) {
+            const allTeachersOption = teacherDropdownMenu.querySelector('[data-teacher-id="all"]');
+            if (allTeachersOption) {
+                allTeachersOption.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    selectTeacher('all', 'All Teachers', 'Select a teacher', '/static/image/default-avatar.png');
+                });
+            }
+        }
+    }
+
+    // Modal close functions
+    function closePreviewModal() {
+        const previewModal = document.getElementById('previewModal');
+        previewModal.classList.remove('show');
+        previewModal.querySelector('.modal-content').classList.remove('modal-lg');
+        document.body.classList.remove('modal-open');
+    }
+
+    function closeResultsModal() {
+        const resultsModal = document.getElementById('resultsModal');
+        resultsModal.classList.remove('show');
+        resultsModal.querySelector('.modal-content').classList.remove('modal-lg');
+        document.body.classList.remove('modal-open');
+    }
+
+    function closeTakeQuizModal() {
+        isQuizActive = false;  // Mark quiz as no longer active
+        document.getElementById('takeQuizModal').classList.remove('show');
+        document.body.classList.remove('modal-open');
+        
+        if (timerInterval) {
+            clearInterval(timerInterval);
+        }
+    }
+
+    // Utility functions
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        } catch (e) {
+            return dateString;
+        }
+    }
+
+    // Format date with time in 12-hour format (e.g., "Apr 13, 2026 at 2:30 PM")
+    function formatDateWithTime(dateString) {
+        if (!dateString) return 'N/A';
+        try {
+            const date = new Date(dateString);
+            const formattedDate = date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            let hours = date.getHours();
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // 0 becomes 12
+            
+            return `${formattedDate} at ${hours}:${minutes} ${ampm}`;
+        } catch (e) {
+            return dateString;
+        }
+    }
+
+    function showError(message) {
+        alert(message);
+    }
+
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+        const previewModal = document.getElementById('previewModal');
+        const resultsModal = document.getElementById('resultsModal');
+        const takeQuizModal = document.getElementById('takeQuizModal');
+        
+        if (event.target == previewModal) {
+            closePreviewModal();
+        }
+        if (event.target == resultsModal) {
+            closeResultsModal();
+        }
+        if (event.target == takeQuizModal) {
+            cancelQuiz();
+        }
+    }
+</script>
+{% endblock %}

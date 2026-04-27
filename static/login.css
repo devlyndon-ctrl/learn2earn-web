@@ -1,0 +1,654 @@
+:root {
+    --primary-color: #5e72e4 ;
+    --secondary-color: #0652DD;
+    --text-light: #f8f9fe;
+    --text-dark: #2d3436;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: url('/static/image/masiconshs.jpg') center center;
+    background-size: cover;
+    background-attachment: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Dark overlay for better readability */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+}
+
+/* --- LOGIN CONTAINER: Fixed width/height for both login and register --- */
+.login-container {
+    display: flex;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 1000px;
+    height: 500px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    border-radius: 0;
+    overflow: hidden;
+    background: none;
+}
+
+/* --- Allow register form to grow container height as needed --- */
+@media (max-width: 768px) {
+    .login-container {
+        width: 98%;
+        max-width: 410px;
+        min-height: 90vh;
+        height: auto;
+    }
+}
+
+.center-section {
+    width: 100%;
+    padding: 2.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 500px;
+}
+
+.header-graphic {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 1.5rem;
+}
+
+.brand-logo {
+    margin-bottom: 0.8rem;
+    max-width: 80%;
+}
+
+.brand-tagline {
+    color: #a4b0be;
+    margin-bottom: 2rem;
+    letter-spacing: 2px;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.login-form {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    opacity: 1;
+    transition: opacity 0.35s ease;
+}
+
+.login-form.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.login-form.fade-in {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.form-control {
+    height: 48px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    padding: 0 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 3px rgba(9, 132, 227, 0.3);
+    background-color: #ffffff;
+
+    outline: none;
+}
+
+.btn-login {
+    width: 100%;
+    height: 48px;
+    background: linear-gradient(  #5e72e4 );
+    border: none;
+    border-radius: 25px;
+    color: white;
+    font-weight: 600;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(9, 132, 227, 0.3);
+}
+
+.forgot-password {
+    color: #a4b0be;
+    text-align: right;
+    font-size: 0.85rem;
+    text-decoration: none;
+    margin-top: 0.5rem;
+    display: block;
+    transition: color 0.3s ease;
+}
+
+.forgot-password:hover {
+    color: #ffffff;
+}
+
+.copyright {
+    position: absolute;
+    bottom: 15px;
+    font-size: 0.75rem;
+    color: #a4b0be;
+    text-align: center;
+    width: 100%;
+}
+
+/* --- Registration Stepper Dots --- */
+.stepper-track {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 8px;
+}
+
+.step-dot {
+    width: 12px !important;
+    height: 12px !important;
+    border-radius: 50%;
+    background: #5e72e4;
+    display: inline-block;
+    margin: 0 0px;
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+.step-dot.active {
+    background: #5e72e4 !important;
+    transform: scale(1.2);
+}
+
+.step-line {
+    width: 36px;
+    height: 4px;
+    background: #a4b0be;
+    display: inline-block;
+    border-radius: 2px;
+    margin: 0 2px;
+    z-index: 0;
+}
+
+/* --- Registration Steps --- */
+.register-step {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    animation: fadeInStep 0.3s ease;
+}
+@keyframes fadeInStep {
+    from { opacity: 0; transform: translateY(20px);}
+    to { opacity: 1; transform: translateY(0);}
+}
+
+/* --- Registration Form Buttons --- */
+#registerForm .btn-login,
+#registerForm .btn-secondary {
+    height: 44px;
+    border-radius: 22px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    min-width: 100px;
+    transition: all 0.3s ease;
+}
+#registerForm .btn-secondary {
+    background: #636e72;
+    color: #fff;
+    border: none;
+    margin-right: 8px;
+}
+#registerForm .btn-secondary:hover {
+    background: #b2bec3;
+    color: #222;
+    transform: translateY(-1px);
+}
+
+/* --- Password Requirements Box --- */
+#passwordRequirements {
+    background: rgba(35, 43, 51, 0.9) !important;
+    border-radius: 12px;
+    padding: 12px 16px !important;
+    margin-bottom: 1rem;
+    margin-top: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+#passwordRequirements div {
+    font-size: 0.85rem !important;
+    margin-bottom: 2px;
+}
+#passwordRequirements .fa-check {
+    color: #00b894;
+}
+#passwordRequirements .fa-times {
+    color: #ff7675;
+}
+
+/* --- Registration Inputs --- */
+#registerForm .form-control {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 22px;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    color: #222;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    box-shadow: none;
+    height: 44px;
+    transition: all 0.3s ease;
+}
+#registerForm .form-control:focus {
+    box-shadow: 0 0 0 3px rgba(9, 132, 227, 0.2);
+    background-color: #ffffff;
+
+
+}
+
+/* --- Registration Step Titles --- */
+#registerForm h5 {
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+
+/* --- Switch Auth Link --- */
+#switchAuth {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    text-align: center;
+}
+#switchAuth a {
+    color:  #825ee4;
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 4px;
+    transition: color 0.3s ease;
+}
+#switchAuth a:hover {
+    color:  #825ee4;
+    text-decoration: underline;
+}
+
+/* --- School Name and Brand Logo --- */
+.school-name {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+    text-shadow: 1px 2px 8px rgba(0, 0, 0, 0.3);
+    line-height: 1.2;
+}
+
+.brand-logo svg {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+}
+
+/* --- Brand Tagline --- */
+.brand-tagline {
+    color: #a4b0be;
+    margin-bottom: 1.5rem;
+    letter-spacing: 1.5px;
+    font-size: 0.85rem;
+    text-align: center;
+    font-weight: 300;
+}
+
+/* --- Responsive for Mobile --- */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .login-container {
+        max-width: 100%;
+        margin: 10px;
+        border-radius: 15px;
+    }
+    
+    .center-section {
+        padding: 2rem 1.5rem;
+        min-height: auto;
+    }
+    
+    .school-name {
+        font-size: 1.5rem;
+    }
+    
+    .brand-tagline {
+        font-size: 0.8rem;
+        margin-bottom: 1.2rem;
+    }
+    
+    .login-form,
+    .register-step {
+        max-width: 100%;
+    }
+    
+    .form-control,
+    #registerForm .form-control {
+        font-size: 0.9rem;
+        height: 42px;
+    }
+    
+    .btn-login,
+    #registerForm .btn-login,
+    #registerForm .btn-secondary {
+        font-size: 0.9rem;
+        height: 42px;
+    }
+    
+    #registerForm h5 {
+        font-size: 1.1rem;
+    }
+    
+    .copyright {
+        font-size: 0.7rem;
+        bottom: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .center-section {
+        padding: 1.5rem 1rem;
+    }
+    
+    .school-name {
+        font-size: 1.3rem;
+    }
+    
+    .brand-tagline {
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+    }
+}
+
+/* --- Hide number arrows for phone input --- */
+#registerForm input[type="number"]::-webkit-inner-spin-button,
+#registerForm input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+#registerForm input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* --- Position toggle password icon --- */
+.position-relative {
+    position: relative;
+}
+
+#togglePassword {
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #666;
+    z-index: 10;
+    transition: color 0.3s ease;
+}
+
+
+
+/* --- Registration Personal Info: Two columns per row --- */
+#registerStep1 .row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 1rem;
+}
+#registerStep1 .row > .col {
+    flex: 1 1 0;
+    min-width: 0;
+}
+#registerStep1 .form-control {
+    margin-bottom: 0;
+}
+
+/* --- Make DOB full width --- */
+#registerStep1 .dob-row {
+    margin-bottom: 1rem;
+}
+
+/* --- Two-column Login Layout --- */
+.login-container {
+    display: flex;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 1000px;
+    height: 500px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    border-radius: 0;
+    overflow: hidden;
+    background: none;
+}
+
+.left-section {
+    width: 40%;
+    background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    padding: 0 2rem;
+}
+
+.left-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('/static/image/masiconshs.jpg') center center;
+    background-size: cover;
+    opacity: 0.1;
+    z-index: 0;
+}
+
+.school-logo {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.sign-in-header {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.school-name {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.social-links {
+    margin-top: 2rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.social-links a {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 5px;
+    transition: all 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+}
+
+.social-links a:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Right section - Login form */
+.right-section {
+    width: 60%;
+    background-color: #1e272e;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+}
+
+/* Responsive for mobile */
+@media (max-width: 992px) {
+    .login-container {
+        flex-direction: column;
+        height: auto;
+        max-height: 90vh;
+    }
+    .left-section, .right-section {
+        width: 100%;
+    }
+    .left-section {
+        padding: 2rem;
+        min-height: 220px;
+    }
+    .right-section {
+        padding: 2rem;
+    }
+}
+
+/* Toast Notification Styles */
+.toast-notification {
+    position: fixed;
+    top: 32px;
+    right: 32px;
+    z-index: 9999;
+    min-width: 240px;
+    max-width: 350px;
+    background: #10B981;
+    color: #fff;
+    padding: 16px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, top 0.3s;
+}
+.toast-notification.show {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+    top: 32px;
+}
+.toast-notification.error {
+    background: #EF4444;
+    color: #fff;
+}
+
+/* Forgot Password Modal Styles */
+.modal-content {
+    background: #1e272e !important;
+    border: none !important;
+    border-radius: 15px !important;
+}
+
+.modal-header {
+    border-bottom: 1px solid #2d3436 !important;
+}
+
+.modal-footer {
+    border-top: 1px solid #2d3436 !important;
+}
+
+.btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* OTP Input Styling */
+#resetOtp {
+    letter-spacing: 8px;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* Timer Styling */
+#otpTimer {
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 10px;
+}
+
+#timer {
+    font-weight: bold;
+    color: #5e72e4;
+}
+
+/* Error Styling for Modal */
+#resetEmailError,
+#resetOtpError,
+#resetPasswordError {
+    color: #ff7675;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    text-align: center;
+}

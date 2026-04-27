@@ -1,0 +1,659 @@
+{% extends "base.html" %}
+
+{% block title %}Learn2Earn - Students{% endblock %}
+{% block page_title %}Students{% endblock %}
+
+{% block main_content %}
+<link rel="stylesheet" href="/static/streak-border.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='teacher_students.css') }}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<style>
+/* Enhanced card styling */
+.card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1rem 1.25rem;
+}
+
+/* ============= REFRESH BUTTON ANIMATION ============= */
+.fa-spin {
+    animation: fa-spin 1s infinite linear;
+}
+
+@keyframes fa-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Enhanced table styling */
+.table-responsive {
+    border-radius: 0 0 12px 12px;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem 0.75rem;
+    background-color: #f8f9fa;
+}
+
+.table td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f3f9;
+}
+
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(94, 114, 228, 0.05);
+}
+
+/* Enhanced badges */
+.badge {
+    font-weight: 500;
+    padding: 0.4em 0.8em;
+    border-radius: 6px;
+}
+
+/* Recent awards styling */
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.list-group-item:hover {
+    background-color: rgba(94, 114, 228, 0.03);
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+/* Custom points icon */
+.points-icon-gradient {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #F5A623, #F4B043);
+    margin-right: 6px;
+}
+
+.points-icon-gradient i {
+    color: #fff;
+    font-size: 13px;
+}
+
+/* Student avatar styling - FIXED */
+.student-avatar {
+    position: relative;
+    display: inline-block;
+    width: 54px;
+    height: 54px;
+}
+
+.student-avatar .avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.student-avatar .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.student-avatar .streak-badge {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 2px solid #fff;
+    z-index: 2;
+}
+
+/* Student info styling */
+.student-info {
+    margin-left: 1rem;
+}
+
+.student-info .student-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #495057;
+}
+
+.student-info .student-class {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+/* Section headers */
+.section-title {
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #495057;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+.section-title:after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(135deg, #5E72E4, #825EE4);
+    border-radius: 3px;
+}
+
+/* Modal positioning */
+.modal-dialog-centered {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: calc(100vh - 1rem);
+    padding-top: 10vh;
+}
+
+@media (min-width: 576px) {
+    .modal-dialog-centered {
+        min-height: calc(100vh - 3.5rem);
+        padding-top: 8vh;
+    }
+}
+
+/* Specific targeting for your modals if needed */
+#dismissClassModal .modal-dialog,
+#classSummaryModal .modal-dialog {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: calc(100vh - 1rem);
+    padding-top: 10vh;
+}
+
+@media (min-width: 576px) {
+    #dismissClassModal .modal-dialog,
+    #classSummaryModal .modal-dialog {
+        min-height: calc(100vh - 3.5rem);
+        padding-top: 8vh;
+    }
+}
+
+/* Ensure modal content doesn't overflow */
+.modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* Custom dismiss card styling */
+.custom-dismiss-card {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.custom-dismiss-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Dismiss modal compact layout */
+#dismissClassModal .dismissal-form-grid .form-label {
+    font-weight: 600;
+    color: #344767;
+}
+
+#dismissClassModal .dismiss-methods-inline {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    padding-top: 0.25rem;
+}
+
+#dismissClassModal .dismiss-methods-inline .form-check {
+    margin-bottom: 0;
+    min-width: 150px;
+}
+
+@media (max-width: 767.98px) {
+    #dismissClassModal .dismiss-methods-inline {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+</style>
+
+<div class="container-fluid px-0">
+    <!-- Student List Card -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-0">Student List - <span class="text-primary" id="classroomLabel">All Classes</span></h5>
+                <p class="text-muted mb-0">Manage and track student points and participation</p>
+            </div>
+            <div class="d-flex">
+                <select class="form-select w-auto me-2" id="classroomFilter">
+                    <option value="">All Classes</option>
+                    <!-- Classrooms will be populated by JavaScript -->
+                </select>
+                <div class="input-group me-2">
+                    <input type="text" class="form-control" id="studentSearchInput" placeholder="Search students...">
+                    <button class="btn btn-outline-primary" type="button" id="studentSearchBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <button class="btn btn-outline-secondary" type="button" id="refreshStudentsBtn" title="Refresh student list">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <!-- Loading State - Inside student list -->
+            <div class="loading-container" id="studentsLoadingMessage">
+                <div class="loading-content">
+                    <div class="loading-avatar-container">
+                        <div class="loading-avatar-circle">
+                            <lottie-player 
+                                src="{{ url_for('static', filename='image/animation/loading_animation_blue.json') }}"
+                                background="transparent" 
+                                speed="1" 
+                                style="width: 100%; height: 100%;"
+                                loop 
+                                autoplay>
+                            </lottie-player>
+                        </div>
+                    </div>
+                    <div class="loading-text">
+                        <div class="loading-title">Loading Students</div>
+                        <div class="loading-subtitle">Almost there! Your student list is being prepared</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error State Container - Inside student list -->
+            <div class="error-container" id="studentsErrorMessage" style="display: none;">
+                <!-- Error content will be populated by JavaScript -->
+            </div>
+
+            <!-- Students Table Content (hidden until loaded) -->
+            <div id="studentsContent" style="display: none;">
+                <div class="table-responsive" id="studentsTableContainer">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-center">Student</th>
+                                <th class="text-center">Points</th>
+                                <th class="text-center">Rewards Redeemed</th>
+                                <th class="text-center">Last Activity</th>
+                                <th class="text-center">Participation (7d)</th>
+                                <th class="text-center">Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            <!-- Students will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Empty State for Students -->
+                <div id="studentsEmpty" style="display: none;">
+                    <div class="empty-state text-center py-5">
+                        <div class="empty-icon mb-3">
+                            <i class="fas fa-users fa-3x text-muted"></i>
+                        </div>
+                        <h5 class="text-muted">No Students Yet</h5>
+                        <p class="text-muted mb-4">Admin will assign students to you by grade and section</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Move pagination lower with margin-top -->
+        <nav class="mt-4" id="studentsPaginationContainer" style="display: none;">
+            <ul class="pagination justify-content-center" id="studentsPagination"></ul>
+        </nav>
+    </div>
+
+    <!-- Class Management Card -->
+    <div class="card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-0">Class Management</h5>
+                <p class="text-muted mb-0">Tools to manage class activities and notifications</p>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card bg-gradient-danger text-white custom-dismiss-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Dismiss Class</h5>
+                            <p class="card-text">Notify all parents that class has ended</p>
+                            <hr class="my-3 opacity-25">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <div class="bg-white rounded-circle text-danger d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-bell"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#dismissClassModal">
+                                        <i class="fas fa-paper-plane me-2"></i> Send Dismissal Notice
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card bg-gradient-success text-white custom-dismiss-card">
+                        <div class="card-body">
+                            <h5 class="card-title text-white">Class Activity Summary</h5>
+                            <p class="card-text">Create an Excel summary of the current filtered students</p>
+                            <hr class="my-3 opacity-25">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <div class="bg-white rounded-circle text-success d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; cursor:pointer;" id="downloadExcelBtn" title="Download Excel">
+                                        <i class="fas fa-file-excel"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <button class="btn btn-light" id="generateSummaryBtn" data-bs-toggle="modal" data-bs-target="#classSummaryModal">
+                                        <i class="fas fa-share-alt me-2"></i> Generate Summary
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Class Dismiss Modal -->
+    <div class="modal fade" id="dismissClassModal" tabindex="-1" aria-labelledby="dismissClassModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dismissClassModalLabel">Dismiss Class Notification</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="dismissalForm" class="dismissal-form-grid">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="dismissalClassroom" class="form-label">Classes</label>
+                                <select class="form-select" id="dismissalClassroom">
+                                    <option value="">All Classes</option>
+                                    <!-- Classrooms will be loaded by JS -->
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="dismissalStudent" class="form-label">Student (Optional)</label>
+                                <select class="form-select" id="dismissalStudent">
+                                    <option value="">All Students</option>
+                                    <!-- Students will be loaded by JS -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-12">
+                                <label for="dismissalTime" class="form-label">Dismissal Time</label>
+                                <input type="time" class="form-control" id="dismissalTime">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="dismissalMessage" class="form-label">Additional Message (Optional)</label>
+                            <textarea class="form-control" id="dismissalMessage" rows="3" placeholder="Enter any additional information for parents..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notification Method</label>
+                            <div class="dismiss-methods-inline">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="notifyEmail">
+                                    <label class="form-check-label" for="notifyEmail">
+                                        Email
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="notifySMS">
+                                    <label class="form-check-label" for="notifySMS">
+                                        SMS Text Message
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="sendDismissalBtn">Send Notification</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Class Summary Modal -->
+    <div class="modal fade" id="classSummaryModal" tabindex="-1" aria-labelledby="classSummaryModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="classSummaryModalLabel">Class Summary</h5>
+            <button id="exportSummaryPdfBtn" type="button" class="btn btn-outline-danger btn-sm ms-2" style="display:none;">
+                <i class="fas fa-file-pdf"></i> Export PDF
+            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="classSummaryContent">
+            <div class="text-center text-muted">Loading summary...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student Notes Modal -->
+    <div class="modal fade" id="studentNotesModal" tabindex="-1" aria-labelledby="studentNotesModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="studentNotesModalLabel">Student Notes</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-2">
+              <strong id="notesStudentName"></strong>
+            </div>
+            <textarea class="form-control" id="studentNotesText" rows="5" placeholder="Enter notes here..."></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" id="saveStudentNotesBtn">Save Notes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Teacher Feedback Analyzer Modal -->
+    <div class="modal fade" id="teacherFeedbackModal" tabindex="-1" aria-labelledby="teacherFeedbackModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header py-2 bg-primary text-white">
+                    <h6 class="modal-title mb-0" id="teacherFeedbackModalLabel">
+                        <i class="fas fa-brain me-1"></i>Feedback Analyzer
+                    </h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <!-- Quick stats placeholder (will be populated by JS) -->
+                    <div id="quickStats" class="small text-muted mb-2" style="display: none;"></div>
+                    
+                    <form id="feedbackFormModal">
+                        <div class="mb-2">
+                            <label for="feedbackInputModal" class="form-label small fw-medium mb-1">
+                                <i class="fas fa-comment-dots me-1"></i>Teacher's Note
+                            </label>
+                            <textarea 
+                                class="form-control form-control-sm" 
+                                id="feedbackInputModal" 
+                                rows="3" 
+                                placeholder="Example: Great job on your essay! Your arguments were well-structured and insightful."
+                                maxlength="1000"
+                                required
+                            ></textarea>
+                            <div class="d-flex justify-content-between mt-1">
+                                <div id="validationIndicator" class="small"></div>
+                                <div class="small text-muted">
+                                    <span id="charCount">0</span>/1000
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2 mb-2">
+                            <button type="submit" class="btn btn-primary btn-sm flex-grow-1" id="analyzeBtnModal">
+                                <i class="fas fa-search me-1"></i>Analyze
+                            </button>
+                            <button type="button" class="btn btn-outline-info btn-sm" id="wellnessCheckBtn" style="display: none;" title="Wellness Check">
+                                <i class="fas fa-heartbeat"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Example prompts -->
+                    <div class="mb-2">
+                        <small class="text-muted">Try an example:</small>
+                        <div class="d-flex flex-wrap gap-1 mt-1">
+                            <span class="badge bg-light text-dark p-1 example-badge-modal" style="cursor: pointer; font-size: 0.7rem;" data-example="Great progress on the math assignment! Your problem-solving skills are improving.">
+                                <i class="fas fa-star text-warning me-1"></i>Positive
+                            </span>
+                            <span class="badge bg-light text-dark p-1 example-badge-modal" style="cursor: pointer; font-size: 0.7rem;" data-example="Your essay has good structure but needs more supporting details.">
+                                <i class="fas fa-minus-circle text-secondary me-1"></i>Neutral
+                            </span>
+                            <span class="badge bg-light text-dark p-1 example-badge-modal" style="cursor: pointer; font-size: 0.7rem;" data-example="I'm concerned about your recent performance. Your grades have dropped significantly.">
+                                <i class="fas fa-exclamation-triangle text-danger me-1"></i>Negative
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Error Alert -->
+                    <div id="errorAlertModal" class="alert alert-danger py-2 px-3 small" style="display: none;">
+                        <i class="fas fa-exclamation-circle me-1"></i>
+                        <span id="errorMessageModal"></span>
+                    </div>
+
+                    <!-- Results Container -->
+                    <div id="resultContainerModal" class="mt-2" style="display: none;">
+                        <hr class="my-2">
+                        
+                        <div class="text-center mb-2">
+                            <span id="sentimentBadgeModal" class="badge"></span>
+                        </div>
+
+                        <div class="row g-1 mb-2">
+                            <div class="col-6">
+                                <div class="bg-light rounded p-1 text-center">
+                                    <div class="small text-muted">Positive</div>
+                                    <div class="fw-bold small" id="positiveScoreModal">0.000</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="bg-light rounded p-1 text-center">
+                                    <div class="small text-muted">Negative</div>
+                                    <div class="fw-bold small" id="negativeScoreModal">0.000</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="feedbackDisplayModal" class="alert alert-info py-1 px-2 mb-1 small" style="display: none;">
+                            <strong class="small"><i class="fas fa-quote-left me-1"></i>Your Feedback</strong>
+                            <p class="mb-0 small" id="feedbackTextModal"></p>
+                        </div>
+                        
+                        <div id="feedbackHiddenNoticeModal" class="alert alert-warning py-1 px-2 mb-1 small" style="display: none;">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            <strong class="small">Feedback protected</strong>
+                            <p class="mb-0 small">Focus on the motivational message below.</p>
+                        </div>
+
+                        <div class="alert alert-warning py-1 px-2 small mb-1">
+                            <strong class="small"><i class="fas fa-lightbulb me-1"></i>Motivation</strong>
+                            <p class="mb-0 small" id="motivationTextModal"></p>
+                        </div>
+
+                        <div class="d-grid gap-1 mt-2">
+                            <button type="button" class="btn btn-success btn-sm" id="sendNLPNotifBtn" style="display:none;">
+                                <i class="fas fa-paper-plane me-1"></i>Send Notification
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer py-1">
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-1"></i>Content filtered for safety
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification for NLP -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+      <div id="nlpNotifToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">
+            Notification sent successfully!
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="/static/js/streak.js"></script>
+<script src="/static/js/teacher/students/students.js"></script>
+<script src="/static/js/teacher/students/students_NLPNOTIF.js"></script>
+
+{% endblock %}

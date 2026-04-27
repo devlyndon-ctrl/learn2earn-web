@@ -1,0 +1,1010 @@
+{% extends "base.html" %}
+{% block title %}
+Learn2Earn - School Rewards
+{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='student_rewards.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Add Lottie Player -->
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+{% endblock %}
+
+{% block main_content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">School Rewards</h2>
+        <a href="{{ url_for('student_rewards_history') }}" class="btn btn-light d-flex align-items-center" style="gap:8px; font-weight:600;">
+            <i class="fas fa-history" style="font-size: 1.3em; color: #4661E9;"></i>
+            <span style="font-size: 1em;">Redemption History</span>
+        </a>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="search-filter-section">
+        <div class="search-container">
+            <div class="filter-row">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search for awesome rewards..." id="searchInput">
+                </div>
+            </div>
+            
+            <div class="filter-tabs-container">
+                <!-- Teacher Filter -->
+                <div class="custom-teacher-dropdown" id="customTeacherDropdown">
+                    <button class="teacher-dropdown-toggle" id="teacherDropdownToggle">
+                        <img src="/static/image/default-avatar.png" alt="Teacher" class="teacher-dropdown-avatar" id="selectedTeacherAvatar">
+                        <span class="teacher-dropdown-info">
+                            <span class="teacher-dropdown-name" id="selectedTeacherName">All Teachers</span>
+                            <span class="teacher-dropdown-subject" id="selectedTeacherSubject">Select a teacher</span>
+                        </span>
+                        <i class="fas fa-chevron-down" style="margin-left: auto; font-size: 0.9em;"></i>
+                    </button>
+                    <div class="teacher-dropdown-menu" id="teacherDropdownMenu">
+                        <button class="teacher-dropdown-option" data-teacher-id="all">
+                            <img src="/static/image/default-avatar.png" alt="All Teachers" class="teacher-dropdown-avatar">
+                            <div class="teacher-dropdown-info">
+                                <span class="teacher-dropdown-name">All Teachers</span>
+                                <span class="teacher-dropdown-subject">View rewards from all teachers</span>
+                            </div>
+                            <span class="teacher-dropdown-active-badge" id="allTeachersBadge">ALL</span>
+                        </button>
+                        <!-- Teacher options will be dynamically added here -->
+                    </div>
+                </div>
+                
+                <!-- Category Filter Tabs -->
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">
+                        <i class="fas fa-layer-group"></i> All
+                    </button>
+                    <button class="filter-tab" data-filter="academic">
+                        <i class="fas fa-graduation-cap"></i> Academic
+                    </button>
+                    <button class="filter-tab" data-filter="privileges">
+                        <i class="fas fa-crown"></i> Privileges
+                    </button>
+                    <button class="filter-tab" data-filter="material">
+                        <i class="fas fa-gift"></i> Material Items
+                    </button>
+                    <button class="filter-tab" data-filter="experiences">
+                        <i class="fas fa-star"></i> Experiences
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State (initially visible) -->
+    <div class="loading-container" id="loadingMessage">
+        <div class="loading-content">
+            <!-- Circular container for Lottie animation - Matching Flutter design -->
+            <div class="loading-avatar-container">
+                <div class="loading-avatar-circle">
+                    <lottie-player 
+                        src="{{ url_for('static', filename='image/animation/loading_animation_blue.json') }}"
+                        background="transparent" 
+                        speed="1" 
+                        style="width: 100%; height: 100%;"
+                        loop 
+                        autoplay>
+                    </lottie-player>
+                </div>
+            </div>
+            
+            <div class="loading-text">
+                <div class="loading-title">Loading Rewards</div>
+                <div class="loading-subtitle">Discover amazing rewards waiting for you!</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error State (hidden by default) -->
+    <div class="error-container" id="errorMessage" style="display: none;">
+        <!-- Error content will be populated by JavaScript -->
+    </div>
+
+    <!-- Top Rewards Section (Red Carousel) -->
+    <div class="top-rewards-section" id="topRewardsSection" style="display: none;">
+        <h3 class="top-rewards-title">
+            <i class="fas fa-fire" style="color: #EF4444; margin-right: 8px;"></i>
+            Most Redeemed Rewards
+        </h3>
+        <div class="top-rewards-carousel" id="topRewardsCarousel">
+            <!-- Top rewards will be dynamically rendered here -->
+        </div>
+    </div>
+
+    <!-- Rewards Grid -->
+    <div class="rewards-grid" id="rewardsGrid" style="display: none;">
+        <!-- Rewards will be dynamically rendered here by JS -->
+    </div>
+
+    <!-- No Rewards Message (hidden by default) -->
+    <div class="no-rewards-container" id="noRewardsMessage" style="display: none;">
+        <i class="fas fa-gift no-rewards-icon"></i>
+        <h3 class="no-rewards-title">No Rewards Available</h3>
+        <p class="no-rewards-subtitle" id="noRewardsSubtitle">We couldn't find any rewards matching your criteria.</p>
+        
+        <div class="no-rewards-suggestions">
+            <p><strong>Suggestions:</strong></p>
+            <ul class="suggestion-list" id="suggestionList">
+                <li>Try adjusting your filters or search terms</li>
+                <li>Check back later for new rewards</li>
+                <li>Contact your teachers if you think this is an error</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Redeem Reward Modal -->
+<div class="modal fade redeem-modal" id="redeemModal" tabindex="-1" aria-labelledby="redeemModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <!-- Header with gradient background -->
+      <div class="modal-header-redeem">
+        <div class="reward-icon">
+          <i class="fas fa-gift"></i>
+        </div>
+        <div class="header-content">
+          <h5 class="modal-title">Redeem Reward</h5>
+          <span class="reward-name" id="modalRewardName">Homework Pass</span>
+          <p class="reward-subtitle" id="modalRewardSubtitle"></p>
+        </div>
+      </div>
+      
+      <div class="modal-body">
+        <!-- Points calculation card -->
+        <div class="points-card">
+          <!-- Current Points -->
+          <div class="points-row">
+            <div class="points-label">
+              <div class="icon-container current-icon">
+                <i class="fas fa-wallet"></i>
+              </div>
+              <span class="label-text">Current Points</span>
+            </div>
+            <div class="points-value">
+              <i class="fas fa-star" style="color: #F5A623;"></i>
+              <span class="current-points" id="modalCurrentPoints"></span>
+            </div>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <!-- Cost -->
+          <div class="points-row">
+            <div class="points-label">
+              <div class="icon-container cost-icon">
+                <i class="fas fa-minus-circle"></i>
+              </div>
+              <span class="label-text">Cost</span>
+            </div>
+            <div class="points-value">
+              <i class="fas fa-star" style="color: #ff0000;"></i>
+              <span class="cost-points" id="modalCostPoints"></span>
+            </div>
+          </div>
+          
+          <div class="gradient-divider"></div>
+          
+          <!-- After Redemption -->
+          <div class="after-redeem-section">
+            <div class="after-redeem-label-row">
+              <span class="after-redeem-icon">
+                <i class="fas fa-arrow-down" style="color: #10B981; font-size: 16px; background: rgba(16,185,129,0.1); border-radius: 8px; padding: 8px;"></i>
+              </span>
+              <span class="after-redeem-label-text">After Redemption</span>
+            </div>
+            <div class="after-redeem-points-row">
+              <i class="fas fa-star" style="color: #10B981; font-size: 16px;"></i>
+              <span class="after-redeem-points" id="modalAfterPoints"></span>
+            </div>
+          </div>
+        </div>
+        <!-- Remarks input -->
+        <div class="mt-4">
+          <label for="modalRemarks" class="form-label" style="font-weight:600;">Remarks <span style="color:red">*</span></label>
+          <textarea id="modalRemarks" class="form-control" rows="2" placeholder="E.g. Will be used for assignment 3" required style="resize:vertical;"></textarea>
+          <div id="remarksError" style="color:#EF4444; font-size:0.95em; display:none; margin-top:4px;">Remarks are required.</div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-confirm" id="confirmRedeem">CONFIRM</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toastNotification" class="toast-notification" style="display:none;">
+  <span id="toastMessage"></span>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Teacher dropdown elements
+    const customTeacherDropdown = document.getElementById('customTeacherDropdown');
+    const teacherDropdownToggle = document.getElementById('teacherDropdownToggle');
+    const teacherDropdownMenu = document.getElementById('teacherDropdownMenu');
+    const selectedTeacherAvatar = document.getElementById('selectedTeacherAvatar');
+    const selectedTeacherName = document.getElementById('selectedTeacherName');
+    const selectedTeacherSubject = document.getElementById('selectedTeacherSubject');
+    const teacherDropdownMenuContainer = document.getElementById('teacherDropdownMenu');
+
+    const rewardsGrid = document.getElementById('rewardsGrid');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const errorMessage = document.getElementById('errorMessage');
+    const noRewardsMessage = document.getElementById('noRewardsMessage');
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const searchInput = document.getElementById('searchInput');
+
+    // Modal elements
+    const redeemModal = new bootstrap.Modal(document.getElementById('redeemModal'));
+    const modalRewardName = document.getElementById('modalRewardName');
+    const modalRewardSubtitle = document.getElementById('modalRewardSubtitle');
+    const modalCurrentPoints = document.getElementById('modalCurrentPoints');
+    const modalCostPoints = document.getElementById('modalCostPoints');
+    const modalAfterPoints = document.getElementById('modalAfterPoints');
+    const confirmRedeemBtn = document.getElementById('confirmRedeem');
+    const modalRemarks = document.getElementById('modalRemarks');
+    const remarksError = document.getElementById('remarksError');
+
+    let allTeachers = [];
+    let allRewards = [];
+    let selectedCategory = 'all';
+    let currentStudentPoints = 0;
+    let selectedReward = null;
+    let lastScrollY = 0;
+
+    // Teacher dropdown functionality
+    teacherDropdownToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        teacherDropdownMenu.classList.toggle('open');
+        teacherDropdownToggle.classList.toggle('active');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!customTeacherDropdown.contains(e.target)) {
+            teacherDropdownMenu.classList.remove('open');
+            teacherDropdownToggle.classList.remove('active');
+        }
+    });
+
+    // Show loading state
+    function showLoading() {
+        loadingMessage.style.display = 'flex';
+        errorMessage.style.display = 'none';
+        rewardsGrid.style.display = 'none';
+        noRewardsMessage.style.display = 'none';
+    }
+
+    // Show error state
+    function showError(message) {
+        loadingMessage.style.display = 'none';
+        rewardsGrid.style.display = 'none';
+        noRewardsMessage.style.display = 'none';
+        
+        errorMessage.style.display = 'flex';
+        errorMessage.style.alignItems = 'center';
+        errorMessage.style.justifyContent = 'center';
+        errorMessage.style.minHeight = '400px';
+        
+        // Load the error template using fetch
+        fetch('/partials/showError')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load error template');
+                }
+                return response.text();
+            })
+            .then(html => {
+                errorMessage.innerHTML = html;
+                // Add event listener to retry button - calls fetchRewardsData for this page
+                const retryButton = document.getElementById('retryButton');
+                if (retryButton) {
+                    retryButton.addEventListener('click', function() {
+                        fetchRewardsData(); // This page's specific function
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading error template:', error);
+                // Fallback
+                errorMessage.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h3 style="color: #DB2D2D;">Connection Error</h3>
+                        <p>${message}</p>
+                        <button onclick="fetchRewardsData()" style="padding: 10px 20px; background: #5e72e4; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            });
+    }
+
+    // Show success state with rewards
+    function showRewards() {
+        loadingMessage.style.display = 'none';
+        errorMessage.style.display = 'none';
+        rewardsGrid.style.display = 'grid';
+        noRewardsMessage.style.display = 'none';
+    }
+
+    // Show no rewards state
+    function showNoRewards() {
+        loadingMessage.style.display = 'none';
+        errorMessage.style.display = 'none';
+        rewardsGrid.style.display = 'none';
+        noRewardsMessage.style.display = 'block';
+    }
+
+    // In the fetchRewardsData() function, modify the success callback
+    function fetchRewardsData() {
+        showLoading();
+        
+        // Fetch all rewards data
+        fetch('/api/student-teachers-rewards')
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+            })
+            .then(mainData => {
+                if (!mainData.success) {
+                    throw new Error(mainData.error || 'Failed to load rewards');
+                }
+                
+                allTeachers = mainData.teachers || [];
+                allRewards = mainData.rewards || [];
+
+                // Populate custom teacher dropdown
+                populateTeacherDropdown();
+                
+                // Extract top 3 most redeemed rewards from allRewards
+                const topRewards = [...allRewards]
+                    .sort((a, b) => (b.redemption_count || 0) - (a.redemption_count || 0))
+                    .slice(0, 3);
+                
+                // Display top rewards if available
+                if (topRewards.length > 0) {
+                    displayTopRewards(topRewards);
+                }
+                
+                renderRewards();
+                
+                // Show success toast when all data has loaded
+                showToast('Reward Loaded Successfully!');
+            })
+            .catch(error => {
+                console.error('Error fetching rewards:', error);
+                showError(error.message);
+            });
+    }
+
+    // Display top rewards in carousel
+    function displayTopRewards(topRewards) {
+        const topRewardsSection = document.getElementById('topRewardsSection');
+        const topRewardsCarousel = document.getElementById('topRewardsCarousel');
+        
+        if (!topRewards || topRewards.length === 0) {
+            topRewardsSection.style.display = 'none';
+            return;
+        }
+
+        topRewardsSection.style.display = 'block';
+        topRewardsCarousel.innerHTML = '';
+
+        topRewards.forEach((reward, index) => {
+            const canAfford = currentStudentPoints >= reward.point_cost;
+            const isMaxedOut = reward.is_maxed_out === true || reward.is_maxed_out === 1;
+            
+            // Get category icon and styling
+            let categoryIcon = 'fa-gift';
+            if (reward.category) {
+                const cat = reward.category.toLowerCase();
+                if (cat === 'academic') categoryIcon = 'fa-book-open';
+                else if (cat === 'privileges') categoryIcon = 'fa-crown';
+                else if (cat === 'material' || cat === 'material items') categoryIcon = 'fa-gift';
+                else if (cat === 'experiences') categoryIcon = 'fa-trophy';
+            }
+
+            const topRewardCard = document.createElement('div');
+            topRewardCard.className = 'top-reward-card';
+            topRewardCard.dataset.rewardId = reward.reward_id;
+            topRewardCard.dataset.isMaxedOut = isMaxedOut;
+            topRewardCard.dataset.canAfford = canAfford;
+            topRewardCard.innerHTML = `
+                <div class="top-reward-card-content">
+                    <!-- Header: Badge and Category -->
+                    <div class="top-reward-header">
+                        <div class="top-reward-badge">
+                            <i class="fas fa-gift"></i>
+                            <span>Most Redeemed</span>
+                        </div>
+                        <div class="top-reward-category-badge">
+                            <i class="fas ${categoryIcon}"></i>
+                            <span>${reward.category || 'Other'}</span>
+                        </div>
+                    </div>
+
+                    <!-- Reward Info -->
+                    <div class="top-reward-info">
+                        <h4 class="top-reward-title">${escapeHtml(reward.reward_name)}</h4>
+                        <p class="top-reward-description">${escapeHtml(reward.description || 'No description available')}</p>
+                    </div>
+
+                    <!-- Footer: Points and Button -->
+                    <div class="top-reward-footer">
+                        <div class="top-reward-points">
+                            <i class="fas fa-star"></i>
+                            <span>${reward.point_cost} pts</span>
+                        </div>
+                        <button class="top-reward-redeem-btn ${isMaxedOut ? 'maxed-out-btn' : ''}" ${!canAfford || isMaxedOut ? 'disabled' : ''}>
+                            <i class="fas fa-ticket-alt"></i>
+                            <span>${isMaxedOut ? 'LIMIT REACHED (' + reward.redemption_count + '/3)' : !canAfford ? 'NEED ' + (reward.point_cost - currentStudentPoints) : 'REDEEM'}</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            topRewardCard.addEventListener('click', function(e) {
+                const rewardId = parseInt(this.dataset.rewardId);
+                const isMaxedOut = this.dataset.isMaxedOut === 'true';
+                const canAfford = this.dataset.canAfford === 'true';
+                const rewardToRedeem = allRewards.find(r => r.reward_id == rewardId);
+                
+                if (!rewardToRedeem) return;
+                
+                // Show message if maxed out
+                if (isMaxedOut) {
+                    showToast('You have reached the redemption limit for this quarter. Try again next quarter!', true);
+                    return;
+                }
+                
+                // Show message if can't afford
+                if (!canAfford) {
+                    const pointsNeeded = rewardToRedeem.point_cost - currentStudentPoints;
+                    showToast(`You need ${pointsNeeded} more points to redeem this reward.`, true);
+                    return;
+                }
+                
+                // Open redeem modal
+                selectedReward = rewardToRedeem;
+                openRedeemModal(rewardToRedeem);
+            });
+
+            topRewardsCarousel.appendChild(topRewardCard);
+        });
+    }
+    
+
+    // Function to populate teacher dropdown
+    function populateTeacherDropdown() {
+        teacherDropdownMenuContainer.innerHTML = `
+            <button class="teacher-dropdown-option" data-teacher-id="all">
+                <img src="/static/image/default-avatar.png" alt="All Teachers" class="teacher-dropdown-avatar">
+                <div class="teacher-dropdown-info">
+                    <span class="teacher-dropdown-name">All Teachers</span>
+                    <span class="teacher-dropdown-subject">View rewards from all teachers</span>
+                </div>
+                <span class="teacher-dropdown-active-badge" id="allTeachersBadge">ALL</span>
+            </button>
+        `;
+
+        allTeachers.forEach(teacher => {
+            const teacherOption = document.createElement('button');
+            teacherOption.className = 'teacher-dropdown-option';
+            teacherOption.setAttribute('data-teacher-id', teacher.id);
+
+            teacherOption.innerHTML = `
+                <img src="${teacher.avatar}" alt="${teacher.name}" class="teacher-dropdown-avatar"
+                     onerror="this.src='/static/image/default-avatar.png'">
+                <div class="teacher-dropdown-info">
+                    <span class="teacher-dropdown-name">${teacher.name}</span>
+                    <span class="teacher-dropdown-subject">${teacher.subject || 'General'}</span>
+                </div>
+                <span class="teacher-dropdown-active-badge" style="display: none;">SELECTED</span>
+            `;
+
+            teacherOption.addEventListener('click', function() {
+                selectTeacher(teacher.id, teacher.name, teacher.subject, teacher.avatar);
+            });
+
+            teacherDropdownMenuContainer.appendChild(teacherOption);
+        });
+
+        // Add event listener for "All Teachers" option
+        const allTeachersOption = teacherDropdownMenuContainer.querySelector('[data-teacher-id="all"]');
+        allTeachersOption.addEventListener('click', function() {
+            selectTeacher('all', 'All Teachers', 'Select a teacher', '/static/image/default-avatar.png');
+        });
+    }
+
+    function selectTeacher(teacherId, teacherName, teacherSubject, teacherAvatar) {
+        // Update selected teacher display
+        selectedTeacherAvatar.src = teacherAvatar;
+        selectedTeacherName.textContent = teacherName;
+        selectedTeacherSubject.textContent = teacherSubject;
+
+        // Update active badges
+        document.querySelectorAll('.teacher-dropdown-active-badge').forEach(badge => {
+            badge.style.display = 'none';
+        });
+
+        if (teacherId === 'all') {
+            document.getElementById('allTeachersBadge').style.display = 'inline-block';
+        } else {
+            const selectedOption = document.querySelector(`[data-teacher-id="${teacherId}"] .teacher-dropdown-active-badge`);
+            if (selectedOption) {
+                selectedOption.style.display = 'inline-block';
+            }
+        }
+
+        // Close dropdown
+        teacherDropdownMenu.classList.remove('open');
+        teacherDropdownToggle.classList.remove('active');
+
+        // Trigger rewards filtering
+        renderRewards();
+    }
+
+    // Filter tabs
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            filterTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            selectedCategory = this.getAttribute('data-filter');
+            renderRewards();
+        });
+    });
+
+    // Search input
+    searchInput.addEventListener('input', renderRewards);
+
+    // Use event delegation for redeem buttons - only handle non-disabled buttons
+    rewardsGrid.addEventListener('click', function(e) {
+        const button = e.target.closest('button');
+        if (!button) return;
+        
+        const rewardCard = button.closest('.reward-card');
+        const rewardId = rewardCard.dataset.id;
+        selectedReward = allRewards.find(r => r.reward_id == rewardId);
+
+        if (button.classList.contains('redeem-btn') && !button.disabled) {
+            if (selectedReward) {
+                openRedeemModal(selectedReward);
+            }
+        } else if (button.classList.contains('redeemed-btn') && button.disabled) {
+            // Show message about quarterly limit
+            showToast('You have reached the redemption limit for this quarter. Try again next quarter!', true);
+        }
+    });
+
+    // Confirm redemption
+    confirmRedeemBtn.addEventListener('click', function() {
+        if (selectedReward) {
+            // Validate remarks
+            if (!modalRemarks.value.trim()) {
+                remarksError.style.display = 'block';
+                modalRemarks.focus();
+                return;
+            }
+            remarksError.style.display = 'none';
+            redeemReward(selectedReward, modalRemarks.value.trim());
+        }
+    });
+
+    // Modal scroll management
+    document.getElementById('redeemModal').addEventListener('show.bs.modal', function () {
+        lastScrollY = window.scrollY;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    document.getElementById('redeemModal').addEventListener('hidden.bs.modal', function () {
+        window.scrollTo({ top: lastScrollY, behavior: 'smooth' });
+    });
+
+    // Fetch current student points
+    function fetchStudentPoints() {
+        return fetch('/api/my-points')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    currentStudentPoints = parseInt(data.points) || 0;
+                }
+            });
+    }
+
+    function openRedeemModal(reward) {
+        fetchStudentPoints().then(() => {
+            modalRewardName.textContent = reward.reward_name;
+            modalRewardSubtitle.textContent = reward.description || '';
+            modalCurrentPoints.textContent = `${currentStudentPoints} pts`;
+            modalCostPoints.textContent = `- ${reward.point_cost} pts`;
+            const afterPoints = currentStudentPoints - reward.point_cost;
+            modalAfterPoints.textContent = `${afterPoints} pts`;
+
+            if (afterPoints < 0) {
+                confirmRedeemBtn.disabled = true;
+                confirmRedeemBtn.style.opacity = '0.6';
+                confirmRedeemBtn.textContent = 'INSUFFICIENT POINTS';
+            } else {
+                confirmRedeemBtn.disabled = false;
+                confirmRedeemBtn.style.opacity = '1';
+                confirmRedeemBtn.textContent = 'CONFIRM';
+            }
+
+            modalRemarks.value = '';
+            remarksError.style.display = 'none';
+
+            redeemModal.show();
+        });
+    }
+
+    function redeemReward(reward, remarks) {
+        fetch('/api/redeem-reward', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                reward_id: reward.reward_id,
+                remarks: remarks
+            })
+        })
+        .then(res => res.json())
+        .then( data => {
+            if (data.success) {
+                fetchStudentPoints().then(() => {
+                    showToast('Reward redeemed successfully!');
+                    redeemModal.hide();
+                    fetchRewardsData(); // Refresh the data
+                });
+            } else {
+                showToast('Failed to redeem reward: ' + data.message, true);
+            }
+        })
+        .catch(error => {
+            console.error('Error redeeming reward:', error);
+            showToast('An error occurred while redeeming the reward.', true);
+        });
+    }
+
+    // Use the custom dropdown for teacher filter
+    function renderRewards() {
+        const selectedTeacherId = getSelectedTeacherId();
+        const searchTerm = searchInput.value.trim().toLowerCase();
+
+        let filteredRewards = allRewards;
+
+        // Filter by teacher
+        if (selectedTeacherId !== 'all') {
+            filteredRewards = filteredRewards.filter(r => r.created_by == selectedTeacherId);
+        }
+
+        // Filter by category
+        if (selectedCategory !== 'all') {
+            filteredRewards = filteredRewards.filter(r =>
+                r.category && r.category.toLowerCase() === selectedCategory.toLowerCase()
+            );
+        }
+
+        // Filter by search
+        if (searchTerm) {
+            filteredRewards = filteredRewards.filter(r =>
+                (r.reward_name && r.reward_name.toLowerCase().includes(searchTerm)) ||
+                (r.description && r.description.toLowerCase().includes(searchTerm))
+            );
+        }
+
+        // Sort: redeemable rewards first (sorted A-Z), then maxed-out rewards (sorted A-Z)
+        filteredRewards.sort((a, b) => {
+            // If one can be redeemed and the other can't, redeemable comes first
+            if (a.can_redeem !== b.can_redeem) {
+                return a.can_redeem ? -1 : 1;  // a.can_redeem = true comes first
+            }
+            // If both have same redemption status, sort alphabetically by reward name
+            const nameA = (a.reward_name || '').toLowerCase();
+            const nameB = (b.reward_name || '').toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
+
+        rewardsGrid.innerHTML = '';
+
+        if (filteredRewards.length === 0) {
+            showNoRewardsMessage(selectedTeacherId, selectedCategory, searchTerm);
+            showNoRewards();
+        } else {
+            hideNoRewardsMessage();
+            displayFilteredRewards(filteredRewards);
+            showRewards();
+        }
+    }
+
+    function getSelectedTeacherId() {
+        const activeBadge = document.querySelector('.teacher-dropdown-active-badge[style*="display: inline-block"]');
+        if (activeBadge) {
+            const option = activeBadge.closest('.teacher-dropdown-option');
+            return option ? option.getAttribute('data-teacher-id') : 'all';
+        }
+        return 'all';
+    }
+
+    function showNoRewardsMessage(selectedTeacherId, selectedCategory, searchTerm) {
+        const noRewardsSubtitle = document.getElementById('noRewardsSubtitle');
+        const suggestionList = document.getElementById('suggestionList');
+
+        let message = 'We couldn\'t find any rewards matching your criteria.';
+        let suggestions = [
+            'Try adjusting your filters or search terms',
+            'Check back later for new rewards',
+            'Contact your teachers if you think this is an error'
+        ];
+
+        if (allRewards.length === 0) {
+            message = 'No rewards are currently available.';
+            suggestions = [
+                'Your teachers haven\'t created any rewards yet',
+                'Check back later when rewards are added',
+                'Talk to your teachers about creating rewards'
+            ];
+        } else if (selectedTeacherId !== 'all') {
+            const teacher = allTeachers.find(t => t.id == selectedTeacherId);
+            const teacherName = teacher ? teacher.name : 'Selected Teacher';
+            message = `No rewards found for ${teacherName}.`;
+            suggestions = [
+                `Try selecting "All Teachers" to see all available rewards`,
+                `${teacherName} might add rewards soon`,
+                'Check rewards from other teachers'
+            ];
+        } else if (selectedCategory !== 'all') {
+            const activeTab = document.querySelector('.filter-tab.active');
+            const categoryName = activeTab ? activeTab.textContent.trim() : selectedCategory;
+            message = `No ${categoryName.toLowerCase()} rewards found.`;
+            suggestions = [
+                'Try selecting "All" categories',
+                'Your teachers might add this category soon',
+                'Check other reward categories'
+            ];
+        } else if (searchTerm) {
+            message = `No rewards found for "${searchTerm}".`;
+            suggestions = [
+                'Check your spelling',
+                'Try different keywords',
+                'Browse all rewards by clearing the search'
+            ];
+        } else if (filteredRewards.length === 0 && allRewards.length > 0) {
+            message = 'No rewards match your current filters.';
+            suggestions = [
+                'Try changing your filter selections',
+                'Clear all filters to see all rewards',
+                'Your filters might be too specific'
+            ];
+        }
+
+        noRewardsSubtitle.textContent = message;
+        suggestionList.innerHTML = suggestions.map(suggestion =>
+            `<li>${suggestion}</li>`
+        ).join('');
+    }
+
+    function hideNoRewardsMessage() {
+        // Handled by showNoRewards() function
+    }
+
+    function displayFilteredRewards(rewards) {
+        rewards.forEach(r => {
+            const teacherName = allTeachers.find(t => t.id == r.created_by)?.name || 'Teacher';
+            const category = r.category ? r.category.toLowerCase() : 'other';
+            const quantity = r.available_quantity !== undefined ? r.available_quantity : 'N/A';
+
+            // Quarterly redemption info
+            const remainingRedeems = r.remaining_redeems !== undefined ? r.remaining_redeems : 3;
+            const redemptionCount = r.redemption_count !== undefined ? r.redemption_count : 0;
+            const canRedeem = r.can_redeem !== undefined ? r.can_redeem : true;
+
+            // Map category to CSS class and icon
+            let categoryClass = 'category-other';
+            let iconClass = 'fa-gift';
+            let iconColor = '#303F9F'; // default dark indigo
+            let iconBg = '#E3E7F9';    // default light indigo
+
+            if (category === 'academic') {
+                categoryClass = 'category-academic';
+                iconClass = 'fa-book-open';
+                iconColor = '#3232FF';
+                iconBg = '#E3E7F9';
+            } else if (category === 'privileges') {
+                categoryClass = 'category-privileges';
+                iconClass = 'fa-crown';
+                iconColor = '#198C19';
+                iconBg = '#E6F7E6';
+            } else if (category === 'material items' || category === 'material') {
+                categoryClass = 'category-material';
+                iconClass = 'fa-gift';
+                iconColor = '#FFAE19';
+                iconBg = '#FFF6E3';
+            } else if (category === 'experiences') {
+                categoryClass = 'category-experiences';
+                iconClass = 'fa-trophy';
+                iconColor = '#8C198C';
+                iconBg = '#F3E3F9';
+            }
+
+            // Points badge gradient
+            const pointsBadgeStyle = `
+                background: linear-gradient(90deg, #F5A623 0%, #FFD700 60%, #F5A623 100%);
+                color: #fff;
+                font-weight: bold;
+                border-radius: 12px;
+                box-shadow: 0 2px 6px rgba(245,166,35,0.18);
+                padding: 4px 10px;
+                font-size: 12px;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                justify-content: center;
+            `;
+
+            // Qty badge style for under points
+            const qtyBadgeStyle = `
+                background: #f0f2ff;
+                color: #4661E9;
+                padding: 3px 10px 3px 8px;
+                border-radius: 12px;
+                font-size: 11px;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                margin-top: 6px;
+                justify-content: center;
+            `;
+
+            // Redemption limit badge style
+            const redemptionBadgeStyle = `
+                background: ${remainingRedeems === 0 ? '#FEE2E2' : '#DBEAFE'};
+                color: ${remainingRedeems === 0 ? '#991B1B' : '#0C4A6E'};
+                padding: 4px 10px;
+                border-radius: 12px;
+                font-size: 11px;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                margin-top: 6px;
+                justify-content: center;
+            `;
+
+            // Button styles based on redemption status
+            const buttonStyle = !canRedeem ? `
+                background-color: #9CA3AF !important;
+                color: white !important;
+                border: none !important;
+                cursor: not-allowed !important;
+                opacity: 0.7;
+            ` : `
+                background: linear-gradient(90deg, #4661E9 0%, #6B8EFF 100%) !important;
+                color: white !important;
+                border: none !important;
+                cursor: pointer !important;
+            `;
+
+            const buttonText = !canRedeem ? `LIMIT REACHED (${redemptionCount}/3)` : 'REDEEM';
+            const buttonClass = !canRedeem ? 'redeemed-btn' : 'redeem-btn';
+
+            rewardsGrid.innerHTML += `
+            <div class="reward-card" data-id="${r.reward_id}" data-category="${category}" data-teacher="${r.created_by}" style="position:relative;">
+                <div style="padding: 36px 16px 0 16px;">
+                    <div style="display: flex; align-items: flex-start;">
+                        <!-- Icon and badge column -->
+                        <div style="display: flex; flex-direction: column; align-items: flex-start; margin-right: 10px;">
+                            <div style="
+                                width: 44px; height: 44px;
+                                background: ${iconBg};
+                                border-radius: 12px;
+                                display: flex; align-items: center; justify-content: center;
+                                flex-shrink: 0;
+                            ">
+                                <i class="fas ${iconClass}" style="color: ${iconColor}; font-size: 22px;"></i>
+                            </div>
+                            <!-- Category badge below icon box, left-aligned -->
+                            <div class="category-badge ${categoryClass}" style="
+                                margin-top: 10px;
+                                position: static;
+                                display: inline-block;
+                                margin-left: 0;
+                            ">
+                                ${r.category || 'Other'}
+                            </div>
+                        </div>
+                        
+                        <div style="flex:1"></div>
+                        
+                        <!-- Teacher name above points and qty -->
+                        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                            <div class="teacher-badge">${teacherName}</div>
+                            <div class="points-shimmer" style="margin-bottom:6px;">
+                                <i class="fas fa-star" style="color: #fff; font-size: 12px;"></i>
+                                <span>${r.point_cost}</span>
+                            </div>
+                            <div style="${qtyBadgeStyle}">
+                                <i class="fas fa-box" style="font-size:10px;"></i> QTY: ${quantity}
+                            </div>
+                            <div style="${redemptionBadgeStyle}">
+                                <i class="fas ${remainingRedeems === 0 ? 'fa-lock' : 'fa-redo'}"></i>
+                                <strong>${remainingRedeems}/3 Left</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="reward-content" style="padding-top: 10px;">
+                    <h3 class="reward-title" style="color: #1E3A5F; font-size: 16px; font-weight: bold;">${r.reward_name}</h3>
+                    <p class="reward-description" style="font-size: 12px; color: #666;">${r.description || 'No description available.'}</p>
+                    ${r.remarks && r.remarks.trim() ? `
+                    <div class="remarks-box">
+                        <strong>Remarks:</strong>
+                        <div>${escapeHtml(r.remarks)}</div>
+                    </div>
+                    ` : ''}
+                    <div style="margin-top: 10px;">
+                        <button class="${buttonClass}" 
+                                style="width: 100%; 
+                                       font-size: 12px; 
+                                       font-weight: bold;
+                                       padding: 10px 12px;
+                                       border-radius: 12px;
+                                       transition: all 0.3s ease;
+                                       ${buttonStyle}"
+                                ${!canRedeem ? 'disabled' : ''}>
+                            ${buttonText}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            `;
+        });
+    }
+
+    // Toast notification function
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('toastNotification');
+        const toastMsg = document.getElementById('toastMessage');
+        toastMsg.textContent = message;
+        toast.className = 'toast-notification' + (isError ? ' error' : '');
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.classList.remove('show');
+            toast.style.display = 'none';
+        }, 3000);
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
+
+        // Add click-to-dismiss
+        toast.onclick = function() {
+            toast.classList.remove('show');
+            toast.style.display = 'none';
+        };
+    }
+
+    // Utility function to escape HTML
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Initialize with "All Teachers" selected and fetch data
+    selectTeacher('all', 'All Teachers', 'Select a teacher', '/static/image/default-avatar.png');
+    fetchRewardsData();
+    fetchStudentPoints();
+});
+</script>
+{% endblock %}

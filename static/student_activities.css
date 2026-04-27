@@ -1,0 +1,3423 @@
+/* ========================================
+   UNIFIED COLOR SCHEME
+   ======================================== 
+   Red (#EF4444 / #DC2626): Denied tasks
+   Green (#10B981 / #059669): Completed/Awarded tasks
+   Blue (#3B82F6 / #2563EB): All other statuses (To Do, Pending, Due Soon, etc.)
+   ======================================== */
+
+/* Stats Section - Updated */
+.stats-section {
+    margin-bottom: 2rem;
+}
+
+.stats-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.points-card, .streak-card, .progress-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(94, 114, 228, 0.12);
+    padding: 24px;
+    flex: 1;
+    min-width: 220px;
+    max-width: 280px;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.points-card:hover, .streak-card:hover, .progress-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(94, 114, 228, 0.18);
+}
+
+/* Points Card Specific Styles */
+.points-card .icon-container {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(245, 166, 35, 0.1);
+    margin: 0 auto 16px auto; /* Center horizontally, keep bottom margin */
+}
+
+.points-card .star-icon {
+    color: #F5A623;
+    font-size: 24px;
+}
+
+/* Completed Specific Styles */ 
+.streak-card .card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.streak-card .icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(16, 185, 129, 0.1);
+    margin-bottom: 16px;
+    font-size: 24px;
+    color: #10B981;
+}
+
+/* Progress Card Specific Styles */
+.progress-card .card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.progress-card .icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(59, 130, 246, 0.1);
+    margin-bottom: 16px;
+    font-size: 24px;
+    color: #3B82F6;
+}
+
+/* Common Stats Styles */
+.stat-value {
+    font-size: 36px;
+    font-weight: 800;
+    color: #1F2937;
+    line-height: 1.1;
+    margin-bottom: 8px;
+}
+
+.stat-label, .days-text {
+    color: #6B7280;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.stat-change {
+    display: inline-flex;
+    align-items: center;
+    background-color: rgba(76, 175, 80, 0.1);
+    border-radius: 20px;
+    padding: 4px 10px;
+    width: fit-content;
+}
+
+.stat-change i {
+    color: #4CAF50;
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+.change-text {
+    color: #4CAF50;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* Updated Search and Filter Section */
+.search-filter-section {
+    margin-bottom: 2rem;
+}
+
+.search-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.search-box i {
+    color: #9E9E9E;
+    margin-right: 10px;
+}
+
+.search-box input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 16px;
+    color: #1F2937;
+    background: transparent;
+    border-bottom: 2.5px solid #8d98e8; /* underline only */
+    transition: border-color 0.2s;
+    padding-bottom: 4px;
+}
+
+.search-box input:focus {
+    border-bottom: 2.5px solid #465fe9;
+}
+
+.search-box input::placeholder {
+    color: #9E9E9E;
+}
+
+.filter-tabs-container {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    display: flex;
+    justify-content: center; /* Center the tabs container */
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 0.25rem; /* reduced gap */
+    min-width: max-content;
+    justify-content: center;
+}
+
+.filter-tab {
+    background: #fff;
+    color: #8d98e8;
+    border: 2px solid #8d98e8;
+    border-radius: 2rem;
+    padding: 0.35rem 0.8rem; /* reduced padding */
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem; /* reduced gap between icon and text */
+    transition: background 0.3s, color 0.3s;
+    cursor: pointer;
+    outline: none;
+    white-space: nowrap;
+    flex-shrink: 1; /* allow shrinking */
+    min-width: 0;   /* allow shrinking */
+}
+
+.filter-tab i {
+    color: #8d98e8;
+    font-size: 1.1em;
+}
+
+.filter-tab.active,
+.filter-tab:active,
+.filter-tab:focus {
+    background: linear-gradient(135deg, #4661E9 0%, #797EEB 50%, #8E69F4 100%);
+    color: #fff;
+    border-color: #8d98e8;
+}
+
+.filter-tab.active i,
+.filter-tab:active i,
+.filter-tab:focus i {
+    color: #fff;
+}
+
+/* Make Awarded tab smaller */
+.filter-tab.small-tab {
+    font-size: 0.92em;
+    padding: 0.35em 1em;
+    min-width: 90px;
+}
+
+.filter-tab.small-tab i {
+    font-size: 1em;
+}
+
+/* Custom scrollbar for filter tabs */
+.filter-tabs-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.filter-tabs-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.filter-tabs-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.filter-tabs-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Tasks Section */
+.tasks-section {
+    margin-bottom: 2rem;
+}
+
+.tasks-container {
+    background: #FFFFFF;
+    border-radius: 24px; /* More rounded corners */
+    box-shadow: 0 4px 16px -1px rgba(0, 0, 0, 0.10);
+    overflow: visible; /* Allow overflow for rounded corners */
+    
+}
+
+.task-list {
+    display: grid;
+    gap: 14px;
+    padding: 16px;
+    background: #f8f9fa;
+}
+
+.task-item {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+    transition: background-color 0.2s;
+    
+}
+
+/* Make all task items rounded and card-like */
+.task-item {
+    border-radius: 18px;
+    border: 1px solid rgba(229, 231, 235, 0.5);
+    box-shadow: 0 4px 15px rgba(94, 114, 228, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+    background: #fff;
+    margin-bottom: 14px;
+    transition: box-shadow 0.2s, transform 0.2s;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+/* Keep status background gradients for color cues */
+.task-item.todo {
+    background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+}
+.task-item.pending,
+.task-item.duesoon {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+.task-item.denied {
+    background: linear-gradient(135deg, #ffe4e6 0%, #fff1f2 100%);
+}
+.task-item.pastdue {
+    background: linear-gradient(135deg, #ffe4e6 0%, #fff1f2 100%);
+}
+.task-item.awarded, .task-item.completed {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.task-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1F2937;
+    margin: 0;
+}
+
+.task-status {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+.task-status.todo {
+    background: linear-gradient(90deg, #F59E0B 0%, #D97706 100%);
+    color: #fff;
+}
+
+.task-status.pending,
+.task-status.duesoon {
+    background: linear-gradient(90deg, #3B82F6 0%, #2563EB 100%);
+    color: #fff;
+}
+
+.task-status.denied {
+    background: linear-gradient(90deg, #EF4444 0%, #DC2626 100%);
+    color: #fff;
+}
+
+.task-status.pastdue {
+    background: linear-gradient(90deg, #EF4444 0%, #DC2626 100%);
+    color: #fff;
+}
+
+
+.task-status.awarded,
+.task-status.completed {
+    background: linear-gradient(90deg, #10B981 0%, #059669 100%);
+    color: #fff;
+}
+
+.task-description {
+    color: #6B7280;
+    font-size: 14px;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.task-footer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.task-date {
+    color: #9E9E9E;
+    font-size: 14px;
+}
+
+.task-points {
+    font-size: 14px;
+    font-weight: 700;
+    color: #5e72e4;
+    margin-left: auto;
+}
+
+/* Task item background gradients */
+.task-item.todo{
+    background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+}
+.task-item.pending,
+.task-item.duesoon {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+.task-item.denied {
+    background: linear-gradient(135deg, #ffe4e6 0%, #fff1f2 100%);
+}
+.task-item.pastdue {
+    background: linear-gradient(135deg, #ffe4e6 0%, #fff1f2 100%);
+}
+.task-item.awarded, .task-item.completed {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+}
+
+/* General badge style */
+.task-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 12px;
+    padding: 4px 12px;
+    margin-right: 8px;
+    background: #f3f4f6;
+    color: #4661E9;
+}
+
+/* Date badge */
+.task-date-badge {
+    background: #e0e7ff;
+    color: #4661E9;
+}
+
+/* Priority badge overrides */
+.priority-badge {
+    color: #fff !important;
+    background: #94A3B8;
+    margin-right: 8px;
+}
+.priority-high {
+    background: #EF4444 !important;
+}
+.priority-medium {
+    background: #F59E0B !important;
+}
+.priority-low {
+    background: #10B981 !important;
+}
+
+/* Points badge */
+.task-points-badge {
+    background: #fef3c7;
+    color: #f59e0b;
+}
+
+.task-badge i {
+    font-size: 1em;
+    margin-right: 4px;
+}
+
+/* Ensure body doesn't scroll when modal is open */
+body.modal-open {
+    overflow: hidden !important;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+/* Make sure no parent containers interfere */
+.student-home-container,
+.tasks-section,
+.tasks-container {
+    position: static !important;
+}
+
+ /* SORT OPTIONS MODAL STYLES */
+    .modal-content-custom {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
+
+    .sort-options-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.25rem 1.5rem;
+        border-bottom: none;
+        background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        border-radius: 12px 12px 0 0;
+    }
+
+    .sort-options-header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .sort-options-icon-circle {
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.25);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .sort-options-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .sort-options-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: white;
+        letter-spacing: -0.025em;
+    }
+
+    .sort-options-subtitle {
+        font-size: 0.875rem;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.9);
+        letter-spacing: -0.01em;
+    }
+
+    .close-sort-options {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        font-size: 1.25rem;
+        color: white;
+        cursor: pointer;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+    
+    .close-sort-options:hover {
+        background-color: rgba(255, 255, 255, 0.35);
+        color: white;
+    }
+
+    .sort-options-list {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem 0.5rem;
+    }
+
+    .sort-option {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 1.25rem;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin: 0 0.75rem;
+        position: relative;
+    }
+    
+    .sort-option:hover {
+        background-color: #f7fafc;
+        transform: translateY(-1px);
+    }
+    
+    .sort-option.selected {
+        background-color: #edf2ff;
+        border: 1px solid #4661E9;
+    }
+    
+    .sort-option.selected .sort-option-check {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .sort-option-icon-container {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .sort-option[data-sort="deadline"] .sort-option-icon-container {
+        background-color: rgba(70, 97, 233, 0.1);
+    }
+    
+    .sort-option[data-sort="priority"] .sort-option-icon-container {
+        background-color: rgba(245, 158, 11, 0.1);
+    }
+    
+    .sort-option[data-sort="points"] .sort-option-icon-container {
+        background-color: rgba(16, 185, 129, 0.1);
+    }
+
+    .sort-option-icon {
+        font-size: 1.25rem;
+    }
+    
+    .sort-option[data-sort="deadline"] .sort-option-icon {
+        color: #4661E9;
+    }
+    
+    .sort-option[data-sort="priority"] .sort-option-icon {
+        color: #F59E0B;
+    }
+    
+    .sort-option[data-sort="points"] .sort-option-icon {
+        color: #10B981;
+    }
+
+    .sort-option-content {
+        flex: 1;
+        text-align: left;
+    }
+
+    .sort-option-title {
+        font-weight: 600;
+        font-size: 1rem;
+        color: #2d3748;
+        margin-bottom: 0.25rem;
+    }
+
+    .sort-option-desc {
+        font-size: 0.875rem;
+        color: #718096;
+        line-height: 1.4;
+    }
+
+    .sort-option-check {
+        color: #4661E9;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: all 0.2s ease;
+    }
+
+/* --- Activity Modal Flutter-like Design --- */
+.activity-modal-content {
+    border-radius: 24px !important;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    overflow: hidden;
+    border: none;
+    padding: 0;
+    background: transparent;
+}
+
+.activity-modal-header {
+    padding: 0;
+    background: transparent;
+    border: none;
+}
+
+.activity-modal-gradient {
+    background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+    border-radius: 24px 24px 0 0;
+    padding: 32px 24px 24px 24px;
+    text-align: center;
+    position: relative;
+}
+
+.activity-modal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 8px 16px;
+    margin-bottom: 16px;
+    letter-spacing: 0.5px;
+}
+
+.activity-modal-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px auto;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.activity-modal-icon i {
+    color: #fff;
+    font-size: 32px;
+}
+
+.activity-modal-title {
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 8px;
+}
+
+.activity-modal-desc {
+    color: rgba(255,255,255,0.95);
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0;
+}
+
+.activity-modal-body {
+    background: #fff;
+    border-radius: 0 0 24px 24px;
+    padding: 16px 18px 12px 18px;
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Custom scrollbar for modal body */
+.activity-modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.activity-modal-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.activity-modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.activity-modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.activity-modal-taskbox {
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 12px 14px 10px 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(70,95,233,0.06);
+}
+
+.activity-modal-taskname {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin-bottom: 6px;
+}
+
+.activity-modal-taskmeta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.9rem;
+    color: #4661E9;
+    font-weight: 600;
+    align-items: center;
+}
+
+.activity-modal-taskmeta i {
+    margin-right: 4px;
+}
+
+.activity-modal-taskpoints {
+    color: #F59E0B;
+}
+
+.activity-modal-section {
+    margin-bottom: 12px;
+}
+
+.activity-modal-label {
+    font-size: 0.9rem;
+    color: #6B7280;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.activity-modal-value {
+    font-size: 1rem;
+    color: #1F2937;
+    font-weight: 500;
+}
+
+.activity-modal-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* Centered content for activity modal */
+.activity-modal-body,
+.activity-modal-taskbox,
+.activity-modal-section,
+.activity-modal-row {
+    text-align: center;
+}
+
+.activity-modal-taskmeta {
+    justify-content: center;
+    display: flex;
+    gap: 1.5em;
+}
+
+.activity-modal-section.activity-modal-row {
+    justify-content: center;
+    display: flex;
+    gap: 2em;
+}
+
+.activity-modal-label,
+.activity-modal-value {
+    text-align: center;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* =========================
+   TO-DO TASK MODAL - FLUTTER STYLE
+   ========================= */
+
+/* === Modal Container === */
+.activity-modal-content {
+  max-width: 420px;
+  min-width: 300px;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  border: none;
+}
+
+/* === Badge === */
+.todo-task-modal-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 18px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #ffffff;
+  margin-bottom: 14px;
+}
+
+.todo-task-modal-badge i {
+  font-size: 12px;
+  color: #ffffff;
+  margin-right: 6px;
+}
+
+/* === Icon Circle === */
+.todo-task-modal-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 12px auto;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.todo-task-modal-icon i {
+  font-size: 24px;
+  color: #ffffff;
+}
+
+/* === Title === */
+.todo-task-modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+
+/* === Subtitle === */
+.todo-task-modal-subtitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* === Modal Body === */
+.activity-modal-body {
+  padding: 24px;
+}
+
+/* === Task Box === */
+.activity-modal-taskbox {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.activity-modal-taskname {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.activity-modal-taskmeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.activity-modal-taskmeta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.activity-modal-taskpoints {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+/* === Section Styles === */
+.activity-modal-section {
+  margin-bottom: 20px;
+}
+
+.activity-modal-section:last-child {
+  margin-bottom: 0;
+}
+
+.activity-modal-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.activity-modal-value {
+  font-size: 14px;
+  color: #1e293b;
+  line-height: 1.5;
+}
+
+.activity-modal-row {
+  display: flex;
+  gap: 20px;
+}
+
+/* === Modal Footer === */
+.activity-modal-footer {
+  border-top: 1px solid #e2e8f0;
+  padding: 16px 24px 24px 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  background: #fff;
+}
+
+.activity-modal-footer .btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.activity-modal-footer .btn-secondary {
+  background: #F3F4F6;
+  color: #1F2937;
+}
+
+.activity-modal-footer .btn-secondary:hover {
+  background: #E5E7EB;
+}
+
+.activity-modal-footer .btn-primary {
+  background: #3B82F6;
+  color: white;
+}
+
+.activity-modal-footer .btn-primary:hover {
+  background: #2563EB;
+}
+
+/* === Upload Proof Section (Matching Flutter Design) === */
+.upload-proof-section {
+  margin: 20px 0;
+}
+
+.upload-proof-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.upload-proof-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.upload-proof-buttons .btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  color: #374151;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.upload-proof-buttons .btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.upload-proof-buttons .btn i {
+  font-size: 16px;
+}
+
+/* Enhanced Upload Proof Styles */
+.proof-images-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.proof-image-item {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid #e5e7eb;
+    transition: all 0.3s ease;
+    background: #f8fafc;
+}
+
+.proof-image-item:hover {
+    border-color: #3b82f6;
+    transform: scale(1.05);
+}
+
+.proof-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.proof-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.proof-image-item:hover .proof-overlay {
+    opacity: 1;
+}
+
+.proof-remove-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.proof-remove-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Upload box styling */
+.upload-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #4661E9;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upload-box:hover {
+    background: #eff6ff;
+    border-color: #3b82f6;
+}
+
+.upload-box-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.no-proofs-message {
+    color: #6b7280;
+    font-size: 14px;
+    margin-top: 8px;
+    font-style: italic;
+}
+
+/* Loading state */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.tab-badge {
+    background: #ef4444;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 12px;
+    padding: 1px 6px; /* reduced padding */
+    margin-left: 4px;
+    display: inline-block;
+    min-width: 18px; /* reduced min-width */
+    text-align: center;
+    vertical-align: middle;
+    line-height: 1.2;
+}
+
+/* Award Modal Styles - Flutter Design */
+.award-modal-content {
+  border-radius: 20px !important;
+  border: none;
+  box-shadow: 0 15px 40px rgba(245, 166, 35, 0.2);
+  overflow: hidden;
+  background: transparent;
+  max-width: 360px;
+  max-width: 420px;   /* Match activity-modal-content */
+  min-width: 300px; 
+  margin: 0 auto;
+}
+
+.award-modal-header {
+  padding: 0;
+  border: none;
+}
+
+.award-header-gradient {
+  background: linear-gradient(135deg, #F5A623 0%, #FF8C00 100%);
+  padding: 28px 24px 24px 24px;
+  position: relative;
+  border-radius: 20px 20px 0 0;
+  overflow: hidden;
+}
+
+/* Star Pattern */
+.star-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.star-bg {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.12);
+}
+
+.star-1 {
+  top: 8px;
+  right: 20px;
+  font-size: 30px;
+}
+
+.star-2 {
+  bottom: 8px;
+  left: 15px;
+  font-size: 24px;
+  opacity: 0.1;
+}
+
+.star-3 {
+  top: 30px;
+  left: 30px;
+  font-size: 16px;
+  opacity: 0.08;
+}
+
+.star-4 {
+  bottom: 35px;
+  right: 35px;
+  font-size: 20px;
+  opacity: 0.1;
+}
+
+/* Trophy Container */
+.trophy-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.trophy-icon-circle {
+  width: 70px;
+  height: 70px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 0 15px rgba(255, 255, 255, 0.4),
+    0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.trophy-icon {
+  color: #F5A623;
+  font-size: 38px;
+}
+
+/* Congratulations Title */
+.congratulations-title {
+  color: white;
+  font-size: 24px;
+  font-weight: 800;
+  text-align: center;
+  margin: 0 0 16px 0;
+  letter-spacing: 0.3px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Points Badge */
+.points-badge {
+  display: inline-flex;
+  align-items: center;
+  background: white;
+  border-radius: 18px;
+  padding: 9px 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 10px;
+}
+
+.points-star {
+  color: #F5A623;
+  font-size: 20px;
+  margin-right: 6px;
+}
+
+.points-value {
+  font-size: 22px;
+  font-weight: 900;
+  color: #F5A623;
+  margin-right: 5px;
+  font-family: 'Inter', sans-serif;
+}
+
+.points-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Category Badge */
+.category-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Award Modal Body */
+.award-modal-body {
+  padding: 20px;
+  background: white;
+  border-radius: 0 0 20px 20px;
+}
+
+/* Teacher Info Card */
+.teacher-info-card {
+  display: flex;
+  align-items: center;
+  padding: 14px;
+  background: #F8FAFC;
+  border-radius: 14px;
+  border: 1.5px solid #E5E7EB;
+  margin-bottom: 14px;
+}
+
+.teacher-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid white;
+  overflow: hidden;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.teacher-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #1E88E5;
+}
+
+.teacher-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.awarded-by-label {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #9CA3AF;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.awarded-by-label i {
+  font-size: 12px;
+  margin-right: 4px;
+}
+
+.teacher-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'Inter', sans-serif;
+}
+
+.teacher-subject {
+  font-size: 12px;
+  color: #7485e8;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Date Card */
+.date-card {
+  display: flex;
+  align-items: center;
+  padding: 14px;
+  background: #F0F9FF;
+  border-radius: 14px;
+  border: 1.5px solid #BAE6FD;
+  margin-bottom: 14px;
+  width: 100%;
+}
+
+.date-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.date-icon i {
+  color: #3B82F6;
+  font-size: 18px;
+}
+
+.date-details {
+  flex: 1;
+}
+
+.date-label {
+  font-size: 12px;
+  color: #0C4A6E;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.date-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0C4A6E;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Note Card */
+.note-card {
+  padding: 14px;
+  background: #FFFBEB;
+  border-radius: 14px;
+  border: 1.5px solid #FDE68A;
+  margin-bottom: 16px;
+}
+
+.note-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.note-header i {
+  color: #D97706;
+  font-size: 16px;
+  margin-right: 6px;
+}
+
+.note-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #92400E;
+}
+
+.note-content {
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+}
+
+.note-content p {
+  margin: 0;
+    font-size: 14px;
+    color: #78350F;
+    line-height: 1.4;
+    font-weight: 500;
+    font-style: italic;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Action Button */
+.action-button-container {
+  width: 100%;
+}
+
+.awesome-btn {
+  width: 100%;
+  height: 46px;
+  background: linear-gradient(135deg, #F5A623 0%, #FF8C00 100%);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.3px;
+}
+
+.awesome-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  color: white;
+}
+
+.awesome-btn i {
+  font-size: 18px;
+}
+
+/* =========================
+   MODERN FILE UPLOAD SECTION - FLUTTER STYLE
+   ========================= */
+
+.upload-files-container {
+    background: white;
+    border-radius: 10px;
+    border: 1.5px solid #E5E7EB;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+/* Upload Header */
+.upload-files-header {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    padding: 12px 16px;
+    color: white;
+}
+
+.upload-files-header-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.upload-files-header-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.upload-files-header-icon i {
+    color: white;
+    font-size: 18px;
+}
+
+.upload-files-header-text {
+    flex: 1;
+}
+
+.upload-files-header-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+    margin-bottom: 1px;
+    font-family: 'Inter', sans-serif;
+}
+
+.upload-files-header-subtitle {
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Upload Body */
+.upload-files-body {
+    padding: 12px;
+}
+
+/* Storage Used Section */
+.upload-storage-section {
+    background: #F8FAFC;
+    border-radius: 8px;
+    border: 1.5px solid #E5E7EB;
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+.storage-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.storage-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-family: 'Inter', sans-serif;
+}
+
+.storage-value {
+    font-size: 12px;
+    font-weight: 700;
+    color: #374151;
+    font-family: 'Inter', sans-serif;
+}
+
+.storage-bar-container {
+    width: 100%;
+    height: 6px;
+    background: #E5E7EB;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.storage-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3B82F6 0%, #2563EB 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.storage-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.storage-usage {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6B7280;
+    font-family: 'Inter', sans-serif;
+}
+
+.storage-clear-btn {
+    background: none;
+    border: none;
+    color: #EF4444;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.storage-clear-btn:hover {
+    color: #DC2626;
+}
+
+/* Selected Files Section */
+.upload-files-list-section {
+    margin-bottom: 10px;
+}
+
+.upload-files-list-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #111827;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 6px;
+    display: block;
+    font-family: 'Inter', sans-serif;
+}
+
+.upload-files-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+
+.upload-file-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #F8FAFC;
+    border: 1.5px solid #E5E7EB;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.upload-file-item:hover {
+    border-color: #3B82F6;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.upload-file-icon {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.upload-file-icon-box {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.upload-file-type {
+    font-size: 9px;
+    font-weight: 700;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+}
+
+/* File Type Colors */
+.file-type-pdf .upload-file-icon-box {
+    background: rgba(220, 38, 38, 0.1);
+}
+
+.file-type-pdf .upload-file-icon i {
+    color: #DC2626;
+    font-size: 18px;
+}
+
+.file-type-document .upload-file-icon-box {
+    background: rgba(37, 99, 235, 0.1);
+}
+
+.file-type-document .upload-file-icon i {
+    color: #2563EB;
+    font-size: 18px;
+}
+
+.file-type-spreadsheet .upload-file-icon-box {
+    background: rgba(5, 150, 105, 0.1);
+}
+
+.file-type-spreadsheet .upload-file-icon i {
+    color: #059669;
+    font-size: 18px;
+}
+
+.file-type-presentation .upload-file-icon-box {
+    background: rgba(220, 38, 38, 0.1);
+}
+
+.file-type-presentation .upload-file-icon i {
+    color: #DC2626;
+    font-size: 18px;
+}
+
+.file-type-image .upload-file-icon-box {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.file-type-image .upload-file-icon i {
+    color: #8B5CF6;
+    font-size: 18px;
+}
+
+.file-type-archive .upload-file-icon-box {
+    background: rgba(124, 58, 237, 0.1);
+}
+
+.file-type-archive .upload-file-icon i {
+    color: #7C3AED;
+    font-size: 18px;
+}
+
+.file-type-video .upload-file-icon-box {
+    background: rgba(236, 72, 153, 0.1);
+}
+
+.file-type-video .upload-file-icon i {
+    color: #EC4899;
+    font-size: 18px;
+}
+
+.file-type-audio .upload-file-icon-box {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.file-type-audio .upload-file-icon i {
+    color: #8B5CF6;
+    font-size: 18px;
+}
+
+.file-type-default .upload-file-icon-box {
+    background: rgba(107, 114, 128, 0.1);
+}
+
+.file-type-default .upload-file-icon i {
+    color: #6B7280;
+    font-size: 18px;
+}
+
+.upload-file-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(239, 68, 68, 0.9);
+    border: none;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.2s ease;
+    padding: 0;
+    font-size: 12px;
+}
+
+.upload-file-item:hover .upload-file-remove {
+    opacity: 1;
+}
+
+.upload-file-remove:hover {
+    background: rgba(220, 38, 38, 1);
+}
+
+/* Upload Prompt (when no files selected) */
+.upload-prompt-container {
+    border: 2px dashed #3B82F6;
+    border-radius: 16px;
+    padding: 16px;
+    background: rgba(240, 249, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.upload-prompt-container:hover {
+    border-color: #2563EB;
+    background: rgba(240, 249, 255, 1);
+}
+
+.upload-prompt-icon {
+    width: 36px;
+    height: 36px;
+    background: white;
+    border: 2.5px solid #3B82F6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+}
+
+.upload-prompt-icon i {
+    color: #3B82F6;
+    font-size: 18px;
+}
+
+.upload-prompt-text {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 4px;
+}
+
+.upload-prompt-subtext {
+    margin: 0;
+    font-size: 12px;
+    color: #6B7280;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Action Buttons */
+.upload-buttons-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+    width: 100%;
+}
+
+.upload-button {
+    width: 100%;
+    height: 44px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.upload-button-primary {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.upload-button-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.upload-button-secondary {
+    background: white;
+    color: #3B82F6;
+    border: 1.5px solid #E5E7EB;
+}
+
+.upload-button-secondary:hover:not(:disabled) {
+    background: #F8FAFC;
+    border-color: #3B82F6;
+}
+
+.upload-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.upload-button i {
+    font-size: 16px;
+}
+
+/* Empty State */
+.upload-empty-message {
+    text-align: center;
+    color: #9CA3AF;
+    font-size: 13px;
+    font-weight: 500;
+    font-style: italic;
+    margin-top: 8px;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Loading State */
+.upload-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.upload-loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* File Upload Input (hidden) */
+.file-upload-input {
+    display: none;
+}
+
+/* Activity Links - Always Clickable */
+.activity-link,
+a.activity-link {
+    color: #3B82F6 !important;
+    text-decoration: underline !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    user-select: auto !important;
+    transition: all 0.2s ease;
+}
+
+.activity-link:hover,
+a.activity-link:hover {
+    color: #2563EB !important;
+    text-decoration-color: #2563EB !important;
+}
+
+.activity-link:active,
+a.activity-link:active {
+    color: #1D4ED8 !important;
+}
+
+.activity-description {
+    pointer-events: auto !important;
+    word-break: break-word;
+}
+
+.activity-description a {
+    pointer-events: auto !important;
+    user-select: auto !important;
+    cursor: pointer !important;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .upload-files-container {
+        max-width: 100%;
+    }
+
+    .upload-files-body {
+        padding: 16px;
+    }
+
+    .upload-files-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .upload-buttons-container {
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .upload-button {
+        height: 44px;
+        font-size: 14px;
+    }
+}
+
+/* Success State */
+.upload-success {
+    background: #ECFDF5;
+    border: 1.5px solid #D1FAE5;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #059669;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+}
+
+.upload-success i {
+    font-size: 16px;
+}
+
+/* Error State */
+.upload-error {
+    background: #FEF2F2;
+    border: 1.5px solid #FECACA;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #DC2626;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+}
+
+.upload-error i {
+    font-size: 16px;
+}
+
+/* Uploaded file size info */
+.file-size-info {
+    font-size: 10px;
+    color: #9CA3AF;
+    text-align: center;
+    margin-top: 2px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Add loading state for images */
+.teacher-avatar img[src=""],
+.teacher-avatar img:not([src]) {
+    background-color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.teacher-avatar img[src=""]::after,
+.teacher-avatar img:not([src])::after {
+    content: "👤";
+    font-size: 24px;
+}
+
+/* Award modal image fixes */
+.award-modal-content .teacher-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Make sure modal images don't overflow */
+.award-modal-content img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* =========================
+   FLUTTER-STYLE AWARDED POINTS CARDS
+   ========================= */
+
+/* Only apply Flutter style when viewing the Awarded tab */
+.tasks-container[data-current-filter="Awarded"] .task-list {
+    padding: 16px;
+    display: grid;
+    gap: 14px;
+    background: #f8f9fa;
+}
+
+/* Main Award Card Container - ONLY for Awarded tab */
+.tasks-container[data-current-filter="Awarded"] .task-item {
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid rgba(229, 231, 235, 0.5);
+    box-shadow: 
+        0 4px 15px rgba(94, 114, 228, 0.08),
+        0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 14px;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 8px 25px rgba(94, 114, 228, 0.12),
+        0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Award Card Content */
+.tasks-container[data-current-filter="Awarded"] .task-content {
+    padding: 16px;
+    background: linear-gradient(135deg, #ffffff 0%, #F8FAFC 50%, #F0F4FF 100%);
+    border-radius: 18px;
+}
+
+/* Header Row */
+.tasks-container[data-current-filter="Awarded"] .task-header-row {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 14px;
+    gap: 12px;
+}
+
+/* Award Icon */
+.tasks-container[data-current-filter="Awarded"] .task-award-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #F5A623 0%, #F59E0B 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 10px rgba(245, 166, 35, 0.4);
+    flex-shrink: 0;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-award-icon i {
+    color: white;
+    font-size: 18px;
+}
+
+/* Task Details */
+.tasks-container[data-current-filter="Awarded"] .task-details {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Category Badge */
+.tasks-container[data-current-filter="Awarded"] .task-category-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%);
+    border: 1px solid rgba(91, 33, 182, 0.3);
+    border-radius: 10px;
+    padding: 4px 10px;
+    margin-bottom: 6px;
+    gap: 4px;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-category-badge i {
+    color: #5B21B6;
+    font-size: 12px;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-category-text {
+    color: #5B21B6;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Task Note/Description */
+.tasks-container[data-current-filter="Awarded"] .task-note {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: #111827;
+    line-height: 1.3;
+    letter-spacing: -0.1px;
+    margin: 2px 0 0 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Award Badge */
+.tasks-container[data-current-filter="Awarded"] .task-award-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+    border-radius: 6px;
+    padding: 4px 8px;
+    box-shadow: 0 2px 6px rgba(139, 92, 246, 0.4);
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-award-badge i {
+    color: white;
+    font-size: 10px;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-award-text {
+    color: white;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Info Section */
+.tasks-container[data-current-filter="Awarded"] .task-info-section {
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.9) 0%, 
+        rgba(240, 244, 255, 0.7) 100%);
+    border: 1px solid rgba(229, 231, 235, 0.6);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-info-row {
+    display: flex;
+    align-items: center;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-info-column {
+    flex: 1;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-info-column:first-child {
+    border-right: 1px solid rgba(229, 231, 235, 0.4);
+    padding-right: 12px;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-info-column:last-child {
+    padding-left: 12px;
+}
+
+/* Points Section */
+.tasks-container[data-current-filter="Awarded"] .task-points-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 3px;
+    gap: 5px;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-points-icon {
+    width: 21px;
+    height: 21px;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-points-icon i {
+    color: #F59E0B;
+    font-size: 15px;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-points-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: #F59E0B;
+    font-weight: 600;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-points-value {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-points-number {
+    font-family: 'Inter', sans-serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: #F59E0B;
+    line-height: 1;
+    letter-spacing: -0.5px;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-points-unit {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #F59E0B;
+    padding-bottom: 2px;
+}
+
+/* Date Section */
+.tasks-container[data-current-filter="Awarded"] .task-date-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 3px;
+    gap: 5px;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-date-icon {
+    width: 21px;
+    height: 21px;
+    background: rgba(94, 114, 228, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-date-icon i {
+    color: #5e72e4;
+    font-size: 15px;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-date-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: #5e72e4;
+    font-weight: 600;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-date-value {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    color: #5e72e4;
+    letter-spacing: -0.2px;
+}
+
+/* Teacher Footer */
+.tasks-container[data-current-filter="Awarded"] .task-teacher-footer {
+    background: #F8FAFC;
+    border: 1px solid rgba(229, 231, 235, 0.4);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-teacher-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-teacher-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-teacher-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #1E88E5;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-teacher-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-teacher-name {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 2px;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-teacher-subject {
+    display: inline-block;
+    background: #7485e8;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-verified-badge {
+    width: 20px;
+    height: 20px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.tasks-container[data-current-filter="Awarded"] .task-verified-badge i {
+    color: #10B981;
+    font-size: 14px;
+}
+
+/* Responsive adjustments for awarded cards */
+@media (max-width: 768px) {
+    .tasks-container[data-current-filter="Awarded"] .task-list {
+        padding: 12px;
+        gap: 10px;
+    }
+    
+    .tasks-container[data-current-filter="Awarded"] .task-content {
+        padding: 14px;
+    }
+    
+    .tasks-container[data-current-filter="Awarded"] .task-award-icon {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .tasks-container[data-current-filter="Awarded"] .task-award-icon i {
+        font-size: 16px;
+    }
+    
+    .tasks-container[data-current-filter="Awarded"] .task-info-section {
+        padding: 12px;
+    }
+    
+    .tasks-container[data-current-filter="Awarded"] .task-points-number {
+        font-size: 20px;
+    }
+    
+    .tasks-container[data-current-filter="Awarded"] .task-teacher-avatar {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .tasks-container[data-current-filter="Awarded"] .task-note {
+        font-size: 12px;
+    }
+}
+
+/* =========================
+   MODAL READABILITY IMPROVEMENTS
+   ========================= */
+
+/* Modal Container Improvements */
+.modal-content-custom,
+.activity-modal-content,
+.award-modal-content {
+    max-height: 85vh !important;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Modal Body Scroll Improvements */
+.modal-body.activity-modal-body {
+    max-height: 60vh !important;
+    overflow-y: auto !important;
+    padding: 20px 24px !important;
+    flex: 1;
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for modal body */
+.modal-body.activity-modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body.activity-modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.modal-body.activity-modal-body::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.modal-body.activity-modal-body::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Header stays fixed */
+.activity-modal-header {
+    flex-shrink: 0;
+}
+
+/* Footer stays fixed */
+.activity-modal-footer {
+    flex-shrink: 0;
+    margin-top: auto;
+}
+
+/* Content sections with better spacing */
+.activity-modal-section {
+    margin-bottom: 18px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.activity-modal-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+/* Task box improvements */
+.activity-modal-taskbox {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+/* Description text with better readability */
+.activity-modal-value {
+    font-size: 14px;
+    color: #1e293b;
+    line-height: 1.5;
+    max-height: 100px;
+    overflow-y: auto;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+/* Proof images container with better scrolling */
+.proof-images-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+/* Individual proof images */
+.proof-image-item {
+    width: 70px;
+    height: 70px;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid #e5e7eb;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.proof-image-item:hover {
+    border-color: #3b82f6;
+    transform: scale(1.05);
+}
+
+/* Upload section improvements */
+.upload-proof-section {
+    margin: 16px 0;
+}
+
+.upload-proof-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Award modal body improvements */
+.award-modal-body {
+    max-height: 50vh;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* Teacher info card in award modal */
+.teacher-info-card,
+.date-card,
+.note-card {
+    margin-bottom: 16px;
+    flex-shrink: 0;
+}
+
+/* Note content with scroll if needed */
+.note-content {
+    max-height: 100px;
+    overflow-y: auto;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+}
+
+/* Loading state in modal */
+.activity-modal-footer .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Better focus states for accessibility */
+.modal-body.activity-modal-body:focus {
+    outline: none;
+}
+
+/* Responsive improvements */
+@media (max-height: 700px) {
+    .modal-body.activity-modal-body {
+        max-height: 50vh !important;
+    }
+    
+    .proof-images-container {
+        max-height: 120px;
+    }
+    
+    .activity-modal-taskbox {
+        max-height: 100px;
+    }
+    
+    .activity-modal-value {
+        max-height: 80px;
+    }
+}
+
+@media (max-height: 600px) {
+    .modal-body.activity-modal-body {
+        max-height: 45vh !important;
+    }
+    
+    .activity-modal-section {
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+    }
+    
+    .proof-images-container {
+        max-height: 100px;
+    }
+}
+
+/* Ensure modal doesn't get too wide on large screens */
+@media (min-width: 768px) {
+    .activity-modal-content,
+    .award-modal-content {
+        max-width: 500px !important;
+    }
+}
+
+/* Compact mode for very small screens */
+@media (max-height: 500px) {
+    .activity-modal-gradient {
+        padding: 15px 20px 10px 20px;
+    }
+    
+    .activity-modal-icon {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 8px;
+    }
+    
+    .activity-modal-icon i {
+        font-size: 22px;
+    }
+    
+    .activity-modal-title {
+        font-size: 1.1rem;
+    }
+    
+    .activity-modal-desc {
+        font-size: 0.9rem;
+    }
+    
+    .modal-body.activity-modal-body {
+        padding: 15px 20px 5px 20px;
+    }
+}
+
+/* Improved scrollbar for proof containers */
+.proof-images-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.proof-images-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.proof-images-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.activity-modal-value::-webkit-scrollbar {
+    width: 4px;
+}
+
+.activity-modal-value::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.activity-modal-value::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+/* Ensure award modal also has proper scrolling */
+.award-modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.award-modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.award-modal-body::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+/* Smooth transitions for modal content */
+.activity-modal-content,
+.award-modal-content {
+    transition: all 0.3s ease;
+}
+
+/* Prevent modal from being too tall on mobile */
+@media (max-width: 576px) {
+
+    .modal-content-custom,
+    .activity-modal-content,
+    .award-modal-content {
+        max-height: 90vh !important;
+        margin: 10px !important;
+    }
+    
+    .modal-body.activity-modal-body {
+        max-height: 65vh !important;
+    }
+}
+
+/* Award Modal Footer Improvements */
+.award-modal-content {
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+}
+
+.award-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px 0 24px !important; /* Reduced bottom padding */
+}
+
+/* Add proper footer styling */
+.award-modal-footer {
+    flex-shrink: 0;
+    padding: 16px 24px;
+    border-top: 1px solid #e9ecef;
+    background: white;
+    border-radius: 0 0 20px 20px;
+    margin-top: auto;
+}
+
+/* Remove the action button container from body */
+.action-button-container {
+    display: none; /* Hide the old button container */
+}
+
+/* Awesome button in footer */
+.award-modal-footer .awesome-btn {
+    width: auto;
+    min-width: 140px;
+    height: 46px;
+    background: linear-gradient(135deg, #F5A623 0%, #FF8C00 100%);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.3px;
+    margin-left: auto; /* Push button to right */
+    padding: 0 24px;
+}
+
+.award-modal-footer .awesome-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    color: white;
+}
+
+.award-modal-footer .awesome-btn i {
+    font-size: 18px;
+}
+
+/* Custom Teacher Dropdown */
+.custom-teacher-dropdown {
+    position: relative;
+    min-width: 250px;
+    margin-right: 1.2em;
+    z-index: 1000;
+}
+
+.teacher-dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    background: #f8f9ff;
+    border: 2px solid #e0e7ff;
+    border-radius: 16px;
+    padding: 0.8em 1.2em;
+    font-weight: 600;
+    font-size: 0.95em;
+    color: #4661E9;
+    cursor: pointer;
+    outline: none;
+    width: 100%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(70, 97, 233, 0.1);
+}
+
+.teacher-dropdown-toggle:hover {
+    border-color: #4661E9;
+    background: #f0f4ff;
+}
+
+.teacher-dropdown-toggle.active {
+    border-color: #4661E9;
+    background: #e0e7ff;
+    box-shadow: 0 4px 12px rgba(70, 97, 233, 0.15);
+}
+
+.teacher-dropdown-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e0e7ff;
+    background: #fff;
+}
+
+.teacher-dropdown-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.teacher-dropdown-name {
+    font-weight: 700;
+    color: #1F2937;
+    font-size: 0.95em;
+    margin-bottom: 2px;
+}
+
+.teacher-dropdown-subject {
+    color: #5e72e4;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+.teacher-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(70, 95, 233, 0.15);
+    z-index: 1001;
+    padding: 0.5em 0;
+    display: none;
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 0.5em;
+    border: 1px solid #e0e7ff;
+}
+
+.teacher-dropdown-menu.open {
+    display: block;
+    animation: dropdownFadeIn 0.2s ease;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.teacher-dropdown-option {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    padding: 0.8em 1.2em;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    transition: background 0.2s ease;
+    font-size: 0.95em;
+    text-align: left;
+}
+
+.teacher-dropdown-option:hover {
+    background: #f8f9ff;
+}
+
+.teacher-dropdown-option.selected {
+    background: #e0e7ff;
+}
+
+.teacher-dropdown-active-badge {
+    background: linear-gradient(135deg, #4661E9, #6B46E9);
+    color: white;
+    font-size: 0.75em;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 4px 8px;
+    margin-left: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .custom-teacher-dropdown {
+        min-width: 100%;
+        margin-right: 0;
+        margin-bottom: 1em;
+    }
+    
+    .teacher-dropdown-toggle {
+        padding: 0.7em 1em;
+    }
+    
+    .teacher-dropdown-avatar {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .filter-tabs-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* Scrollbar styling for dropdown */
+.teacher-dropdown-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.teacher-dropdown-menu::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.teacher-dropdown-menu::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.teacher-dropdown-menu::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Add smooth fade-in animation for stats cards */
+.stats-row .points-card,
+.stats-row .streak-card, 
+.stats-row .progress-card {
+    animation: fadeInUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+    }
+    60% {
+        opacity: 1;
+        transform: translateY(-4px) scale(1.02);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+/* Strikethrough ONLY for completed tasks (not awarded) */
+.task-item.completed .task-title,
+.task-item.completed .task-description {
+    text-decoration: line-through;
+    text-decoration-color: #000000;
+    text-decoration-thickness: 2px;
+    opacity: 0.7;
+    font-style: italic;
+    color: #666666;
+}
+
+/* Keep status badges and points visible */
+.task-item.completed .task-status,
+.task-item.completed .task-points-badge,
+.task-item.completed .task-badge {
+    text-decoration: none !important;
+    opacity: 1 !important;
+    font-style: normal !important;
+}
+
+/* ======================================= */
+/* SUBMITTED FILES SECTION - FLUTTER DESIGN */
+/* ======================================= */
+
+.submitted-files-section {
+    width: 100%;
+    padding: 16px;
+    background: #F8FAFC;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: 16px;
+    box-sizing: border-box;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.files-header {
+    margin-bottom: 16px;
+}
+
+.files-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 4px 0;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+.files-subtitle {
+    font-size: 13px;
+    color: #6B7280;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+}
+
+.files-list-container {
+    max-height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-right: 4px;
+}
+
+/* Custom scrollbar for files list */
+.files-list-container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.files-list-container::-webkit-scrollbar-track {
+    background: #E5E7EB;
+    border-radius: 10px;
+}
+
+.files-list-container::-webkit-scrollbar-thumb {
+    background: #9CA3AF;
+    border-radius: 10px;
+}
+
+.files-list-container::-webkit-scrollbar-thumb:hover {
+    background: #6B7280;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.file-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), transparent);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.file-item:hover {
+    border-color: #3B82F6;
+    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.15);
+    transform: translateY(-2px);
+}
+
+.file-item:hover::before {
+    opacity: 1;
+}
+
+.file-item:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+}
+
+.file-icon-container {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 2px solid;
+    margin-right: 14px;
+    background: white;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.file-item:hover .file-icon-container {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.file-icon-container i {
+    font-size: 22px;
+    transition: transform 0.2s ease;
+}
+
+.file-item:hover .file-icon-container i {
+    transform: scale(1.1);
+}
+
+.file-info {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.file-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -0.01em;
+    line-height: 1.4;
+}
+
+.file-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+
+.file-type-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+    background: rgba(0, 0, 0, 0.05);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.file-size {
+    font-size: 11px;
+    color: #6B7280;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+
+.file-size i {
+    font-size: 11px;
+    color: #9CA3AF;
+}
+
+.file-tap-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.file-item:hover .file-tap-indicator {
+    opacity: 1;
+}
+
+.file-tap-indicator i {
+    font-size: 11px;
+    color: #3B82F6;
+}
+
+.file-tap-indicator span {
+    font-size: 11px;
+    color: #3B82F6;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+}
+
+.file-item .fa-chevron-right {
+    font-size: 14px;
+    margin-left: 8px;
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+.file-item:hover .fa-chevron-right {
+    opacity: 1;
+    transform: translateX(4px);
+}
+
+/* Empty state for files */
+.files-empty-state {
+    padding: 24px;
+    text-align: center;
+    background: white;
+    border-radius: 12px;
+    border: 2px dashed #E5E7EB;
+}
+
+.files-empty-state i {
+    font-size: 32px;
+    color: #9CA3AF;
+    margin-bottom: 12px;
+}
+
+.files-empty-state p {
+    font-size: 14px;
+    color: #6B7280;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Loading state for files */
+.files-loading {
+    padding: 24px;
+    text-align: center;
+    background: white;
+    border-radius: 12px;
+}
+
+.files-loading i {
+    font-size: 24px;
+    color: #3B82F6;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .submitted-files-section {
+        padding: 12px;
+    }
+    
+    .file-icon-container {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        margin-right: 10px;
+    }
+    
+    .file-icon-container i {
+        font-size: 18px;
+    }
+    
+    .file-name {
+        font-size: 13px;
+    }
+    
+    .file-meta {
+        gap: 8px;
+    }
+    
+    .file-tap-indicator span {
+        font-size: 10px;
+    }
+
+    /* Responsive modal adjustments for mobile */
+    .activity-modal-content {
+        max-width: 100%;
+        margin: 10px;
+    }
+
+    .activity-modal-gradient {
+        padding: 24px 20px 20px 20px;
+    }
+
+    .activity-modal-title {
+        font-size: 1.25rem;
+    }
+
+    .activity-modal-desc {
+        font-size: 0.95rem;
+    }
+
+    .activity-modal-body {
+        padding: 20px 20px 8px 20px;
+    }
+
+    .activity-modal-footer {
+        padding: 16px 20px 20px 20px;
+        flex-direction: column;
+    }
+
+    .activity-modal-footer .btn {
+        width: 100%;
+        padding: 12px 16px;
+    }
+}
